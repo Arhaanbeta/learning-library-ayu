@@ -1,0 +1,57 @@
+---
+/**
+ * An older single-file (or multi-file) lesson, shown exactly as it was, inside the site frame.
+ * It opens fresh every time: anything it saved on the device last time is cleared first.
+ */
+import BaseLayout from './BaseLayout.astro';
+import Breadcrumb from '@components/Breadcrumb.astro';
+import SectionNav from '@components/SectionNav.astro';
+import PrevNext from '@components/PrevNext.astro';
+import { ancestors, neighbours, type Page } from '@lib/content';
+import { url } from '@lib/url';
+
+interface Props { page: Page }
+const { page } = Astro.props;
+const folder = page.folder;
+const { prev, next } = neighbours(page);
+const src = url(page.data.legacy!.replace(/^\//, ''));
+---
+<BaseLayout title={page.data.title} description={page.data.summary} accent={folder.accent}>
+  <Breadcrumb trail={[...ancestors(folder).map((f) => ({ label: f.title, href: f.href })), { label: page.data.title }]} />
+  <div class="legacy-head">
+    <h1>{page.data.title}</h1>
+    <a class="btn quiet" href={src} target="_blank" rel="noopener">Open full screen ↗</a>
+  </div>
+  <!-- Start fresh: remove whatever older lessons saved on this device (keeps only the site's own day/night choice). -->
+  <script is:inline>
+    (function () {
+      try {
+        var keep = { 'library.theme': 1 };
+        for (var i = localStorage.length - 1; i >= 0; i--) { var k = localStorage.key(i); if (!keep[k]) localStorage.removeItem(k); }
+        sessionStorage.clear();
+      } catch (e) { /* storage blocked: nothing saved to clear */ }
+    })();
+  </script>
+  <iframe
+    class="legacy-frame"
+    src={src}
+    title={page.data.title}
+    loading="eager"
+    sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-downloads allow-modals"
+    allow="clipboard-write; fullscreen"
+  ></iframe>
+  <div class="after">
+    <SectionNav folder={folder} current={page.id} />
+    <PrevNext prev={prev} next={next} folder={folder} />
+  </div>
+</BaseLayout>
+
+<style>
+  .legacy-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); margin: var(--space-4) 0; }
+  h1 { font-size: var(--text-xl); }
+  .legacy-frame {
+    display: block; width: 100%; height: calc(100dvh - 7rem); min-height: 32rem;
+    border: var(--border); border-radius: var(--radius); background: #fff; box-shadow: var(--shadow);
+  }
+  .after { display: grid; gap: var(--space-4); margin-top: var(--space-6); max-width: 48rem; }
+</style>

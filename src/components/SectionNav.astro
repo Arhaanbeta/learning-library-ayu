@@ -1,16 +1,16 @@
 ---
-// The section's contents. A sidebar on wide screens; a fold-out list on phones and tablets.
-import type { Section } from '@lib/content';
-interface Props { section: Section; current?: string }
-const { section, current } = Astro.props;
+// The other lessons in the same folder. A sidebar on wide screens; a fold-out list on phones and tablets.
+import type { Folder } from '@lib/content';
+interface Props { folder: Folder; current?: string }
+const { folder, current } = Astro.props;
 ---
 <aside class="section-nav">
   <details open={false} class="fold">
-    <summary><span class="eyebrow">In this section</span><span class="title">{section.title}</span></summary>
+    <summary><span class="eyebrow">In this part</span><span class="title">{folder.title}</span></summary>
     <ol>
-      {section.pages.map((p, i) => (
+      {folder.pages.map((p, i) => (
         <li>
-          <a href={p.href} aria-current={p.id === current ? 'page' : undefined} data-page-id={p.id}>
+          <a href={p.href} aria-current={p.id === current ? 'page' : undefined}>
             <span class="num" aria-hidden="true">{i + 1}</span>
             <span>{p.data.title}</span>
           </a>

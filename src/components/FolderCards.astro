@@ -1,0 +1,34 @@
+---
+// Cards for the folders inside a folder (subjects, subdomains, topics…), each with its lesson count.
+import { allPages, plural, type Folder } from '@lib/content';
+interface Props { folders: Folder[] }
+const { folders } = Astro.props;
+---
+<ul class="cards" role="list">
+  {folders.map((f) => {
+    const n = allPages(f).length;
+    return (
+      <li data-accent={f.accent}>
+        <a class="fc card" href={f.href}>
+          {f.icon && <span class="icon" aria-hidden="true">{f.icon}</span>}
+          <span class="name">{f.title}</span>
+          {f.blurb && <span class="blurb">{f.blurb}</span>}
+          <span class="meta">{n ? plural(n, 'lesson') : 'Coming soon'}{f.folders.length ? ` · ${plural(f.folders.length, 'part')}` : ''}</span>
+        </a>
+      </li>
+    );
+  })}
+</ul>
+
+<style>
+  .cards { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr)); }
+  .fc {
+    height: 100%; display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-5);
+    text-decoration: none; color: var(--ink); border-top: 6px solid var(--accent);
+    transition: transform var(--fast) var(--ease);
+  }
+  .fc:hover { transform: translateY(-2px); }
+  .icon { font-size: 2.2rem; line-height: 1; }
+  .name { font-size: var(--text-lg); font-weight: 700; color: var(--accent-ink); }
+  .blurb { color: var(--ink-2); flex: 1; }
+</style>

@@ -1,0 +1,32 @@
+---
+// A numbered list of lessons (used on folder pages and the library map).
+import type { Page } from '@lib/content';
+interface Props { pages: Page[]; compact?: boolean }
+const { pages, compact = false } = Astro.props;
+---
+<ol class:list={['lessons', { compact }]} role="list">
+  {pages.map((p, i) => (
+    <li>
+      <a class="pg card" href={p.href}>
+        <span class="num" aria-hidden="true">{i + 1}</span>
+        <span class="body">
+          <span class="name">{p.data.title}</span>
+          {!compact && p.data.summary && <span class="summary">{p.data.summary}</span>}
+          {!compact && (p.data.minutes || p.data.legacy) && <span class="meta">{[p.data.minutes && `${p.data.minutes} minutes`, p.data.legacy && 'interactive'].filter(Boolean).join(' · ')}</span>}
+        </span>
+      </a>
+    </li>
+  ))}
+</ol>
+
+<style>
+  .lessons { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+  .pg { display: flex; gap: var(--space-4); align-items: flex-start; padding: var(--space-4) var(--space-5); text-decoration: none; color: var(--ink); min-height: var(--tap); }
+  .pg:hover { box-shadow: 0 0 0 2px var(--accent), var(--shadow); }
+  .compact .pg { padding: var(--space-3) var(--space-4); box-shadow: none; }
+  .num { flex: 0 0 auto; display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 50%; border: 2px solid var(--accent); color: var(--accent-ink); font-weight: 700; }
+  .body { display: flex; flex-direction: column; gap: 2px; }
+  .name { font-weight: 700; font-size: var(--text-lg); }
+  .compact .name { font-size: var(--text-base); }
+  .summary { color: var(--ink-2); }
+</style>

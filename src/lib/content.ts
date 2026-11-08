@@ -1,6 +1,5 @@
 /**
- * One place that turns the three content collections into a tree:
- * subjects → sections → pages, each sorted by `order`, with their URLs.
+ * The one place that turns content/ into a tree: folders (any depth) holding lessons.
  * Every page and layout reads content through here, never straight from the collections.
  */
 import { getCollection, type CollectionEntry } from 'astro:content';
@@ -8,95 +7,114 @@ import type { Accent } from './accents';
 import { url } from './url';
 
 export interface Page {
-  id: string; // permanent page id (progress key)
+  id: string; // permanent lesson id
   slug: string; // from the file name, without the "01-" prefix
-  subject: string;
-  section: string;
+  path: string; // "technology/cloud/kubernetes"
   href: string;
+  folder: Folder;
   data: CollectionEntry<'pages'>['data'];
   entry: CollectionEntry<'pages'>;
 }
-export interface Section {
+export interface Folder {
+  path: string; // "" for the root, else "technology/cloud"
   slug: string;
-  subject: string;
   href: string;
   title: string;
   order: number;
-  summary: string;
+  icon?: string;
+  accent: Accent;
+  blurb?: string;
+  depth: number; // 0 = root, 1 = top level (domain/subject), 2 = next level…
+  parent?: Folder;
+  folders: Folder[];
   pages: Page[];
 }
-export interface Subject {
-  slug: string;
-  href: string;
-  title: string;
-  accent: Accent;
-  icon: string;
-  order: number;
-  blurb: string;
-  sections: Section[];
-}
 
-const byOrder = <T extends { order: number; title?: string }>(a: T, b: T) =>
-  a.order - b.order || String(a.title ?? '').localeCompare(String(b.title ?? ''));
+const DEFAULT_ACCENT: Accent = 'blue';
+const titleFromSlug = (s: string) => s.replace(/[-_]+/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
+const byOrder = (a: { order: number; title: string }, b: { order: number; title: string }) =>
+  a.order - b.order || a.title.localeCompare(b.title);
 
-let cached: Promise<Subject[]> | undefined;
+let cached: Promise<Folder> | undefined;
 
-/** The whole library. Fails the build with a clear message if a folder is missing its subject.json or section.json. */
-export function getLibrary(): Promise<Subject[]> {
+/** The whole library as a tree. The root's `folders` are the top level (Maths, Technology…). */
+export function getLibrary(): Promise<Folder> {
   cached ??= build();
   return cached;
 }
 
-async function build(): Promise<Subject[]> {
-  const [subjectEntries, sectionEntries, pageEntries] = await Promise.all([
-    getCollection('subjects'),
-    getCollection('sections'),
-    getCollection('pages'),
-  ]);
+async function build(): Promise<Folder> {
+  const [metaEntries, pageEntries] = await Promise.all([getCollection('folders'), getCollection('pages')]);
+  const metas = new Map(metaEntries.map((m) => [m.id, m.data]));
+  const root: Folder = { path: '', slug: '', href: url(), title: 'Library', order: 0, accent: DEFAULT_ACCENT, depth: 0, folders: [], pages: [] };
+  const all = new Map<string, Folder>([['', root]]);
 
-  const subjects = new Map<string, Subject>();
-  for (const s of subjectEntries) {
-    subjects.set(s.id, { slug: s.id, href: url(`${s.id}/`), ...s.data, sections: [] });
+  // A folder (and its parents) exists if it has a meta.json or holds a lesson.
+  function folder(path: string): Folder {
+    const found = all.get(path);
+    if (found) return found;
+    const parts = path.split('/');
+    const parent = folder(parts.slice(0, -1).join('/'));
+    const slug = parts[parts.length - 1];
+    const m = metas.get(path);
+    const f: Folder = {
+      path, slug, href: url(`${path}/`),
+      title: m?.title ?? titleFromSlug(slug), order: m?.order ?? 100, icon: m?.icon,
+      accent: m?.accent ?? parent.accent, blurb: m?.blurb,
+      depth: parts.length, parent, folders: [], pages: [],
+    };
+    all.set(path, f);
+    parent.folders.push(f);
+    return f;
   }
+  for (const path of metas.keys()) folder(path);
 
-  const sections = new Map<string, Section>();
-  for (const s of sectionEntries) {
-    const [subject, section] = s.id.split('/');
-    const parent = subjects.get(subject);
-    if (!parent) throw new Error(`content/${s.id}/section.json: its subject folder has no subject.json (content/${subject}/subject.json).`);
-    const sec: Section = { slug: section, subject, href: url(`${subject}/${section}/`), ...s.data, pages: [] };
-    sections.set(s.id, sec);
-    parent.sections.push(sec);
-  }
-
-  const seenSlugs = new Set<string>();
   for (const p of pageEntries) {
-    const file = p.filePath ?? '';
-    const parts = file.replace(/^\.?\/?content\//, '').split('/');
-    if (parts.length !== 3) throw new Error(`Page "${p.id}" (${file}) must sit at content/<subject>/<section>/<file>.mdx.`);
-    const [subject, section, fileName] = parts;
-    const parent = sections.get(`${subject}/${section}`);
-    if (!parent) throw new Error(`${file}: its section folder has no section.json (content/${subject}/${section}/section.json).`);
-    const slug = fileName.replace(/\.(md|mdx)$/, '').replace(/^\d+[-_]/, '');
-    const key = `${subject}/${section}/${slug}`;
-    if (seenSlugs.has(key)) throw new Error(`Two pages in content/${subject}/${section}/ would both live at /${key}/. Rename one file.`);
-    seenSlugs.add(key);
-    parent.pages.push({ id: p.id, slug, subject, section, href: url(`${key}/`), data: p.data, entry: p });
+    const rel = (p.filePath ?? '').replace(/^\.?\/?content\//, '');
+    const parts = rel.split('/');
+    if (parts.length < 2) throw new Error(`Lesson "${rel}" must sit inside a folder in content/, e.g. content/maths/${rel}.`);
+    const parent = folder(parts.slice(0, -1).join('/'));
+    const slug = parts[parts.length - 1].replace(/\.(md|mdx)$/, '').replace(/^\d+[-_]/, '');
+    const path = `${parent.path}/${slug}`;
+    if (parent.pages.some((x) => x.slug === slug)) throw new Error(`Two lessons in content/${parent.path}/ would both live at /${path}/. Rename one file.`);
+    parent.pages.push({ id: p.id, slug, path, href: url(`${path}/`), folder: parent, data: p.data, entry: p });
   }
 
-  const list = [...subjects.values()].sort(byOrder);
-  for (const s of list) {
-    s.sections.sort(byOrder);
-    for (const sec of s.sections) sec.pages.sort((a, b) => byOrder(a.data, b.data));
+  // A lesson and a sub-folder must not share an address.
+  for (const f of all.values()) {
+    for (const p of f.pages) if (f.folders.some((c) => c.slug === p.slug)) throw new Error(`content/${f.path}/ has both a folder and a lesson called "${p.slug}". Rename one.`);
+    f.folders.sort(byOrder);
+    f.pages.sort((a, b) => byOrder({ order: a.data.order, title: a.data.title }, { order: b.data.order, title: b.data.title }));
   }
-  return list;
+
+  // Folders inherit the nearest accent; recompute top-down now that every meta is known.
+  (function inherit(f: Folder) { for (const c of f.folders) { c.accent = metas.get(c.path)?.accent ?? f.accent; inherit(c); } })(root);
+  return root;
 }
 
-/** Previous and next pages within the same section. */
-export function neighbours(section: Section, page: Page) {
-  const i = section.pages.findIndex((p) => p.id === page.id);
-  return { prev: section.pages[i - 1], next: section.pages[i + 1] };
+/** Every folder below (and including) this one, depth first. */
+export function allFolders(f: Folder): Folder[] {
+  return [f, ...f.folders.flatMap(allFolders)];
+}
+/** Every lesson anywhere inside this folder. */
+export function allPages(f: Folder): Page[] {
+  return [...f.pages, ...f.folders.flatMap(allPages)];
+}
+/** The chain of folders from the top level down to this one (the root left out). */
+export function ancestors(f: Folder): Folder[] {
+  const out: Folder[] = [];
+  for (let x: Folder | undefined = f; x && x.depth > 0; x = x.parent) out.unshift(x);
+  return out;
+}
+/** The nearest icon up the tree. */
+export function iconOf(f: Folder): string | undefined {
+  for (let x: Folder | undefined = f; x; x = x.parent) if (x.icon) return x.icon;
+  return undefined;
+}
+/** Previous and next lessons in the same folder. */
+export function neighbours(page: Page) {
+  const list = page.folder.pages, i = list.indexOf(page);
+  return { prev: list[i - 1], next: list[i + 1] };
 }
 
-export const totalMinutes = (pages: Page[]) => pages.reduce((n, p) => n + p.data.minutes, 0);
 export const plural = (n: number, one: string, many = one + 's') => `${n} ${n === 1 ? one : many}`;

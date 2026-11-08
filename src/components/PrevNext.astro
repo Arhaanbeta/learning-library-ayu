@@ -1,14 +1,14 @@
 ---
-// Previous / next lesson in the section. On the last page, "next" goes back to the section contents.
-import type { Page, Section } from '@lib/content';
-interface Props { prev?: Page; next?: Page; section: Section }
-const { prev, next, section } = Astro.props;
+// Previous / next lesson in the same folder. On the last lesson, "next" goes back to the folder.
+import type { Folder, Page } from '@lib/content';
+interface Props { prev?: Page; next?: Page; folder: Folder }
+const { prev, next, folder } = Astro.props;
 ---
 <nav class="prevnext" aria-label="More lessons">
   {prev ? <a class="pn prev" href={prev.href} rel="prev"><span class="meta">‹ Previous</span><span class="t">{prev.data.title}</span></a> : <span />}
   {next
     ? <a class="pn next" href={next.href} rel="next"><span class="meta">Next ›</span><span class="t">{next.data.title}</span></a>
-    : <a class="pn next" href={section.href}><span class="meta">Finished the section</span><span class="t">Back to {section.title}</span></a>}
+    : <a class="pn next" href={folder.href}><span class="meta">Finished this part</span><span class="t">Back to {folder.title}</span></a>}
 </nav>
 
 <style>

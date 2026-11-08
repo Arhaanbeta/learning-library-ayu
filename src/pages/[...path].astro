@@ -1,0 +1,63 @@
+---
+/**
+ * Every folder page and every lesson page, at any depth.
+ * A folder lists its sub-folders and lessons; a lesson shows its words, or an older lesson in a frame.
+ */
+import { render } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import LessonLayout from '../layouts/LessonLayout.astro';
+import LegacyLayout from '../layouts/LegacyLayout.astro';
+import Breadcrumb from '@components/Breadcrumb.astro';
+import FolderCards from '@components/FolderCards.astro';
+import LessonList from '@components/LessonList.astro';
+import { lessonComponents } from '@components/mdx';
+import { allFolders, allPages, ancestors, iconOf, getLibrary, plural, type Folder, type Page } from '@lib/content';
+
+export async function getStaticPaths() {
+  const root = await getLibrary();
+  const folders = allFolders(root).filter((f) => f.depth > 0);
+  return [
+    ...folders.map((folder) => ({ params: { path: folder.path }, props: { kind: 'folder' as const, folder } })),
+    ...allPages(root).map((page) => ({ params: { path: page.path }, props: { kind: 'page' as const, page } })),
+  ];
+}
+type Props = { kind: 'folder'; folder: Folder } | { kind: 'page'; page: Page };
+const props = Astro.props;
+const Content = props.kind === 'page' && !props.page.data.legacy ? (await render(props.page.entry)).Content : null;
+const folder = props.kind === 'folder' ? props.folder : null;
+const count = folder ? allPages(folder).length : 0;
+---
+{props.kind === 'page' && props.page.data.legacy && <LegacyLayout page={props.page} />}
+{props.kind === 'page' && Content && (
+  <LessonLayout page={props.page}>
+    <Content components={lessonComponents} />
+  </LessonLayout>
+)}
+{folder && (
+  <BaseLayout title={folder.title} description={folder.blurb} accent={folder.accent}>
+    <Breadcrumb trail={ancestors(folder).map((f) => ({ label: f.title, href: f === folder ? undefined : f.href }))} />
+    <header class="head">
+      {iconOf(folder) && <span class="icon" aria-hidden="true">{iconOf(folder)}</span>}
+      <h1>{folder.title}</h1>
+      {folder.blurb && <p class="lead">{folder.blurb}</p>}
+      <p class="meta">{plural(count, 'lesson')}</p>
+    </header>
+    {folder.folders.length > 0 && <FolderCards folders={folder.folders} />}
+    {folder.pages.length > 0 && (
+      <section class="lessons" aria-label="Lessons">
+        {folder.folders.length > 0 && <h2>General</h2>}
+        <LessonList pages={folder.pages} />
+      </section>
+    )}
+    {count === 0 && <p class="lead empty">Nothing here yet.</p>}
+  </BaseLayout>
+)}
+
+<style>
+  .head { display: flex; flex-direction: column; gap: var(--space-2); margin: var(--space-4) 0 var(--space-6); }
+  .icon { font-size: 3rem; line-height: 1; }
+  h1 { font-size: var(--text-2xl); }
+  .lessons { margin-top: var(--space-6); max-width: 48rem; }
+  .lessons h2 { font-size: var(--text-lg); margin-bottom: var(--space-3); color: var(--ink-2); }
+  .empty { margin-top: var(--space-4); }
+</style>

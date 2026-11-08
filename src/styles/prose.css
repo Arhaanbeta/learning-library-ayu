@@ -31,3 +31,10 @@ pre.astro-code {
 /* Maths */
 .prose .katex { font-size: 1.08em; }
 .prose .katex-display { overflow-x: auto; overflow-y: hidden; padding-block: var(--space-2); }
+
+/* A diagram from an imported document that still needs redrawing */
+.prose .diagram-gap {
+  display: flex; gap: var(--space-3); align-items: flex-start; margin: var(--space-5) 0;
+  padding: var(--space-4); border: 2px dashed var(--line-2); border-radius: var(--radius); color: var(--ink-2);
+}
+.prose .diagram-gap figcaption small { color: var(--ink-3); }

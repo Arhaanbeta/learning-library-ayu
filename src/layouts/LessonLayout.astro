@@ -1,7 +1,7 @@
 ---
 /**
- * A lesson page: breadcrumb, the section's contents in a sidebar, the lesson,
- * and previous/next links.
+ * A written lesson: breadcrumb, the folder's other lessons in a sidebar, the lesson,
+ * and previous/next links. Always opens at the top; nothing about the reader is remembered.
  */
 import 'katex/dist/katex.min.css';
 import '../styles/prose.css';
@@ -10,28 +10,29 @@ import Breadcrumb from '@components/Breadcrumb.astro';
 import SectionNav from '@components/SectionNav.astro';
 import PrevNext from '@components/PrevNext.astro';
 import CopyButtons from '@components/CopyButtons.astro';
-import { neighbours, type Page, type Section, type Subject } from '@lib/content';
+import { ancestors, neighbours, type Page } from '@lib/content';
 
-interface Props { subject: Subject; section: Section; page: Page }
-const { subject, section, page } = Astro.props;
-const { prev, next } = neighbours(section, page);
-const n = section.pages.indexOf(page) + 1;
+interface Props { page: Page }
+const { page } = Astro.props;
+const folder = page.folder;
+const { prev, next } = neighbours(page);
+const n = folder.pages.indexOf(page) + 1;
 ---
-<BaseLayout title={page.data.title} description={page.data.summary} accent={subject.accent}>
-  <Breadcrumb trail={[{ label: subject.title, href: subject.href }, { label: section.title, href: section.href }, { label: page.data.title }]} />
+<BaseLayout title={page.data.title} description={page.data.summary} accent={folder.accent}>
+  <Breadcrumb trail={[...ancestors(folder).map((f) => ({ label: f.title, href: f.href })), { label: page.data.title }]} />
   <div class="lesson">
-    <SectionNav section={section} current={page.id} />
+    <SectionNav folder={folder} current={page.id} />
     <article>
       <header class="lesson-head">
-        <p class="eyebrow">{section.title} · Page {n} of {section.pages.length}</p>
+        <p class="eyebrow">{folder.title} · Lesson {n} of {folder.pages.length}</p>
         <h1>{page.data.title}</h1>
-        <p class="lead">{page.data.summary}</p>
-        <p class="meta">About {page.data.minutes} minutes</p>
+        {page.data.summary && <p class="lead">{page.data.summary}</p>}
+        {page.data.minutes && <p class="meta">About {page.data.minutes} minutes</p>}
       </header>
       <div class="prose">
         <slot />
       </div>
-      <PrevNext prev={prev} next={next} section={section} />
+      <PrevNext prev={prev} next={next} folder={folder} />
     </article>
     <CopyButtons />
   </div>

@@ -19,6 +19,7 @@ const siteName = 'Learning Library';
 const fullTitle = title === siteName ? title : `${title} · ${siteName}`;
 const path = Astro.url.pathname;
 const nav = [
+  { href: url('map/'), label: 'Map' },
   { href: url('search/'), label: 'Search' },
 ];
 ---

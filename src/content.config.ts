@@ -1,13 +1,14 @@
 /**
- * Content model: Subject → Section → Page.
+ * Content model: a tree of folders, any depth, with lessons as the leaves.
  *
- *   content/<subject>/subject.json
- *   content/<subject>/<section>/section.json
- *   content/<subject>/<section>/<NN-file-name>.mdx
+ *   content/<folder>/meta.json                 e.g. Technology (a domain or subject)
+ *   content/<folder>/<folder>/meta.json        e.g. Technology › Cloud (a subdomain)
+ *   content/<folder>/.../<NN-file-name>.mdx    a lesson, at any depth
  *
- * The subject and section come from the folder path. A page's `id` is PERMANENT:
- * progress is keyed on it, so it must never change or be reused. The build fails
- * if any page id is missing, badly formed or used twice.
+ * Folders can be nested as deep as you like (domain → subject → subdomain → topic …).
+ * meta.json is optional: a folder without one is titled from its name.
+ * A lesson's `id` is PERMANENT: it must never change or be reused. The build fails if
+ * any lesson id is missing, badly formed or used twice.
  */
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
@@ -16,58 +17,53 @@ import { ACCENTS } from './lib/accents';
 
 const ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-// Remembers which file claimed each page id, so a second file with the same id fails the build.
+// Remembers which file claimed each lesson id, so a second file with the same id fails the build.
 const claimed = new Map<string, string>();
 function pageId({ entry, data }: { entry: string; data: Record<string, unknown> }): string {
   const id = data.id;
   if (typeof id !== 'string' || !id.trim()) {
-    throw new Error(`Page "content/${entry}" has no "id" in its frontmatter. Every page needs a permanent id, e.g. "phy-forces-what-is-a-force".`);
+    throw new Error(`Lesson "content/${entry}" has no "id" in its frontmatter. Every lesson needs a permanent id, e.g. "phy-forces-what-is-a-force".`);
   }
   if (!ID_PATTERN.test(id)) {
-    throw new Error(`Page "content/${entry}" has id "${id}". Use only lower-case letters, numbers and single hyphens.`);
+    throw new Error(`Lesson "content/${entry}" has id "${id}". Use only lower-case letters, numbers and single hyphens.`);
   }
   const owner = claimed.get(id);
   if (owner && owner !== entry) {
-    throw new Error(`Page id "${id}" is used twice: "content/${owner}" and "content/${entry}". Ids must be unique and are never reused.`);
+    throw new Error(`Lesson id "${id}" is used twice: "content/${owner}" and "content/${entry}". Ids must be unique and are never reused.`);
   }
   claimed.set(id, entry);
   return id;
 }
 
-// "physics/subject.json" → "physics"; "physics/forces/section.json" → "physics/forces"
+// "technology/cloud/meta.json" → "technology/cloud"
 const folderOf = ({ entry }: { entry: string }) => entry.split('/').slice(0, -1).join('/');
 
-const subjects = defineCollection({
-  loader: glob({ pattern: '*/subject.json', base: './content', generateId: folderOf }),
+/** One shape for every folder, whatever its level. */
+const folders = defineCollection({
+  loader: glob({ pattern: '**/meta.json', base: './content', generateId: folderOf }),
   schema: z.object({
     title: z.string().min(1),
-    accent: z.enum(ACCENTS),
-    icon: z.string().min(1).max(8),
-    order: z.number().int(),
-    blurb: z.string().min(1).max(200),
-  }).strict(),
-});
-
-const sections = defineCollection({
-  loader: glob({ pattern: '*/*/section.json', base: './content', generateId: folderOf }),
-  schema: z.object({
-    title: z.string().min(1),
-    order: z.number().int(),
-    summary: z.string().min(1).max(240),
+    order: z.number().default(100),
+    icon: z.string().max(8).optional(),
+    accent: z.enum(ACCENTS).optional(), // inherited from the parent folder when left out
+    blurb: z.string().max(240).optional(),
   }).strict(),
 });
 
 const pages = defineCollection({
-  loader: glob({ pattern: '*/*/*.{md,mdx}', base: './content', generateId: pageId }),
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './content', generateId: pageId }),
   schema: z.object({
     id: z.string().regex(ID_PATTERN),
     title: z.string().min(1),
-    summary: z.string().min(1).max(200),
-    order: z.number().int(),
-    minutes: z.number().int().min(1).max(60),
+    summary: z.string().max(240).default(''),
+    order: z.number().default(100),
+    minutes: z.number().int().min(1).max(600).optional(),
     tags: z.array(z.string()).default([]),
+    // An older single-file lesson shown as it is, inside the site frame. Path under public/.
     legacy: z.string().startsWith('/legacy/').endsWith('.html').optional(),
+    // Where the old lesson came from (e.g. a Claude artifact link). For our records only.
+    source: z.string().optional(),
   }).strict(),
 });
 
-export const collections = { subjects, sections, pages };
+export const collections = { folders, pages };

@@ -1,0 +1,21 @@
+// @ts-check
+import { defineConfig } from 'astro/config';
+import mdx from '@astrojs/mdx';
+import { unified } from '@astrojs/markdown-remark';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+
+// The site lives at https://arhaanbeta.github.io/learning-library-ayu/
+// If the repo is renamed or moved to a custom domain, change `site` and `base` here (nowhere else).
+export default defineConfig({
+  site: 'https://arhaanbeta.github.io',
+  base: '/learning-library-ayu',
+  trailingSlash: 'always',
+  integrations: [mdx()],
+  markdown: {
+    // Maths: $…$ inline and $$…$$ blocks, drawn by KaTeX at build time (no maths JavaScript in the browser).
+    processor: unified({ remarkPlugins: [remarkMath], rehypePlugins: [rehypeKatex] }),
+    // Code colours follow light/dark mode through CSS variables (see src/styles/prose.css).
+    shikiConfig: { themes: { light: 'github-light', dark: 'github-dark' }, defaultColor: false, wrap: true },
+  },
+});

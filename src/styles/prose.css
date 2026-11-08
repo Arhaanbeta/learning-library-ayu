@@ -32,9 +32,11 @@ pre.astro-code {
 .prose .katex { font-size: 1.08em; }
 .prose .katex-display { overflow-x: auto; overflow-y: hidden; padding-block: var(--space-2); }
 
-/* A diagram from an imported document that still needs redrawing */
-.prose .diagram-gap {
-  display: flex; gap: var(--space-3); align-items: flex-start; margin: var(--space-5) 0;
-  padding: var(--space-4); border: 2px dashed var(--line-2); border-radius: var(--radius); color: var(--ink-2);
+/* A diagram from an imported Claude Docs document, drawn as plain SVG at build time.
+   On narrow screens it keeps a readable size and scrolls sideways instead of shrinking. */
+.prose .docfig {
+  margin: var(--space-5) 0; padding: var(--space-4); overflow-x: auto;
+  background: var(--surface); border: var(--border); border-radius: var(--radius);
 }
-.prose .diagram-gap figcaption small { color: var(--ink-3); }
+.prose .docfig svg { display: block; width: 100%; min-width: 34rem; height: auto; }
+.prose .docfig figcaption { margin-top: var(--space-3); font-size: var(--text-sm); color: var(--ink-2); text-align: center; }

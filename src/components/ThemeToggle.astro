@@ -1,0 +1,32 @@
+---
+// Day/night switch. Follows the device until tapped; the choice is then remembered on this device.
+---
+<button class="icon-btn theme-toggle" type="button" aria-label="Switch to dark mode" title="Day / night">
+  <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.6 8.6 0 1 0 10.7 10.7Z" /></svg>
+  <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" /><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6" /></svg>
+</button>
+
+<script>
+  const KEY = 'library.theme';
+  const root = document.documentElement;
+  function label() {
+    const dark = root.dataset.theme === 'dark';
+    document.querySelectorAll<HTMLButtonElement>('.theme-toggle').forEach((b) => b.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode'));
+  }
+  label();
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => setTimeout(label, 0));
+  document.addEventListener('click', (e) => {
+    if (!(e.target as Element).closest('.theme-toggle')) return;
+    const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    root.dataset.theme = next;
+    try { localStorage.setItem(KEY, next); } catch { /* private mode: still switches for this visit */ }
+    label();
+  });
+</script>
+
+<style>
+  svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; grid-area: 1 / 1; }
+  .moon { fill: currentColor; stroke: none; }
+  :global([data-theme='dark']) .moon { display: none; }
+  :global([data-theme='light']) .sun { display: none; }
+</style>

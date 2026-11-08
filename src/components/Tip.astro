@@ -1,0 +1,6 @@
+---
+// A helpful shortcut or way of thinking.
+import Callout from './Callout.astro';
+interface Props { title?: string }
+---
+<Callout role="tip" icon="👍" label="Tip" title={Astro.props.title}><slot /></Callout>

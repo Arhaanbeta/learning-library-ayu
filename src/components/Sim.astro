@@ -1,0 +1,20 @@
+---
+/**
+ * The frame around a small interactive simulation (sliders, live diagrams).
+ * The simulation itself is its own component in src/sims/, placed inside <Sim>.
+ */
+interface Props { title: string; hint?: string }
+const { title, hint = 'Try it: move the sliders and watch what changes.' } = Astro.props;
+---
+<section class="sim" aria-label={`Try it: ${title}`}>
+  <header><span class="badge" aria-hidden="true">🧪</span><div><h3>{title}</h3><p class="meta">{hint}</p></div></header>
+  <div class="stage"><slot /></div>
+</section>
+
+<style>
+  .sim { margin: var(--space-6) 0; border: 2px solid var(--accent); border-radius: var(--radius-lg); background: var(--surface); overflow: hidden; }
+  header { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-3) var(--space-4); background: var(--accent-soft); }
+  .badge { font-size: 1.6em; }
+  h3 { font-size: var(--text-lg); }
+  .stage { padding: var(--space-4); }
+</style>

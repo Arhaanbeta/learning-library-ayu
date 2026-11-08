@@ -1,0 +1,106 @@
+/*
+ * DESIGN TOKENS: the one file that decides how the whole library looks.
+ * Components and layouts use only these variables, never their own colours or sizes,
+ * so a redesign starts (and usually ends) here.
+ *
+ * Light/dark: a tiny script in BaseLayout sets <html data-theme="light|dark"> before the
+ * page paints (from the reader's choice, else the device setting). Dark values live
+ * once, under [data-theme="dark"].
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Surfaces and text */
+  --paper: #f7f5f0;        /* page background: warm, not stark white */
+  --surface: #ffffff;      /* cards, sidebar, callouts */
+  --surface-2: #f0ede6;    /* inset areas: code, tracks */
+  --ink: #1d2230;          /* main text (contrast 15:1 on paper) */
+  --ink-2: #464d5c;        /* secondary text */
+  --ink-3: #636a78;        /* hints, meta (still 5:1 on paper) */
+  --line: #e3ded4;         /* hairlines */
+  --line-2: #cfc8bb;       /* stronger borders, inputs */
+
+  /* Callout roles (KeyIdea, Tip, Remember, Warning, RealWorld) */
+  --key: #2f5bd3;     --key-soft: #e8eefc;
+  --tip: #17806a;     --tip-soft: #e3f4ef;
+  --remember: #7a4cc2; --remember-soft: #f0e9fb;
+  --warning: #b4570b; --warning-soft: #fcefdf;
+  --world: #a3407a;   --world-soft: #f9e8f1;
+
+  /* Fallback accent; each subject overrides it with data-accent (below) */
+  --accent: #2f5bd3; --accent-soft: #e8eefc; --accent-ink: #1e3f9c; --on-accent: #ffffff;
+
+  /* Type */
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-heading: var(--font-body);
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  --text-sm: 1rem;        /* 16px: meta, captions (never smaller) */
+  --text-base: 1.125rem;  /* 18px: body text (minimum for reading) */
+  --text-lg: 1.3125rem;   /* 21px: lead paragraph, card titles */
+  --text-xl: 1.625rem;    /* 26px: section headings */
+  --text-2xl: 2.125rem;   /* 34px: page titles */
+  --text-3xl: 2.75rem;    /* 44px: home heading */
+  --leading: 1.65;
+  --leading-tight: 1.2;
+  --measure: 68ch;        /* longest reading line */
+
+  /* Space (4px steps) */
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+  --space-5: 1.5rem;  --space-6: 2rem;   --space-7: 3rem;    --space-8: 4rem;
+
+  /* Shape and depth */
+  --radius-sm: 8px; --radius: 14px; --radius-lg: 20px; --radius-pill: 999px;
+  --shadow: 0 1px 2px rgb(29 34 48 / 0.06), 0 6px 20px -8px rgb(29 34 48 / 0.18);
+  --border: 1px solid var(--line);
+
+  /* Touch and layout */
+  --tap: 48px;             /* smallest tap target */
+  --page-max: 72rem;       /* widest page */
+  --sidebar: 17rem;
+  --focus: 3px solid var(--accent);
+
+  /* Motion */
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --fast: 150ms;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #12151c;
+  --surface: #1a1e27;
+  --surface-2: #232834;
+  --ink: #edf0f5;
+  --ink-2: #c3c9d4;
+  --ink-3: #9aa2b1;
+  --line: #2b313d;
+  --line-2: #3d4452;
+
+  --key: #8aa8ff;     --key-soft: #1c2643;
+  --tip: #5fd1b5;     --tip-soft: #142e29;
+  --remember: #c3a2ff; --remember-soft: #261d3b;
+  --warning: #ffb066; --warning-soft: #33230f;
+  --world: #f39ac8;   --world-soft: #35192a;
+
+  --accent: #8aa8ff; --accent-soft: #1c2643; --accent-ink: #bccdff; --on-accent: #0b1430;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -10px rgb(0 0 0 / 0.7);
+}
+
+/*
+ * Subject accents. A subject picks one name in its subject.json ("accent": "teal").
+ * Add a new colour by adding a light block and a dark block here, plus the name in src/lib/accents.ts.
+ * --accent: bars, buttons, links · --accent-soft: tinted backgrounds · --accent-ink: accent-coloured text.
+ */
+[data-accent="teal"]   { --accent: #0f7f86; --accent-soft: #def3f2; --accent-ink: #0b5f64; --on-accent: #ffffff; }
+[data-accent="blue"]   { --accent: #2f5bd3; --accent-soft: #e8eefc; --accent-ink: #1e3f9c; --on-accent: #ffffff; }
+[data-accent="violet"] { --accent: #7247c4; --accent-soft: #efe8fb; --accent-ink: #55309e; --on-accent: #ffffff; }
+[data-accent="orange"] { --accent: #c25a0c; --accent-soft: #fcecdc; --accent-ink: #934305; --on-accent: #ffffff; }
+[data-accent="green"]  { --accent: #2f8236; --accent-soft: #e2f3e3; --accent-ink: #215f27; --on-accent: #ffffff; }
+[data-accent="rose"]   { --accent: #c23a62; --accent-soft: #fbe5ec; --accent-ink: #962848; --on-accent: #ffffff; }
+
+[data-theme="dark"][data-accent="teal"],   [data-theme="dark"] [data-accent="teal"]   { --accent: #4fc9cf; --accent-soft: #10302f; --accent-ink: #8de0e3; --on-accent: #04201f; }
+[data-theme="dark"][data-accent="blue"],   [data-theme="dark"] [data-accent="blue"]   { --accent: #8aa8ff; --accent-soft: #1c2643; --accent-ink: #bccdff; --on-accent: #0b1430; }
+[data-theme="dark"][data-accent="violet"], [data-theme="dark"] [data-accent="violet"] { --accent: #b597ff; --accent-soft: #261d3b; --accent-ink: #d3c0ff; --on-accent: #1a0f33; }
+[data-theme="dark"][data-accent="orange"], [data-theme="dark"] [data-accent="orange"] { --accent: #ffa25c; --accent-soft: #35230f; --accent-ink: #ffc796; --on-accent: #2b1503; }
+[data-theme="dark"][data-accent="green"],  [data-theme="dark"] [data-accent="green"]  { --accent: #6fd27a; --accent-soft: #163019; --accent-ink: #a4e7ab; --on-accent: #08200b; }
+[data-theme="dark"][data-accent="rose"],   [data-theme="dark"] [data-accent="rose"]   { --accent: #ff8fb0; --accent-soft: #3a1825; --accent-ink: #ffbdd0; --on-accent: #2e0915; }

@@ -1,0 +1,29 @@
+---
+/**
+ * The one box behind KeyIdea, Tip, Remember, Warning and RealWorld.
+ * Change how every callout looks here; each wrapper only picks its colour role, icon and label.
+ */
+interface Props { role: 'key' | 'tip' | 'remember' | 'warning' | 'world'; icon: string; label: string; title?: string }
+const { role, icon, label, title } = Astro.props;
+---
+<aside class={`callout ${role}`} aria-label={title ? `${label}: ${title}` : label}>
+  <p class="head"><span class="icon" aria-hidden="true">{icon}</span><span class="label">{label}</span>{title && <span class="title">{title}</span>}</p>
+  <div class="body"><slot /></div>
+</aside>
+
+<style>
+  .callout {
+    --c: var(--key); --c-soft: var(--key-soft);
+    background: var(--c-soft); border-left: 6px solid var(--c); border-radius: var(--radius);
+    padding: var(--space-4) var(--space-5); margin-block: var(--space-5);
+  }
+  .tip { --c: var(--tip); --c-soft: var(--tip-soft); }
+  .remember { --c: var(--remember); --c-soft: var(--remember-soft); }
+  .warning { --c: var(--warning); --c-soft: var(--warning-soft); }
+  .world { --c: var(--world); --c-soft: var(--world-soft); }
+  .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2); margin-bottom: var(--space-2); }
+  .icon { font-size: 1.25em; }
+  .label { font-weight: 700; font-size: var(--text-sm); letter-spacing: 0.06em; text-transform: uppercase; color: var(--c); }
+  .title { font-weight: 700; flex-basis: 100%; }
+  .body > :global(* + *) { margin-top: var(--space-3); }
+</style>

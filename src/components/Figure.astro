@@ -1,0 +1,19 @@
+---
+/**
+ * A diagram with a caption. Put an inline <svg> (or an image) inside.
+ * Draw SVGs with `currentColor` and the token variables so they work in light and dark mode.
+ */
+interface Props { caption: string; label?: string }
+const { caption, label } = Astro.props;
+---
+<figure class="figure" role="group" aria-label={label ?? caption}>
+  <div class="art"><slot /></div>
+  <figcaption>{caption}</figcaption>
+</figure>
+
+<style>
+  .figure { margin: var(--space-5) 0; background: var(--surface); border: var(--border); border-radius: var(--radius); padding: var(--space-4); }
+  .art { display: grid; place-items: center; color: var(--ink); }
+  .art :global(svg) { width: 100%; height: auto; max-height: 22rem; }
+  figcaption { margin-top: var(--space-3); font-size: var(--text-sm); color: var(--ink-2); text-align: center; }
+</style>

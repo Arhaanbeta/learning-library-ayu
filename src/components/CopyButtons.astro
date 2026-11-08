@@ -1,0 +1,37 @@
+---
+// Adds a "Copy" button to every code block on the page. Included once by LessonLayout.
+---
+<script>
+  function addButtons() {
+    document.querySelectorAll<HTMLPreElement>('pre.astro-code').forEach((pre) => {
+      if (pre.parentElement?.classList.contains('copy-wrap')) return;
+      const wrap = document.createElement('div');
+      wrap.className = 'copy-wrap';
+      pre.replaceWith(wrap);
+      wrap.append(pre);
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'copy-btn';
+      b.textContent = 'Copy';
+      b.setAttribute('aria-label', 'Copy this code');
+      b.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(pre.innerText); b.textContent = 'Copied ✓'; }
+        catch { b.textContent = 'Select & copy'; }
+        setTimeout(() => { b.textContent = 'Copy'; }, 1600);
+      });
+      wrap.append(b);
+    });
+  }
+  addButtons();
+</script>
+
+<style is:global>
+  .copy-wrap { position: relative; }
+  .copy-btn {
+    position: absolute; top: var(--space-2); right: var(--space-2);
+    min-height: 40px; padding: 0 var(--space-3); border-radius: var(--radius-pill);
+    border: 1px solid var(--line-2); background: var(--surface); color: var(--ink-2);
+    font-size: var(--text-sm); font-weight: 700; cursor: pointer;
+  }
+  .copy-btn:hover { color: var(--ink); border-color: var(--accent); }
+</style>

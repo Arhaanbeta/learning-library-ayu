@@ -1,0 +1,6 @@
+---
+// Something worth keeping in your head after the page.
+import Callout from './Callout.astro';
+interface Props { title?: string }
+---
+<Callout role="remember" icon="🧠" label="Remember" title={Astro.props.title}><slot /></Callout>

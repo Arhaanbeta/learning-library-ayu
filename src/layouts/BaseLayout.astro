@@ -1,0 +1,89 @@
+---
+/**
+ * The frame every page shares: head tags, header, footer, light/dark switch.
+ * Every page sits inside this, so site-wide changes (header, nav, fonts) happen once, here.
+ */
+import '../styles/tokens.css';
+import '../styles/base.css';
+import ThemeToggle from '@components/ThemeToggle.astro';
+import { url } from '@lib/url';
+import type { Accent } from '@lib/accents';
+
+interface Props {
+  title: string;
+  description?: string;
+  accent?: Accent;
+}
+const { title, description = 'Our family learning library.', accent } = Astro.props;
+const siteName = 'Learning Library';
+const fullTitle = title === siteName ? title : `${title} · ${siteName}`;
+const path = Astro.url.pathname;
+const nav = [
+  { href: url('search/'), label: 'Search' },
+  { href: url('me/'), label: 'Me' },
+];
+---
+<!doctype html>
+<html lang="en-GB" data-accent={accent}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- Keep the site out of search engines (see CLAUDE.md). -->
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#f7f5f0" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#12151c" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
+    <!-- Set light/dark before the first paint, so the page never flashes the wrong colours. -->
+    <script is:inline>
+      (function () {
+        var KEY = 'library.theme', root = document.documentElement, mq = matchMedia('(prefers-color-scheme: dark)');
+        function saved() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+        function apply() { var s = saved(); root.dataset.theme = s === 'light' || s === 'dark' ? s : (mq.matches ? 'dark' : 'light'); }
+        apply();
+        mq.addEventListener('change', apply);
+      })();
+    </script>
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to the lesson</a>
+    <header class="site-header">
+      <div class="wrap bar">
+        <a class="brand" href={url()}><span class="logo" aria-hidden="true">📚</span><span>{siteName}</span></a>
+        <nav aria-label="Main">
+          {nav.map((n) => <a href={n.href} aria-current={path.startsWith(n.href) ? 'page' : undefined}>{n.label}</a>)}
+        </nav>
+        <ThemeToggle />
+      </div>
+    </header>
+    <main id="main" class="wrap">
+      <slot />
+    </main>
+    <footer class="site-footer wrap meta">Made at home, for learning. ✏️</footer>
+  </body>
+</html>
+
+<style>
+  .site-header {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: saturate(1.4) blur(10px);
+    border-bottom: var(--border);
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .bar { display: flex; align-items: center; gap: var(--space-3); min-height: 4rem; }
+  .brand { display: inline-flex; align-items: center; gap: var(--space-2); font-weight: 700; font-size: var(--text-lg); color: var(--ink); text-decoration: none; min-height: var(--tap); }
+  .logo { font-size: 1.4em; }
+  nav { display: flex; gap: var(--space-1); margin-left: auto; }
+  nav a {
+    display: inline-flex; align-items: center; min-height: var(--tap); padding: 0 var(--space-3);
+    border-radius: var(--radius-pill); color: var(--ink-2); font-weight: 700; text-decoration: none;
+  }
+  nav a:hover { background: var(--surface-2); }
+  nav a[aria-current='page'] { color: var(--ink); background: var(--surface-2); }
+  main { padding-block: var(--space-6) var(--space-8); }
+  .site-footer { padding-block: var(--space-6); border-top: var(--border); }
+  @media (max-width: 30rem) { .brand span:last-child { display: none; } }
+</style>

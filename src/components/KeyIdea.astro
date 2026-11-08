@@ -1,0 +1,6 @@
+---
+// The single most important idea on the page.
+import Callout from './Callout.astro';
+interface Props { title?: string }
+---
+<Callout role="key" icon="💡" label="Key idea" title={Astro.props.title}><slot /></Callout>

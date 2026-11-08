@@ -1,0 +1,49 @@
+---
+// Home: "Continue where you left off" (Phase 2) and one tile per subject.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getLibrary, plural } from '@lib/content';
+const subjects = await getLibrary();
+---
+<BaseLayout title="Learning Library">
+  <section class="hello">
+    <h1>What shall we learn today?</h1>
+    <p class="lead">Pick a subject. Every page is one idea and takes about 5 to 10 minutes.</p>
+  </section>
+
+  <!-- Phase 2 fills this in from the reader's progress. -->
+  <section class="continue card" data-continue hidden aria-label="Continue where you left off"></section>
+
+  <ul class="tiles" role="list">
+    {subjects.map((s) => {
+      const pages = s.sections.reduce((n, sec) => n + sec.pages.length, 0);
+      return (
+        <li data-accent={s.accent}>
+          <a class="tile card" href={s.href} data-subject={s.slug}>
+            <span class="icon" aria-hidden="true">{s.icon}</span>
+            <span class="name">{s.title}</span>
+            <span class="blurb">{s.blurb}</span>
+            <span class="meta">{plural(s.sections.length, 'section')} · {plural(pages, 'page')}</span>
+          </a>
+        </li>
+      );
+    })}
+  </ul>
+  {subjects.length === 0 && <p class="lead">No subjects yet. Add a folder in content/ with a subject.json.</p>}
+</BaseLayout>
+
+<style>
+  .hello { display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-6); }
+  h1 { font-size: var(--text-3xl); }
+  @media (max-width: 40rem) { h1 { font-size: var(--text-2xl); } }
+  .continue { margin-bottom: var(--space-6); padding: var(--space-4); }
+  .tiles { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); }
+  .tile {
+    height: 100%; display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-5);
+    text-decoration: none; color: var(--ink); border-top: 6px solid var(--accent);
+    transition: transform var(--fast) var(--ease), box-shadow var(--fast);
+  }
+  .tile:hover { transform: translateY(-2px); }
+  .icon { font-size: 2.4rem; line-height: 1; }
+  .name { font-size: var(--text-xl); font-weight: 700; color: var(--accent-ink); }
+  .blurb { color: var(--ink-2); flex: 1; }
+</style>

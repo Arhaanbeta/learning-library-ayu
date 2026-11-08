@@ -1,0 +1,9 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { url } from '@lib/url';
+---
+<BaseLayout title="Page not found">
+  <h1>We can't find that page</h1>
+  <p class="lead" style="margin-block: var(--space-3) var(--space-5)">It may have moved. Your progress is safe.</p>
+  <a class="btn" href={url()}>Go to the library</a>
+</BaseLayout>

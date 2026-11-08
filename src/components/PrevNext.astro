@@ -1,0 +1,23 @@
+---
+// Previous / next lesson in the section. On the last page, "next" goes back to the section contents.
+import type { Page, Section } from '@lib/content';
+interface Props { prev?: Page; next?: Page; section: Section }
+const { prev, next, section } = Astro.props;
+---
+<nav class="prevnext" aria-label="More lessons">
+  {prev ? <a class="pn prev" href={prev.href} rel="prev"><span class="meta">‹ Previous</span><span class="t">{prev.data.title}</span></a> : <span />}
+  {next
+    ? <a class="pn next" href={next.href} rel="next"><span class="meta">Next ›</span><span class="t">{next.data.title}</span></a>
+    : <a class="pn next" href={section.href}><span class="meta">Finished the section</span><span class="t">Back to {section.title}</span></a>}
+</nav>
+
+<style>
+  .prevnext { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-top: var(--space-6); max-width: var(--measure); }
+  .pn {
+    display: flex; flex-direction: column; gap: 2px; padding: var(--space-4); min-height: var(--tap);
+    background: var(--surface); border: var(--border); border-radius: var(--radius); text-decoration: none; color: var(--ink);
+  }
+  .pn:hover { border-color: var(--accent); }
+  .next { text-align: right; grid-column: 2; }
+  .t { font-weight: 700; color: var(--accent-ink); }
+</style>

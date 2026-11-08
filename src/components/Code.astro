@@ -1,0 +1,18 @@
+---
+/**
+ * A code block with a copy button: <Code lang="python" code={`print("hi")`} />
+ * (Plain ``` fenced blocks in lessons get the same copy button automatically.)
+ */
+import { Code as Shiki } from 'astro:components';
+interface Props { code: string; lang?: string; title?: string }
+const { code, lang = 'text', title } = Astro.props;
+---
+<figure class="code">
+  {title && <figcaption class="meta">{title}</figcaption>}
+  <Shiki code={code} lang={lang as any} themes={{ light: 'github-light', dark: 'github-dark' }} defaultColor={false} wrap />
+</figure>
+
+<style>
+  .code { margin: var(--space-5) 0; }
+  figcaption { margin-bottom: var(--space-2); font-family: var(--font-mono); }
+</style>

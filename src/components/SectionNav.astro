@@ -1,0 +1,53 @@
+---
+// The section's contents. A sidebar on wide screens; a fold-out list on phones and tablets.
+import type { Section } from '@lib/content';
+interface Props { section: Section; current?: string }
+const { section, current } = Astro.props;
+---
+<aside class="section-nav">
+  <details open={false} class="fold">
+    <summary><span class="eyebrow">In this section</span><span class="title">{section.title}</span></summary>
+    <ol>
+      {section.pages.map((p, i) => (
+        <li>
+          <a href={p.href} aria-current={p.id === current ? 'page' : undefined} data-page-id={p.id}>
+            <span class="num" aria-hidden="true">{i + 1}</span>
+            <span>{p.data.title}</span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </details>
+</aside>
+
+<script>
+  // Wide screens: always open, like a sidebar. Narrow screens: closed until tapped.
+  const wide = matchMedia('(min-width: 62rem)');
+  const sync = () => document.querySelectorAll<HTMLDetailsElement>('.section-nav .fold').forEach((d) => { d.open = wide.matches; });
+  sync();
+  wide.addEventListener('change', sync);
+</script>
+
+<style>
+  .section-nav { position: relative; }
+  @media (min-width: 62rem) { .section-nav { position: sticky; top: 5.5rem; } }
+  .fold { background: var(--surface); border: var(--border); border-radius: var(--radius); }
+  summary { display: flex; flex-direction: column; gap: 2px; padding: var(--space-3) var(--space-4); cursor: pointer; min-height: var(--tap); list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: '▾'; position: absolute; right: var(--space-4); top: var(--space-4); color: var(--ink-3); }
+  .fold[open] summary::after { content: '▴'; }
+  .title { font-weight: 700; }
+  ol { list-style: none; margin: 0; padding: 0 var(--space-2) var(--space-3); }
+  a {
+    display: flex; gap: var(--space-3); align-items: center; min-height: var(--tap);
+    padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm);
+    color: var(--ink-2); text-decoration: none; line-height: 1.35;
+  }
+  a:hover { background: var(--surface-2); }
+  a[aria-current='page'] { background: var(--accent-soft); color: var(--ink); font-weight: 700; }
+  .num {
+    flex: 0 0 auto; display: inline-grid; place-items: center; width: 1.8rem; height: 1.8rem;
+    border-radius: 50%; border: 2px solid var(--line-2); font-size: var(--text-sm); font-weight: 700;
+  }
+  a[aria-current='page'] .num { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+</style>

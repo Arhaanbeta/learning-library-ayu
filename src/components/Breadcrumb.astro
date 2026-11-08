@@ -1,0 +1,21 @@
+---
+// "Physics › Forces › What is a force?" The last item is the current page (no link).
+import { url } from '@lib/url';
+interface Crumb { label: string; href?: string }
+interface Props { trail: Crumb[] }
+const { trail } = Astro.props;
+---
+<nav class="crumbs" aria-label="You are here">
+  <ol>
+    <li><a href={url()}>Home</a></li>
+    {trail.map((c) => <li>{c.href ? <a href={c.href}>{c.label}</a> : <span aria-current="page">{c.label}</span>}</li>)}
+  </ol>
+</nav>
+
+<style>
+  ol { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); list-style: none; margin: 0; padding: 0; font-size: var(--text-sm); }
+  li { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--ink-3); }
+  li + li::before { content: '›'; color: var(--ink-3); }
+  a { color: var(--ink-2); display: inline-flex; align-items: center; min-height: 40px; }
+  [aria-current] { color: var(--ink); font-weight: 700; }
+</style>

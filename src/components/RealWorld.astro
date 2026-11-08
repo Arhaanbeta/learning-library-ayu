@@ -1,0 +1,6 @@
+---
+// A real-world example. Lessons end with 2–3 of these.
+import Callout from './Callout.astro';
+interface Props { title?: string }
+---
+<Callout role="world" icon="🌍" label="In the real world" title={Astro.props.title}><slot /></Callout>

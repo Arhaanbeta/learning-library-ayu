@@ -1,0 +1,50 @@
+---
+/**
+ * A lesson page: breadcrumb, the section's contents in a sidebar, the lesson,
+ * previous/next links and the "Mark as done" spot (switched on in Phase 2).
+ */
+import 'katex/dist/katex.min.css';
+import '../styles/prose.css';
+import BaseLayout from './BaseLayout.astro';
+import Breadcrumb from '@components/Breadcrumb.astro';
+import SectionNav from '@components/SectionNav.astro';
+import PrevNext from '@components/PrevNext.astro';
+import CopyButtons from '@components/CopyButtons.astro';
+import { neighbours, type Page, type Section, type Subject } from '@lib/content';
+
+interface Props { subject: Subject; section: Section; page: Page }
+const { subject, section, page } = Astro.props;
+const { prev, next } = neighbours(section, page);
+const n = section.pages.indexOf(page) + 1;
+---
+<BaseLayout title={page.data.title} description={page.data.summary} accent={subject.accent}>
+  <Breadcrumb trail={[{ label: subject.title, href: subject.href }, { label: section.title, href: section.href }, { label: page.data.title }]} />
+  <div class="lesson">
+    <SectionNav section={section} current={page.id} />
+    <article data-page-id={page.id}>
+      <header class="lesson-head">
+        <p class="eyebrow">{section.title} · Page {n} of {section.pages.length}</p>
+        <h1>{page.data.title}</h1>
+        <p class="lead">{page.data.summary}</p>
+        <p class="meta">About {page.data.minutes} minutes</p>
+      </header>
+      <div class="prose">
+        <slot />
+      </div>
+      <!-- Phase 2 turns this on: saves "done" for the current reader. -->
+      <div class="done-slot" data-done-for={page.id} hidden>
+        <button class="btn" type="button" data-act="mark-done">Mark as done</button>
+      </div>
+      <PrevNext prev={prev} next={next} section={section} />
+    </article>
+    <CopyButtons />
+  </div>
+</BaseLayout>
+
+<style>
+  .lesson { display: grid; gap: var(--space-6); grid-template-columns: minmax(0, 1fr); margin-top: var(--space-4); }
+  @media (min-width: 62rem) { .lesson { grid-template-columns: var(--sidebar) minmax(0, 1fr); align-items: start; } }
+  .lesson-head { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-6); max-width: var(--measure); }
+  h1 { font-size: var(--text-2xl); }
+  .done-slot { margin-top: var(--space-7); }
+</style>

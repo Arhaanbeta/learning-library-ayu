@@ -1,0 +1,56 @@
+---
+// A section's contents page.
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumb from '@components/Breadcrumb.astro';
+import { getLibrary, plural, totalMinutes, type Section, type Subject } from '@lib/content';
+
+export async function getStaticPaths() {
+  const subjects = await getLibrary();
+  return subjects.flatMap((subject) =>
+    subject.sections.map((section) => ({ params: { subject: subject.slug, section: section.slug }, props: { subject, section } })),
+  );
+}
+interface Props { subject: Subject; section: Section }
+const { subject, section } = Astro.props;
+const first = section.pages[0];
+---
+<BaseLayout title={`${section.title} · ${subject.title}`} description={section.summary} accent={subject.accent}>
+  <Breadcrumb trail={[{ label: subject.title, href: subject.href }, { label: section.title }]} />
+  <header class="head">
+    <p class="eyebrow">{subject.icon} {subject.title}</p>
+    <h1>{section.title}</h1>
+    <p class="lead">{section.summary}</p>
+    <p class="meta">{plural(section.pages.length, 'page')} · about {totalMinutes(section.pages)} minutes in all</p>
+    {first && <p><a class="btn" href={first.href}>Start with page 1 ›</a></p>}
+  </header>
+  <ol class="pages" role="list">
+    {section.pages.map((p, i) => (
+      <li>
+        <a class="pg card" href={p.href} data-page-id={p.id}>
+          <span class="num" aria-hidden="true">{i + 1}</span>
+          <span class="body">
+            <span class="name">{p.data.title}</span>
+            <span class="summary">{p.data.summary}</span>
+            <span class="meta">{p.data.minutes} minutes</span>
+          </span>
+        </a>
+      </li>
+    ))}
+  </ol>
+</BaseLayout>
+
+<style>
+  .head { display: flex; flex-direction: column; gap: var(--space-2); margin: var(--space-4) 0 var(--space-6); }
+  h1 { font-size: var(--text-2xl); }
+  .head .btn { margin-top: var(--space-3); }
+  .pages { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); max-width: 48rem; }
+  .pg { display: flex; gap: var(--space-4); align-items: flex-start; padding: var(--space-4) var(--space-5); text-decoration: none; color: var(--ink); }
+  .pg:hover { box-shadow: 0 0 0 2px var(--accent), var(--shadow); }
+  .num {
+    flex: 0 0 auto; display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 50%;
+    border: 2px solid var(--accent); color: var(--accent-ink); font-weight: 700;
+  }
+  .body { display: flex; flex-direction: column; gap: 2px; }
+  .name { font-weight: 700; font-size: var(--text-lg); }
+  .summary { color: var(--ink-2); }
+</style>

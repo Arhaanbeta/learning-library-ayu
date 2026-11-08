@@ -1,0 +1,86 @@
+---
+/**
+ * Tug of war: two teams pull a rope. Shows each pull as an arrow, the resultant force,
+ * and whether the forces are balanced. Vanilla TypeScript, no libraries.
+ * Use inside <Sim title="…">. Several on one page work independently.
+ */
+interface Props { left?: number; right?: number; max?: number }
+const { left = 300, right = 300, max = 600 } = Astro.props;
+---
+<div class="tug" data-max={max}>
+  <svg viewBox="0 0 600 170" role="img" aria-label="Two teams pulling a rope">
+    <line class="rope" x1="40" y1="85" x2="560" y2="85" />
+    <g class="knot"><circle cx="300" cy="85" r="11" /><line x1="300" y1="40" x2="300" y2="130" class="mid" /></g>
+    <g class="arrow left-arrow"><line x1="300" y1="45" x2="200" y2="45" /><path d="M0 0 L14 -8 L14 8 Z" /></g>
+    <g class="arrow right-arrow"><line x1="300" y1="125" x2="400" y2="125" /><path d="M0 0 L-14 -8 L-14 8 Z" /></g>
+    <text class="lbl l" x="20" y="30">Left team</text>
+    <text class="lbl r" x="580" y="160" text-anchor="end">Right team</text>
+  </svg>
+
+  <div class="controls">
+    <label>
+      <span>Left team pulls with <b data-out="left">{left}</b> N</span>
+      <input type="range" min="0" max={max} step="10" value={left} data-in="left" />
+    </label>
+    <label>
+      <span>Right team pulls with <b data-out="right">{right}</b> N</span>
+      <input type="range" min="0" max={max} step="10" value={right} data-in="right" />
+    </label>
+  </div>
+
+  <p class="result" aria-live="polite"></p>
+</div>
+
+<script>
+  function setup(root: HTMLElement) {
+    const max = Number(root.dataset.max) || 600;
+    const input = (k: string) => root.querySelector<HTMLInputElement>(`[data-in="${k}"]`)!;
+    const out = (k: string) => root.querySelector<HTMLElement>(`[data-out="${k}"]`)!;
+    const knot = root.querySelector<SVGGElement>('.knot')!;
+    const arrow = (side: 'left' | 'right', size: number) => {
+      const g = root.querySelector<SVGGElement>(`.${side}-arrow`)!;
+      const len = (size / max) * 240, dir = side === 'left' ? -1 : 1, end = 300 + dir * len;
+      const line = g.querySelector('line')!;
+      line.setAttribute('x2', String(end));
+      g.querySelector('path')!.setAttribute('transform', `translate(${end} ${side === 'left' ? 45 : 125})`);
+      g.style.opacity = size > 0 ? '1' : '0';
+    };
+    const result = root.querySelector<HTMLElement>('.result')!;
+
+    function update() {
+      const L = Number(input('left').value), R = Number(input('right').value), net = R - L;
+      out('left').textContent = String(L);
+      out('right').textContent = String(R);
+      arrow('left', L);
+      arrow('right', R);
+      // The knot leans towards the winning side, a little, to show the direction of the resultant force.
+      knot.style.transform = `translateX(${Math.max(-60, Math.min(60, (net / max) * 120))}px)`;
+      root.dataset.state = net === 0 ? 'balanced' : 'unbalanced';
+      result.innerHTML = net === 0
+        ? `<b>Balanced.</b> Resultant force = ${R} − ${L} = 0 N. The rope stays where it is.`
+        : `<b>Unbalanced.</b> Resultant force = ${Math.abs(net)} N to the <b>${net > 0 ? 'right' : 'left'}</b>. The rope starts moving that way.`;
+    }
+    root.querySelectorAll('input').forEach((i) => i.addEventListener('input', update));
+    update();
+  }
+  document.querySelectorAll<HTMLElement>('.tug').forEach(setup);
+</script>
+
+<style>
+  svg { width: 100%; height: auto; display: block; }
+  .rope { stroke: var(--ink-3); stroke-width: 6; stroke-linecap: round; }
+  .knot { transition: transform 300ms var(--ease); }
+  .knot circle { fill: var(--accent); }
+  .mid { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 4 4; }
+  .arrow line { stroke-width: 7; stroke-linecap: round; transition: all 200ms var(--ease); }
+  .arrow path { transition: transform 200ms var(--ease); }
+  .left-arrow line { stroke: var(--key); } .left-arrow path { fill: var(--key); }
+  .right-arrow line { stroke: var(--warning); } .right-arrow path { fill: var(--warning); }
+  .lbl { font-size: 18px; font-weight: 700; fill: var(--ink-2); font-family: var(--font-body); }
+  .controls { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); margin-top: var(--space-3); }
+  label { display: flex; flex-direction: column; gap: var(--space-2); }
+  input[type='range'] { width: 100%; height: var(--tap); accent-color: var(--accent); cursor: pointer; }
+  .result { margin-top: var(--space-4); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); background: var(--surface-2); }
+  .tug[data-state='balanced'] .result { background: var(--tip-soft); }
+  .tug[data-state='unbalanced'] .result { background: var(--warning-soft); }
+</style>

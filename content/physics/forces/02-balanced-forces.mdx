@@ -1,0 +1,88 @@
+---
+id: phy-forces-balanced-forces
+title: Balanced and unbalanced forces
+summary: When forces cancel out, nothing changes. When one side wins, things speed up, slow down or turn.
+order: 2
+minutes: 9
+tags: [balanced, unbalanced, resultant force, newton's first law]
+---
+
+import TugOfWar from '@sims/TugOfWar.astro';
+
+Picture a tug of war. Both teams pull as hard as they can, yet the rope does not move at all. Lots of force, no movement. How?
+
+Because the two pulls are **the same size** and point in **opposite directions**. They cancel each other out.
+
+<KeyIdea>
+What matters is the **resultant force**: all the forces on an object added together, counting their directions. If the resultant force is zero, the forces are **balanced**. If it is not zero, they are **unbalanced**.
+</KeyIdea>
+
+## Working out the resultant force
+
+When forces act along the same line, it is simple:
+
+- forces in the **same** direction: **add** them;
+- forces in **opposite** directions: **take the smaller from the bigger**. The answer points the way of the bigger force.
+
+The left team pulls with 300 N and the right team with 250 N:
+
+$$
+\text{resultant force} = 300\,\text{N} - 250\,\text{N} = 50\,\text{N} \text{ to the left}
+$$
+
+<Sim title="Tug of war">
+  <TugOfWar left={300} right={250} />
+</Sim>
+
+Move both sliders to the same number. The result says *balanced*, even though both teams are pulling hard.
+
+## What balanced forces do
+
+Here is the surprising part. **Balanced forces do not mean "not moving".** They mean "**no change**":
+
+- something that is **still** stays still (a book resting on a table);
+- something that is **moving** keeps moving at the **same speed in the same direction** (a car cruising steadily along a straight motorway, where the engine's push exactly matches air resistance and friction).
+
+This rule is called **Newton's first law of motion**.
+
+## What unbalanced forces do
+
+An unbalanced force always **changes** the motion. The object:
+
+- speeds up, if the resultant force points the way it is moving;
+- slows down, if it points the opposite way;
+- turns, if it points to the side.
+
+<Warning title="A common mistake">
+"It's moving, so there must be an unbalanced force." Not true! A bike rolling along at a steady speed has **balanced** forces. You only need an unbalanced force to **change** speed or direction.
+</Warning>
+
+## Try it in code
+
+The same sum in Python (you will meet Python in Coding):
+
+```python
+left = 300   # newtons, pulling left
+right = 250  # newtons, pulling right
+
+resultant = left - right
+print(resultant, "N to the left")   # 50 N to the left
+```
+
+<Remember>
+Add forces that point the same way; subtract forces that point opposite ways. Zero resultant = balanced = **no change** in motion.
+</Remember>
+
+## In the real world
+
+<RealWorld title="A lift going up">
+As a lift starts, the cable pulls harder than gravity pulls down: unbalanced, so it speeds up. In the middle of the journey the forces balance, so it rises at a steady speed. Near the top the cable pulls a little less, so it slows down and stops.
+</RealWorld>
+
+<RealWorld title="A skydiver">
+Just after jumping, gravity is much bigger than air resistance, so the skydiver speeds up. As they fall faster, air resistance grows until it balances their weight. Then they fall at a steady top speed, about 200 km/h.
+</RealWorld>
+
+<RealWorld title="A book on a shelf">
+Gravity pulls the book down. The shelf pushes up just as hard. The forces balance, so the book stays exactly where it is.
+</RealWorld>

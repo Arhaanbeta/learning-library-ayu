@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>C Concept Simulator — Watch the Program Execute</title>
+<style>
+:root{
+  --accent:#5b5bd6;
+  --accent-soft:color-mix(in srgb,var(--accent) 14%,transparent);
+  --bg:#f6f7fb;
+  --panel:#ffffff;
+  --panel2:#f2f4f7;
+  --ink:#101828;
+  --muted:#667085;
+  --border:#dfe3ea;
+  --good:#087a4b;
+  --bad:#b42318;
+  --warn:#b54708;
+  --console:#0b1220;
+  --consoleText:#d8ffe6;
+  --scale:1;
+  --radius:18px;
+  --shadow:0 16px 38px rgba(16,24,40,.08);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#0b0d12;--panel:#121620;--panel2:#171c27;--ink:#f3f5f7;--muted:#a2aabd;--border:#2a3140;--console:#06090f}
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:calc(16px * var(--scale));
+}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+.app{max-width:1480px;margin:auto;padding:18px}
+.topbar{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px
+}
+.brand h1{margin:0;font-size:clamp(28px,4vw,48px);line-height:1;letter-spacing:-.04em}
+.brand p{margin:8px 0 0;color:var(--muted);max-width:800px;line-height:1.45}
+.controls-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.small-control{display:flex;align-items:center;gap:7px;border:1px solid var(--border);background:var(--panel);border-radius:12px;padding:7px 9px}
+.small-control label{font-size:.78rem;color:var(--muted);font-weight:750}
+.small-control input[type="range"]{width:90px}
+.iconbtn,.btn{
+  min-height:42px;border:1px solid var(--border);background:var(--panel);border-radius:12px;padding:9px 13px;font-weight:800
+}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.good{background:var(--good);border-color:var(--good);color:#fff}
+.course-map{
+  display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:12px 0 14px
+}
+.mapnode{
+  border:1px solid var(--border);background:var(--panel);border-radius:14px;padding:10px 12px;min-width:0
+}
+.mapnode b{display:block;font-size:.76rem;letter-spacing:.08em;text-transform:uppercase}
+.mapnode span{display:block;color:var(--muted);font-size:.82rem;margin-top:3px}
+.lessons{
+  display:flex;gap:8px;overflow:auto;padding:4px 2px 10px;scrollbar-width:thin
+}
+.lesson{
+  flex:0 0 auto;border:1px solid var(--border);background:var(--panel);border-radius:999px;padding:9px 13px;font-weight:800
+}
+.lesson.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.layout{display:grid;grid-template-columns:minmax(0,1.07fr) minmax(0,.93fr);gap:14px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);min-width:0}
+.card.pad{padding:16px}
+.panel-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.panel-title h2,.panel-title h3{margin:0;font-size:1rem}
+.kicker{font-size:.72rem;text-transform:uppercase;letter-spacing:.11em;color:var(--accent);font-weight:900}
+.lesson-head{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start}
+.lesson-head h2{margin:4px 0 6px;font-size:clamp(22px,2.5vw,34px);letter-spacing:-.025em}
+.lesson-head p{margin:0;color:var(--muted);line-height:1.45}
+.rule{
+  border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:10px;padding:10px 12px;
+  margin-top:12px;line-height:1.4
+}
+.rule b{display:block;margin-bottom:2px}
+.input-zone{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-top:12px}
+.field{display:grid;gap:5px}
+.field label{font-size:.76rem;font-weight:800;color:var(--muted)}
+.field input{
+  min-height:42px;border:1px solid var(--border);background:var(--panel2);border-radius:10px;padding:8px 10px;min-width:120px
+}
+.err{color:var(--bad);font-size:.8rem;font-weight:700;min-height:1.2em;margin-top:6px}
+.code-wrap{overflow:auto;border:1px solid var(--border);border-radius:14px;background:#0c111b;color:#e6edf3}
+.code{min-width:520px;padding:9px 0;font:700 .88rem/1.58 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.line{display:grid;grid-template-columns:32px 22px 1fr;gap:7px;padding:2px 10px;white-space:pre}
+.line .num{text-align:right;color:#657086;user-select:none}
+.line .pc{color:#ffd166;text-align:center}
+.line.active{background:#1e293b}
+.line.active .num{color:#fff}
+.world{
+  position:relative;min-height:300px;border:1px solid var(--border);border-radius:16px;padding:14px;
+  background:linear-gradient(180deg,var(--panel2),transparent);overflow:hidden
+}
+.world-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;min-height:240px;align-items:center}
+.station{
+  min-height:105px;border:2px solid var(--border);border-radius:16px;background:var(--panel);
+  padding:12px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:5px;
+  transition:border-color .2s,background .2s,transform .2s
+}
+.station.active{border-color:var(--accent);background:var(--accent-soft);transform:translateY(-3px)}
+.station .emoji{font-size:2rem;line-height:1}
+.station b{font-size:.9rem}
+.station small{color:var(--muted);line-height:1.25}
+.runner{
+  position:absolute;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
+  background:var(--accent);color:#fff;font-weight:950;box-shadow:0 8px 20px rgba(0,0,0,.22);
+  transition:transform .38s cubic-bezier(.2,.8,.2,1);z-index:4;pointer-events:none
+}
+@media(prefers-reduced-motion:reduce){.runner,.station{transition:none}}
+.stepcard{margin-top:12px;border:1px solid var(--border);border-radius:14px;padding:13px}
+.step-top{display:flex;gap:10px;align-items:flex-start}
+.stepno{flex:0 0 auto;border-radius:999px;background:var(--accent-soft);padding:5px 9px;font-size:.78rem;font-weight:900}
+.step-action{font-weight:900}
+.step-why{color:var(--muted);line-height:1.45;margin-top:4px}
+.transport{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.progress{height:8px;background:var(--panel2);border-radius:999px;overflow:hidden;margin-top:10px}
+.progress>div{height:100%;background:var(--accent);width:0;transition:width .2s}
+.triple{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
+.explain{border:1px solid var(--border);border-radius:14px;padding:12px;min-width:0}
+.explain h3{margin:0 0 7px;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase}
+.explain p{margin:0;color:var(--muted);line-height:1.42}
+.explain.codeword h3{color:var(--accent)}
+.runtime{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.runtime .box{border:1px solid var(--border);border-radius:14px;padding:11px;min-height:105px}
+.runtime h3{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;margin:0 0 8px;color:var(--muted)}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{border:1px solid var(--border);border-radius:9px;background:var(--panel2);padding:6px 8px;font:700 .82rem ui-monospace,SFMono-Regular,Menlo,monospace}
+.console{background:var(--console);color:var(--consoleText);border-radius:12px;padding:10px;min-height:80px;white-space:pre-wrap;font:700 .82rem/1.45 ui-monospace,SFMono-Regular,Menlo,monospace}
+.stack{display:flex;flex-direction:column;gap:6px}
+.frame{border:1px solid var(--border);border-radius:9px;padding:7px 8px;font-size:.84rem}
+.frame.top{border-color:var(--accent);background:var(--accent-soft);font-weight:850}
+.predict{margin-top:10px;border:1px dashed var(--border);border-radius:14px;padding:11px}
+.predict p{margin:0 0 8px;font-weight:800}
+.predict .choices{display:flex;gap:7px;flex-wrap:wrap}
+.choice{border:1px solid var(--border);background:var(--panel);border-radius:10px;padding:8px 10px;font-weight:750}
+.choice.correct{border-color:var(--good);background:color-mix(in srgb,var(--good) 12%,transparent)}
+.choice.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,transparent)}
+.footnote{color:var(--muted);font-size:.76rem;line-height:1.45;margin-top:10px}
+.focus .app{max-width:none;padding:12px}
+.focus .brand,.focus .course-map{display:none}
+.focus .topbar{justify-content:flex-end;margin-bottom:8px}
+.focus .layout{grid-template-columns:1fr 1fr}
+.focus{position:fixed;inset:0;z-index:999999;background:var(--bg);overflow:auto}
+@media(max-width:980px){
+  .layout{grid-template-columns:1fr}
+  .course-map{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .focus .layout{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .app{padding:10px}
+  .course-map{grid-template-columns:1fr 1fr}
+  .world-grid{grid-template-columns:1fr 1fr}
+  .triple,.runtime{grid-template-columns:1fr}
+  .lesson-head{grid-template-columns:1fr}
+  .small-control input[type="range"]{width:70px}
+}
+</style>
+</head>
+<body>
+<div id="simRoot" class="app">
+  <header class="topbar">
+    <div class="brand">
+      <h1>C: watch it happen</h1>
+      <p>Not a syntax quiz. Change the input, then step through the tiny C program. The highlighted line, moving runner, memory, call stack and console all describe the same execution.</p>
+    </div>
+    <div class="controls-top">
+      <div class="small-control"><label for="accent">Colour</label><input id="accent" type="color" value="#5b5bd6" aria-label="Accent colour"></div>
+      <div class="small-control"><label for="size">Size</label><input id="size" type="range" min="85" max="125" value="100" aria-label="Interface size"></div>
+      <button id="focusBtn" class="iconbtn" type="button">⛶ Focus view</button>
+    </div>
+  </header>
+
+  <section class="course-map" aria-label="Page architecture">
+    <div class="mapnode"><b>First term · HTML</b><span>the page frame and visible controls</span></div>
+    <div class="mapnode"><b>Second term · JavaScript</b><span>the live execution and animation engine</span></div>
+    <div class="mapnode"><b>Main term · C logic</b><span>fixed execution rules for each C example</span></div>
+    <div class="mapnode"><b>Output</b><span>stdin, memory, stack and stdout stay synchronised</span></div>
+    <div class="mapnode"><b>Simulator</b><span>colour and size change; program logic does not</span></div>
+  </section>
+
+  <nav id="lessons" class="lessons" aria-label="C concepts"></nav>
+
+  <main class="layout">
+    <section class="card pad">
+      <div class="lesson-head">
+        <div>
+          <div id="kicker" class="kicker"></div>
+          <h2 id="lessonTitle"></h2>
+          <p id="lessonPurpose"></p>
+        </div>
+        <button id="restartLesson" type="button" class="btn">↺ Restart lesson</button>
+      </div>
+
+      <div id="rule" class="rule"></div>
+      <div id="inputZone" class="input-zone"></div>
+      <div id="inputError" class="err" role="alert"></div>
+
+      <div class="panel-title" style="margin-top:13px">
+        <h3>Code — the gold arrow is the program counter</h3>
+        <span id="statusText" class="kicker"></span>
+      </div>
+      <div class="code-wrap"><div id="codePanel" class="code"></div></div>
+
+      <div class="stepcard">
+        <div class="step-top">
+          <span id="stepNo" class="stepno"></span>
+          <div>
+            <div id="stepAction" class="step-action"></div>
+            <div id="stepWhy" class="step-why"></div>
+          </div>
+        </div>
+        <div class="transport">
+          <button id="backBtn" class="btn" type="button">← Back</button>
+          <button id="stepBtn" class="btn primary" type="button">Step →</button>
+          <button id="playBtn" class="btn" type="button">▶ Play</button>
+          <button id="resetBtn" class="btn" type="button">Reset run</button>
+          <label class="small-control"><span style="font-size:.78rem;font-weight:800;color:var(--muted)">Speed</span><input id="speed" type="range" min="250" max="1600" value="850" step="50"></label>
+        </div>
+        <div class="progress"><div id="progressBar"></div></div>
+      </div>
+
+      <div class="triple">
+        <div class="explain codeword"><h3>Code</h3><p id="codeMeaning"></p></div>
+        <div class="explain"><h3>Description</h3><p id="description"></p></div>
+        <div class="explain"><h3>Why</h3><p id="whyBox"></p></div>
+      </div>
+
+      <div id="predict" class="predict"></div>
+    </section>
+
+    <section class="card pad">
+      <div class="panel-title"><h2>World simulator</h2><span class="kicker">same execution, made visible</span></div>
+      <div id="world" class="world" aria-live="polite">
+        <div id="runner" class="runner">▶</div>
+        <div id="worldGrid" class="world-grid"></div>
+      </div>
+
+      <div class="runtime" style="margin-top:12px">
+        <div class="box"><h3>Memory</h3><div id="memory" class="chips"></div></div>
+        <div class="box"><h3>Call stack</h3><div id="stack" class="stack"></div></div>
+        <div class="box"><h3>stdin — what enters</h3><div id="stdin" class="console"></div></div>
+        <div class="box"><h3>stdout — what appears</h3><div id="stdout" class="console"></div></div>
+      </div>
+
+      <div class="footnote">
+        Fidelity boundary: this is a source-faithful simulator for the included beginner programs, not a complete C compiler. The traces avoid undefined behaviour, and the input examples use validated whole numbers so each demonstrated execution has a definite result.
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+"use strict";
+(() => {
+  const root = document.getElementById("simRoot");
+  if (!root || root.dataset.ready) return;
+  root.dataset.ready = "1";
+
+  const $ = (id) => document.getElementById(id);
+  const NL = "\n";
+
+  const mk = (line, station, action, why, codeMeaning, desc, mem={}, stdin="", stdout="", stack=["main"], next="Continue") =>
+    ({line,station,action,why,codeMeaning,desc,mem,stdin,stdout,stack,next});
+
+  const lessons = {
+    printf: {
+      label:"printf",
+      kicker:"OUTPUT",
+      title:"printf: make the program speak",
+      purpose:"Watch characters leave the program and appear on standard output. The point is the effect, not memorising punctuation.",
+      rule:"<b>Exact rule</b><code>printf</code> writes formatted output to <b>stdout</b> (the program’s normal output stream).",
+      inputs:[],
+      code:[
+        "#include <stdio.h>",
+        "",
+        "int main(void) {",
+        "    printf(\"Hello!\\n\");",
+        "    printf(\"I can show values too: %d\\n\", 7);",
+        "    return 0;",
+        "}"
+      ],
+      world:[
+        ["main","🧠","Program","main is running"],
+        ["printf","📨","printf","send formatted characters"],
+        ["stdout","🖥️","stdout","characters become visible"]
+      ],
+      build:() => [
+        mk(2,"main","Enter main.","C begins executing the body of main.","main(void)","The program has reached its starting function.",{}, "", "", ["main"],"Reach the first printf"),
+        mk(3,"printf","Execute the first printf.","The call formats the characters and sends them to stdout.","printf(\"Hello!\\\\n\")","The text Hello! and a newline are produced.",{}, "", "Hello!"+NL, ["main"],"The console gains Hello!"),
+        mk(4,"printf","Execute the second printf.","The integer 7 is formatted as decimal text and inserted where %d requests it.","printf(..., 7)","The value becomes visible text; the integer in memory is not itself the screen output.",{}, "", "Hello!"+NL+"I can show values too: 7"+NL, ["main"],"The console gains the second line"),
+        mk(5,"main","Return 0 from main.","Returning from main ends this program normally.","return 0","Execution leaves main and the program finishes.",{}, "", "Hello!"+NL+"I can show values too: 7"+NL, ["main"],"Finish")
+      ]
+    },
+
+    scanf: {
+      label:"scanf",
+      kicker:"INPUT",
+      title:"scanf: bring a value into memory",
+      purpose:"Type a whole number. Watch the text arrive through stdin, get converted, then become a stored C integer.",
+      rule:"<b>Exact rule</b>With <code>%d</code>, <code>scanf</code> converts matching input characters to an <code>int</code> and stores the result through the supplied address.",
+      inputs:[{key:"n",label:"Whole number to type",type:"number",min:-99,max:99,default:12}],
+      code:[
+        "#include <stdio.h>",
+        "",
+        "int main(void) {",
+        "    int n = 0;",
+        "    printf(\"Give me a number: \");",
+        "    scanf(\"%d\", &n);",
+        "    printf(\"Stored n = %d\\n\", n);",
+        "    return 0;",
+        "}"
+      ],
+      world:[
+        ["you","⌨️","You","type characters"],
+        ["stdin","📥","stdin","input stream"],
+        ["scanf","🔎","scanf","convert the characters"],
+        ["memory","📦","memory n","store the integer"],
+        ["stdout","🖥️","stdout","show the stored value"]
+      ],
+      build:v => {
+        const n = v.n;
+        return [
+          mk(3,"memory","Create n and initialise it to 0.","Initialisation gives n a defined starting value.","int n = 0","A memory box named n exists and currently contains 0.",{n:0},String(n),"",["main"],"Create storage"),
+          mk(4,"stdout","Print the prompt.","The user needs to know that input is expected.","printf(\"Give me a number: \")","stdout now contains the prompt.",{n:0},String(n),"Give me a number: ",["main"],"Ask for input"),
+          mk(5,"you","The user provides "+n+".","Those typed digits are input characters, not yet the C integer stored in n.","input characters","The chosen whole number is waiting on stdin.",{n:0},String(n),"Give me a number: ",["main"],"Characters arrive"),
+          mk(5,"stdin","scanf reads from stdin.","The input stream supplies the characters to the conversion.","scanf reads","The input is consumed by this conversion.",{n:0},String(n),"Give me a number: ",["main"],"Read input"),
+          mk(5,"scanf","Convert the characters to an int.","%d requests decimal integer conversion.","%d conversion","The characters represent the integer "+n+".",{n:0},String(n),"Give me a number: ",["main"],"Convert"),
+          mk(5,"memory","Store the converted value in n.","&n identifies the object where scanf must write the successful conversion.","&n","n changes from 0 to "+n+".",{n:n},String(n),"Give me a number: ",["main"],"Store"),
+          mk(6,"stdout","Print n.","printf reads the current stored value and formats it for output.","printf(..., n)","The stored integer is turned back into visible decimal characters.",{n:n},String(n),"Give me a number: Stored n = "+n+NL,["main"],"Show the result"),
+          mk(7,"memory","Return 0.","main finishes normally.","return 0","The run ends with n still holding "+n+".",{n:n},String(n),"Give me a number: Stored n = "+n+NL,["main"],"Finish")
+        ];
+      }
+    },
+
+    ifelse: {
+      label:"if / else",
+      kicker:"TWO-WAY DECISION",
+      title:"if / else: choose exactly one road",
+      purpose:"Change n and watch the condition choose one branch. The branch not chosen is skipped completely.",
+      rule:"<b>Exact rule</b>The <code>if</code> condition is evaluated. If non-zero (true), the if-body executes; otherwise the else-body executes.",
+      inputs:[{key:"n",label:"n",type:"number",min:-9,max:9,default:7}],
+      code:[
+        "#include <stdio.h>",
+        "",
+        "int main(void) {",
+        "    int n = {{n}};",
+        "    if (n >= 5) {",
+        "        printf(\"BIG\\n\");",
+        "    } else {",
+        "        printf(\"SMALL\\n\");",
+        "    }",
+        "    return 0;",
+        "}"
+      ],
+      world:[
+        ["memory","📦","n","current stored value"],
+        ["test","❓","n >= 5 ?","evaluate once"],
+        ["yes","🚪","if road","only when true"],
+        ["no","🚪","else road","only when false"],
+        ["stdout","🖥️","stdout","selected branch prints"]
+      ],
+      build:v => {
+        const yes = v.n >= 5, word = yes ? "BIG" : "SMALL";
+        return [
+          mk(3,"memory","Initialise n to "+v.n+".","The condition will read this stored value.","int n = "+v.n,"n now has a definite value.",{n:v.n},"","",["main"],"Store n"),
+          mk(4,"test","Evaluate n >= 5.","Control cannot choose a branch until this expression has a truth value.","n >= 5","With n = "+v.n+", the condition is "+String(yes).toUpperCase()+".",{n:v.n,condition:yes},"","",["main"],yes?"Take the if road":"Take the else road"),
+          mk(yes?5:7,yes?"yes":"no","Enter the "+(yes?"if":"else")+" branch.","Only the selected body executes; the other body is skipped.","selected branch","This is the one permitted road for this run.",{n:v.n},"","",["main"],"Run its printf"),
+          mk(yes?5:7,"stdout","Print "+word+".","The selected branch contains this output call.","printf(\""+word+"\\\\n\")","The chosen branch becomes visible on stdout.",{n:v.n},"",word+NL,["main"],"Leave the decision"),
+          mk(9,"memory","Return 0.","The decision is over; execution continues after the entire if/else statement.","return 0","No code from the unchosen branch ever ran.",{n:v.n},"",word+NL,["main"],"Finish")
+        ];
+      }
+    },
+
+    elseif: {
+      label:"else if",
+      kicker:"ORDERED DECISION",
+      title:"else if: test from top to bottom",
+      purpose:"A chain is not several independent decisions. The first true condition wins, then the rest of the chain is skipped.",
+      rule:"<b>Exact rule</b>Conditions are considered in source order. The body belonging to the first true condition executes; <code>else</code> handles the remaining cases.",
+      inputs:[{key:"score",label:"Score",type:"number",min:0,max:100,default:82}],
+      code:[
+        "#include <stdio.h>",
+        "",
+        "int main(void) {",
+        "    int score = {{score}};",
+        "    if (score >= 90) {",
+        "        printf(\"A\\n\");",
+        "    } else if (score >= 75) {",
+        "        printf(\"B\\n\");",
+        "    } else if (score >= 50) {",
+        "        printf(\"C\\n\");",
+        "    } else {",
+        "        printf(\"D\\n\");",
+        "    }",
+        "    return 0;",
+        "}"
+      ],
+      world:[
+        ["memory","📦","score","current value"],
+        ["a","1️⃣",">= 90 ?","first door"],
+        ["b","2️⃣",">= 75 ?","second door"],
+        ["c","3️⃣",">= 50 ?","third door"],
+        ["d","4️⃣","else","remainder"],
+        ["stdout","🖥️","stdout","winning grade"]
+      ],
+      build:v => {
+        const s=v.score, trace=[mk(3,"memory","Initialise score to "+s+".","The chain will test this value.", "int score = "+s,"score is ready.",{score:s},"","",["main"],"Start at the top")];
+        let grade="", line=0, station="";
+        const addTest=(ln,st,label,result,next)=>trace.push(mk(ln,st,"Test "+label+".","This condition is "+(result?"true":"false")+".",label,"Because the chain is ordered, "+(result?"this branch wins and later tests are skipped.":"execution moves to the next condition."),{score:s,condition:result},"","",["main"],next));
+        if(s>=90){addTest(4,"a","score >= 90",true,"Choose A");grade="A";line=5;station="a";}
+        else{
+          addTest(4,"a","score >= 90",false,"Try the next condition");
+          if(s>=75){addTest(6,"b","score >= 75",true,"Choose B");grade="B";line=7;station="b";}
+          else{
+            addTest(6,"b","score >= 75",false,"Try the next condition");
+            if(s>=50){addTest(8,"c","score >= 50",true,"Choose C");grade="C";line=9;station="c";}
+            else{
+              addTest(8,"c","score >= 50",false,"No condition matched");
+              trace.push(mk(10,"d","Enter else.","Every earlier condition was false.","else","else is the remainder case.",{score:s},"","",["main"],"Choose D"));
+              grade="D";line=11;station="d";
+            }
+          }
+        }
+        trace.push(mk(line,station,"Execute the winning printf.","The first matching branch alone produces the grade.","printf(\""+grade+"\\\\n\")","Grade "+grade+" is written to stdout.",{score:s},"",grade+NL,["main"],"Leave the chain"));
+        trace.push(mk(13,"stdout","Return 0.","Execution continues after the complete chain.","return 0","The run ends.",{score:s},"",grade+NL,["main"],"Finish"));
+        return trace;
+      }
+    },
+
+    forloop: {
+      label:"for",
+      kicker:"COUNTED LOOP",
+      title:"for: initialise → check → body → update",
+      purpose:"Watch one complete loop cycle. The counter does not magically repeat: control moves through four distinct pieces in a fixed order.",
+      rule:"<b>Exact rule</b>Initialisation runs once. Before each iteration the condition is checked. After each body, the iteration expression runs, then control returns to the condition.",
+      inputs:[{key:"n",label:"Count to",type:"number",min:0,max:6,default:3}],
+      code:[
+        "#include <stdio.h>",
+        "",
+        "int main(void) {",
+        "    int n = {{n}};",
+        "    for (int i = 1; i <= n; i++) {",
+        "        printf(\"%d \", i);",
+        "    }",
+        "    printf(\"done\\n\");",
+        "    return 0;",
+        "}"
+      ],
+      world:[
+        ["init","🟢","initialise","i = 1 once"],
+        ["test","❓","check","i <= n ?"],
+        ["body","🔁","body","print i"],
+        ["update","➕","update","i++"],
+        ["after","🏁","after loop","continue here"],
+        ["stdout","🖥️","stdout","visible result"]
+      ],
+      build:v => {
+        let i=1,out="",t=[
+          mk(3,"init","Store n = "+v.n+".","n is the loop's upper limit.","int n = "+v.n,"n is ready.",{n:v.n},"","",["main"],"Set up the loop"),
+          mk(4,"init","Initialise i = 1.","The for-loop initialiser executes exactly once.","int i = 1","The counter begins at 1.",{n:v.n,i:1},"","",["main"],"Check the condition")
+        ];
+        for(;;){
+          const ok=i<=v.n;
+          t.push(mk(4,"test","Check i <= n.","The body may execute only when the condition is true.","i <= n",i+" <= "+v.n+" is "+String(ok).toUpperCase()+".",{n:v.n,i,condition:ok},"",out,["main"],ok?"Enter the body":"Exit the loop"));
+          if(!ok) break;
+          out += i+" ";
+          t.push(mk(5,"body","Run the loop body.","This is one iteration.","printf(\"%d \", i)","stdout gains the current i.",{n:v.n,i},"",out,["main"],"Run the update"));
+          i++;
+          t.push(mk(4,"update","Execute i++.","The iteration expression runs after the body, not before it.","i++","i becomes "+i+".",{n:v.n,i},"",out,["main"],"Go back to the condition"));
+        }
+        out += "done"+NL;
+        t.push(mk(7,"after","Continue after the loop.","The false condition transfers control to the next statement after the loop.","printf(\"done\\\\n\")","The loop has ended; now the following statement runs.",{n:v.n,i},"",out,["main"],"Print done"));
+        t.push(mk(8,"stdout","Return 0.","main finishes.","return 0","Final output is complete.",{n:v.n,i},"",out,["main"],"Finish"));
+        return t;
+      }
+    },
+
+    whileloop: {
+      label:"while",
+      kicker:"PRE-TEST LOOP",
+      title:"while: check first, then maybe run",
+      purpose:"Think of a jar: before taking a biscuit, check whether any are left. A false first check means the body runs zero times.",
+      rule:"<b>Exact rule</b><code>while</code> evaluates its condition before every iteration. The body executes only when that check is true.",
+      inputs:[{key:"cookies",label:"Cookies in jar",type:"number",min:0,max:6,default:3}],
+      code:[
+        "#include <stdio.h>",
+        "",
+        "int main(void) {",
+        "    int cookies = {{cookies}};",
+        "    while (cookies > 0) {",
+        "        printf(\"Eat one: %d left\\n\", cookies);",
+        "        cookies--;",
+        "    }",
+        "    printf(\"Jar empty\\n\");",
+        "    return 0;",
+        "}"
+      ],
+      world:[
+        ["jar","🍪","jar","cookies remaining"],
+        ["test","❓","check first","cookies > 0 ?"],
+        ["body","😋","body","eat / print"],
+        ["decrement","➖","cookies--","change state"],
+        ["after","🏁","after loop","when false"],
+        ["stdout","🖥️","stdout","story on screen"]
+      ],
+      build:v => {
+        let c=v.cookies,out="",t=[mk(3,"jar","Initialise cookies to "+c+".","This is the loop state.","int cookies = "+c,"The jar contains "+c+".",{cookies:c},"","",["main"],"Check before doing anything")];
+        for(;;){
+          const ok=c>0;
+          t.push(mk(4,"test","Check cookies > 0.","while is a pre-test loop.","cookies > 0",c+" > 0 is "+String(ok).toUpperCase()+".",{cookies:c,condition:ok},"",out,["main"],ok?"Run the body":"Skip to after the loop"));
+          if(!ok) break;
+          out += "Eat one: "+c+" left"+NL;
+          t.push(mk(5,"body","Run the body.","The current value is printed before it is decremented.","printf(..., cookies)","This iteration sees cookies = "+c+".",{cookies:c},"",out,["main"],"Change the state"));
+          c--;
+          t.push(mk(6,"decrement","Execute cookies--.","Without changing state, this particular loop would never reach zero.","cookies--","cookies becomes "+c+".",{cookies:c},"",out,["main"],"Return to the condition"));
+        }
+        out += "Jar empty"+NL;
+        t.push(mk(8,"after","Print Jar empty.","The false check exited the loop and execution continued afterward.","after the while","The body is no longer running.",{cookies:c},"",out,["main"],"Finish"));
+        t.push(mk(9,"stdout","Return 0.","main finishes normally.","return 0","The run is complete.",{cookies:c},"",out,["main"],"Finish"));
+        return t;
+      }
+    },
+
+    dowhile: {
+      label:"do while",
+      kicker:"POST-TEST LOOP",
+      title:"do while: run once, then decide whether to repeat",
+      purpose:"Press the doorbell first; only afterward ask whether another ring is needed. This is why the body always runs at least once.",
+      rule:"<b>Exact rule</b>A <code>do while</code> body executes before its condition is checked, so the body executes at least once.",
+      inputs:[{key:"target",label:"Target rings",type:"number",min:0,max:5,default:3}],
+      code:[
+        "#include <stdio.h>",
+        "",
+        "int main(void) {",
+        "    int target = {{target}};",
+        "    int rings = 0;",
+        "    do {",
+        "        printf(\"Ring %d\\n\", rings + 1);",
+        "        rings++;",
+        "    } while (rings < target);",
+        "    printf(\"stop\\n\");",
+        "    return 0;",
+        "}"
+      ],
+      world:[
+        ["start","🔢","rings = 0","initial state"],
+        ["body","🔔","body first","ring now"],
+        ["update","➕","rings++","change state"],
+        ["test","❓","check after","rings < target ?"],
+        ["after","🏁","after loop","when false"],
+        ["stdout","🖥️","stdout","rings appear"]
+      ],
+      build:v => {
+        let r=0,out="",t=[
+          mk(3,"start","Store target = "+v.target+".","This is the desired repeat threshold.","int target = "+v.target,"target is ready.",{target:v.target},"","",["main"],"Initialise rings"),
+          mk(4,"start","Initialise rings = 0.","The body will run before any loop condition is tested.","int rings = 0","No ring has happened yet.",{target:v.target,rings:0},"","",["main"],"Enter the body")
+        ];
+        do{
+          out += "Ring "+(r+1)+NL;
+          t.push(mk(6,"body","Run the body first.","do-while reaches the body before its condition.","printf(\"Ring...\")","A ring happens even when target is 0.",{target:v.target,rings:r},"",out,["main"],"Increment rings"));
+          r++;
+          t.push(mk(7,"update","Execute rings++.","The state changes before the post-test.","rings++","rings becomes "+r+".",{target:v.target,rings:r},"",out,["main"],"Now test"));
+          const ok=r<v.target;
+          t.push(mk(8,"test","Check rings < target.","This check occurs after the body.","rings < target",r+" < "+v.target+" is "+String(ok).toUpperCase()+".",{target:v.target,rings:r,condition:ok},"",out,["main"],ok?"Repeat the body":"Leave the loop"));
+          if(!ok) break;
+        }while(true);
+        out += "stop"+NL;
+        t.push(mk(9,"after","Print stop.","The false post-test transfers control after the loop.","printf(\"stop\\\\n\")","The loop has finished.",{target:v.target,rings:r},"",out,["main"],"Finish"));
+        t.push(mk(10,"stdout","Return 0.","main ends normally.","return 0","The run is complete.",{target:v.target,rings:r},"",out,["main"],"Finish"));
+        return t;
+      }
+    },
+
+    functions: {
+      label:"functions",
+      kicker:"FUNCTION CALL",
+      title:"functions: leave the caller, do a job, return a result",
+      purpose:"Watch main pause, values enter a new function call, local work happen there, and control return to the exact call site.",
+      rule:"<b>Exact rule</b>A call transfers control into the function. Arguments initialise parameters in that call’s frame; <code>return</code> ends the call and can supply a value back to the caller.",
+      inputs:[
+        {key:"a",label:"a",type:"number",min:-9,max:9,default:2},
+        {key:"b",label:"b",type:"number",min:-9,max:9,default:3}
+      ],
+      code:[
+        "#include <stdio.h>",
+        "",
+        "int add(int x, int y) {",
+        "    int total = x + y;",
+        "    return total;",
+        "}",
+        "",
+        "int main(void) {",
+        "    int a = {{a}}, b = {{b}};",
+        "    int answer = add(a, b);",
+        "    printf(\"answer = %d\\n\", answer);",
+        "    return 0;",
+        "}"
+      ],
+      world:[
+        ["main","👤","main","caller"],
+        ["call","📞","call add","transfer control"],
+        ["params","📥","x and y","parameters"],
+        ["local","🧮","total","local work"],
+        ["return","↩️","return","back to caller"],
+        ["stdout","🖥️","stdout","show answer"]
+      ],
+      build:v => {
+        const total=v.a+v.b;
+        return [
+          mk(8,"main","Initialise a and b.","These objects belong to main's call frame.","int a, b","main stores a = "+v.a+" and b = "+v.b+".",{a:v.a,b:v.b},"","",["main"],"Reach the function call"),
+          mk(9,"call","Call add(a, b).","main pauses at this expression while the called function executes.","add(a, b)","Control leaves main temporarily.",{a:v.a,b:v.b},"","",["main"],"Enter add"),
+          mk(2,"params","Enter add; initialise x and y.","Argument values are used to initialise this call's parameters.","int add(int x, int y)","x receives "+v.a+"; y receives "+v.b+".",{a:v.a,b:v.b,x:v.a,y:v.b},"","",["main","add"],"Run add's body"),
+          mk(3,"local","Compute total = x + y.","total is a local automatic variable in this add call.","int total = x + y","total becomes "+total+".",{a:v.a,b:v.b,x:v.a,y:v.b,total:total},"","",["main","add"],"Return the result"),
+          mk(4,"return","Return total.","return ends this add call and supplies "+total+" as the call expression's value.","return total","The add frame is about to disappear.",{a:v.a,b:v.b,x:v.a,y:v.b,total:total},"","",["main","add"],"Resume main"),
+          mk(9,"main","Store the returned value in answer.","The call expression has completed with value "+total+".","int answer = add(a, b)","main resumes at the call site and answer becomes "+total+".",{a:v.a,b:v.b,answer:total},"","",["main"],"Print answer"),
+          mk(10,"stdout","Print answer.","printf reads answer from main's frame.","printf(..., answer)","stdout shows the returned result.",{a:v.a,b:v.b,answer:total},"","answer = "+total+NL,["main"],"Finish"),
+          mk(11,"main","Return 0.","main ends normally.","return 0","No function frames remain after program termination.",{a:v.a,b:v.b,answer:total},"","answer = "+total+NL,["main"],"Finish")
+        ];
+      }
+    }
+  };
+
+  let current = "printf";
+  let values = {};
+  let trace = [];
+  let index = 0;
+  let timer = null;
+
+  function esc(s){
+    return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+  }
+
+  function stop(){
+    if(timer){ clearInterval(timer); timer=null; }
+    $("playBtn").textContent = "▶ Play";
+  }
+
+  function buildLessons(){
+    const nav=$("lessons");
+    nav.innerHTML="";
+    Object.entries(lessons).forEach(([key,lesson])=>{
+      const b=document.createElement("button");
+      b.type="button";
+      b.className="lesson"+(key===current?" active":"");
+      b.textContent=lesson.label;
+      b.addEventListener("click",()=>selectLesson(key));
+      nav.appendChild(b);
+    });
+  }
+
+  function buildInputs(){
+    const host=$("inputZone");
+    host.innerHTML="";
+    values={};
+    const defs=lessons[current].inputs;
+    if(!defs.length){
+      host.innerHTML='<span style="color:var(--muted);font-size:.84rem;font-weight:700">No input needed for this lesson.</span>';
+      return;
+    }
+    defs.forEach(d=>{
+      values[d.key]=d.default;
+      const wrap=document.createElement("div");
+      wrap.className="field";
+      const lab=document.createElement("label");
+      lab.textContent=d.label;
+      const inp=document.createElement("input");
+      inp.type=d.type;
+      inp.value=d.default;
+      inp.min=d.min;
+      inp.max=d.max;
+      inp.inputMode="numeric";
+      inp.dataset.key=d.key;
+      inp.addEventListener("input",()=>validateAndRebuild());
+      wrap.append(lab,inp);
+      host.appendChild(wrap);
+    });
+  }
+
+  function readInputs(){
+    const defs=lessons[current].inputs;
+    let ok=true, msg="";
+    defs.forEach(d=>{
+      const el=$("inputZone").querySelector('[data-key="'+d.key+'"]');
+      let n=Number(el.value);
+      if(el.value.trim()==="" || !Number.isFinite(n) || !Number.isInteger(n)){
+        ok=false; msg="Use whole numbers only for this lesson."; return;
+      }
+      if(n<d.min || n>d.max){
+        ok=false; msg=d.label+" must be between "+d.min+" and "+d.max+"."; return;
+      }
+      values[d.key]=n;
+    });
+    $("inputError").textContent=msg;
+    return ok;
+  }
+
+  function validateAndRebuild(){
+    stop();
+    if(readInputs()) rebuildTrace();
+  }
+
+  function hydratedCode(){
+    return lessons[current].code.map(line => line.replace(/\{\{(\w+)\}\}/g,(_,k)=>String(values[k])));
+  }
+
+  function buildWorld(){
+    const host=$("worldGrid");
+    host.innerHTML="";
+    lessons[current].world.forEach(([id,emoji,name,sub])=>{
+      const s=document.createElement("div");
+      s.className="station";
+      s.dataset.station=id;
+      s.innerHTML='<span class="emoji">'+emoji+'</span><b>'+esc(name)+'</b><small>'+esc(sub)+'</small>';
+      host.appendChild(s);
+    });
+  }
+
+  function moveRunner(station){
+    const world=$("world"), target=world.querySelector('[data-station="'+station+'"]'), runner=$("runner");
+    if(!target) return;
+    const wr=world.getBoundingClientRect(), tr=target.getBoundingClientRect();
+    const x=tr.left-wr.left+(tr.width-runner.offsetWidth)/2;
+    const y=tr.top-wr.top+(tr.height-runner.offsetHeight)/2;
+    runner.style.transform="translate("+x+"px,"+y+"px)";
+  }
+
+  function render(){
+    const lesson=lessons[current], s=trace[index];
+    $("kicker").textContent=lesson.kicker;
+    $("lessonTitle").textContent=lesson.title;
+    $("lessonPurpose").textContent=lesson.purpose;
+    $("rule").innerHTML=lesson.rule;
+    $("statusText").textContent=index===trace.length-1?"FINISHED":"RUNNING";
+
+    const code=$("codePanel");
+    code.innerHTML="";
+    hydratedCode().forEach((text,i)=>{
+      const row=document.createElement("div");
+      row.className="line"+(i===s.line?" active":"");
+      row.innerHTML='<span class="num">'+(i+1)+'</span><span class="pc">'+(i===s.line?"▶":"")+'</span><span>'+esc(text)+'</span>';
+      code.appendChild(row);
+    });
+
+    $("stepNo").textContent="Step "+(index+1)+" / "+trace.length;
+    $("stepAction").textContent=s.action;
+    $("stepWhy").textContent=s.why;
+    $("codeMeaning").textContent=s.codeMeaning;
+    $("description").textContent=s.desc;
+    $("whyBox").textContent=s.why;
+    $("stdin").textContent=s.stdin || "— nothing waiting —";
+    $("stdout").textContent=s.stdout || "— nothing printed yet —";
+
+    const mem=$("memory");
+    mem.innerHTML="";
+    const entries=Object.entries(s.mem);
+    if(!entries.length) mem.innerHTML='<span style="color:var(--muted);font-size:.82rem">No user variables yet.</span>';
+    entries.forEach(([k,v])=>{
+      const chip=document.createElement("span");
+      chip.className="chip";
+      chip.textContent=k+" = "+v;
+      mem.appendChild(chip);
+    });
+
+    const stack=$("stack");
+    stack.innerHTML="";
+    [...s.stack].reverse().forEach((name,i)=>{
+      const f=document.createElement("div");
+      f.className="frame"+(i===0?" top":"");
+      f.textContent=(i===0?"▶ ":"")+name+(i===0?"  ← running":"");
+      stack.appendChild(f);
+    });
+
+    document.querySelectorAll(".station").forEach(el=>el.classList.toggle("active",el.dataset.station===s.station));
+    requestAnimationFrame(()=>moveRunner(s.station));
+
+    $("backBtn").disabled=index===0;
+    $("stepBtn").disabled=index>=trace.length-1;
+    $("progressBar").style.width=((index+1)/trace.length*100)+"%";
+    buildPrediction(s);
+  }
+
+  function buildPrediction(s){
+    const host=$("predict");
+    host.innerHTML="";
+    if(index>=trace.length-1){
+      host.innerHTML="<p>Run complete.</p><span style='color:var(--muted)'>Change the input and run again to see how the path changes.</span>";
+      return;
+    }
+    const p=document.createElement("p");
+    p.textContent="Predict before stepping: what happens next?";
+    const choices=document.createElement("div");
+    choices.className="choices";
+    const right=s.next;
+    const wrongs=["Jump to a random line","Erase all memory"];
+    [right,...wrongs].forEach((label,i)=>{
+      const b=document.createElement("button");
+      b.type="button";
+      b.className="choice";
+      b.textContent=label;
+      b.addEventListener("click",()=>{
+        choices.querySelectorAll("button").forEach(x=>x.disabled=true);
+        if(i===0){
+          b.classList.add("correct");
+          b.textContent="✓ "+label;
+        }else{
+          b.classList.add("wrong");
+          b.textContent="✗ "+label;
+        }
+      });
+      choices.appendChild(b);
+    });
+    host.append(p,choices);
+  }
+
+  function rebuildTrace(){
+    if(!readInputs()) return;
+    trace=lessons[current].build({...values});
+    index=0;
+    render();
+  }
+
+  function selectLesson(key){
+    stop();
+    current=key;
+    buildLessons();
+    buildInputs();
+    buildWorld();
+    rebuildTrace();
+  }
+
+  $("stepBtn").addEventListener("click",()=>{
+    if(index<trace.length-1){ index++; render(); }
+  });
+  $("backBtn").addEventListener("click",()=>{
+    stop();
+    if(index>0){ index--; render(); }
+  });
+  $("resetBtn").addEventListener("click",()=>{
+    stop(); index=0; render();
+  });
+  $("restartLesson").addEventListener("click",()=>{
+    stop(); buildInputs(); rebuildTrace();
+  });
+  $("playBtn").addEventListener("click",()=>{
+    if(timer){ stop(); return; }
+    $("playBtn").textContent="❚❚ Pause";
+    const tick=()=>{
+      if(index>=trace.length-1){ stop(); return; }
+      index++; render();
+    };
+    timer=setInterval(tick, Number($("speed").value));
+  });
+  $("speed").addEventListener("input",()=>{
+    if(timer){
+      stop();
+      $("playBtn").click();
+    }
+  });
+  $("accent").addEventListener("input",(e)=>{
+    document.documentElement.style.setProperty("--accent",e.target.value);
+  });
+  $("size").addEventListener("input",(e)=>{
+    document.documentElement.style.setProperty("--scale",String(Number(e.target.value)/100));
+  });
+
+  $("focusBtn").addEventListener("click",()=>{
+    stop();
+    document.body.classList.toggle("focus");
+    $("focusBtn").textContent=document.body.classList.contains("focus")?"↙ Exit focus":"⛶ Focus view";
+    requestAnimationFrame(()=>moveRunner(trace[index].station));
+  });
+
+  window.addEventListener("resize",()=>{ if(trace.length) moveRunner(trace[index].station); });
+  document.addEventListener("keydown",(e)=>{
+    const tag=document.activeElement && document.activeElement.tagName;
+    if(tag==="INPUT" || tag==="TEXTAREA" || tag==="SELECT") return;
+    if(e.key==="ArrowRight" && index<trace.length-1){ index++; render(); }
+    if(e.key==="ArrowLeft" && index>0){ stop(); index--; render(); }
+    if(e.key===" "){ e.preventDefault(); $("playBtn").click(); }
+  });
+
+  buildLessons();
+  buildInputs();
+  buildWorld();
+  rebuildTrace();
+})();
+</script>
+</body>
+</html>

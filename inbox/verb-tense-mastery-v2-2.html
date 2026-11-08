@@ -1,0 +1,1769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Verb Tense Mastery — a complete, self-contained guide to the English temporal system: tense, aspect, modality, future reference, discourse, and a diagnostic mastery system.">
+<title>Verb Tense Mastery · Second Edition</title>
+<style>
+/* ================= DESIGN TOKENS ================= */
+:root{
+  --paper:#eef0ee;          /* chart-paper */
+  --card:#f7f8f6;
+  --ink:#1b2530;            /* slate ink */
+  --soft:#55616d;
+  --line:#ccd3d0;
+  --hair:#dde2df;
+
+  /* the time triad — used identically in every timeline */
+  --past:#8c6a2f;           /* ochre: fixed, sepia, already-happened */
+  --pres:#0e7490;           /* teal: now — also the interaction colour */
+  --fut:#7c5cc4;            /* violet: not-yet */
+
+  /* five box categories */
+  --c-concept:#0e7490;
+  --c-contrast:#7c5cc4;
+  --c-caution:#a03e2d;
+  --c-practice:#8c6a2f;
+  --c-answer:#2f7d4f;
+
+  --r:14px;
+  --serif:'Iowan Old Style','Palatino Linotype',Palatino,'Noto Serif',Georgia,serif;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Noto Sans',sans-serif;
+  --mono:ui-monospace,'Roboto Mono','Cascadia Mono',Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;min-width:0;min-height:0}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:4.5rem;overflow-x:clip}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--serif);
+  font-size:clamp(1rem,.95rem + .35vw,1.14rem);
+  line-height:1.68;overflow-wrap:break-word;max-width:100%;
+  background-image:linear-gradient(var(--hair) 1px,transparent 1px);
+  background-size:100% 2.4rem;background-attachment:fixed;
+}
+.wrap{max-width:46rem;margin-inline:auto;padding-inline:clamp(1rem,4vw,2rem)}
+img,svg{max-width:100%;height:auto}table,figure,pre,canvas,video{max-width:100%}
+a{color:var(--pres);text-decoration-thickness:1px;text-underline-offset:2px}
+a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid var(--pres);outline-offset:2px;border-radius:4px}
+h1,h2,h3,h4{font-family:var(--sans);line-height:1.2;letter-spacing:-.01em;margin:0 0 .5em}
+h1{font-size:clamp(1.9rem,1.4rem + 2.4vw,3rem);font-weight:800}
+h2{font-size:clamp(1.35rem,1.15rem + 1vw,1.8rem);font-weight:750;margin-top:0}
+h3{font-size:clamp(1.12rem,1.02rem + .5vw,1.32rem);font-weight:700;margin-top:1.6em}
+h4{font-size:1.02em;font-weight:700}
+p{margin:.75em 0}
+em{font-style:italic}
+section.part-open{margin-top:4rem}
+section{margin:0 0 2.5rem}
+
+/* eyebrows + part banners */
+.eyebrow{font-family:var(--sans);font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);margin:0 0 .4rem}
+.partband{border-block:2px solid var(--ink);padding:.9rem 0;margin:3.5rem 0 2rem}
+.partband .eyebrow{color:var(--ink)}
+.partband p{margin:.3rem 0 0;color:var(--soft);font-size:.95em}
+
+/* verb specimens in mono */
+.f{font-family:var(--mono);font-size:.88em;background:#e5e9e6;border-radius:6px;padding:.08em .35em;white-space:normal;overflow-wrap:anywhere}
+
+
+/* ================= FIVE BOX CATEGORIES ================= */
+.box{border-radius:var(--r);padding:1rem 1.1rem;margin:1.2rem 0;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--soft)}
+.box .bl{font-family:var(--sans);font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin:0 0 .45rem}
+.box.concept{border-left-color:var(--c-concept)}.box.concept .bl{color:var(--c-concept)}
+.box.contrast{border-left-color:var(--c-contrast)}.box.contrast .bl{color:var(--c-contrast)}
+.box.caution{border-left-color:var(--c-caution)}.box.caution .bl{color:var(--c-caution)}
+.box.practice{border-left-color:var(--c-practice)}.box.practice .bl{color:var(--c-practice)}
+.box.answerbox{border-left-color:var(--c-answer)}.box.answerbox .bl{color:var(--c-answer)}
+.box :last-child{margin-bottom:0}.box :first-child{margin-top:0}
+.sub{font-family:var(--sans);font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
+
+/* comparison pairs */
+.pair{display:grid;gap:.8rem;grid-template-columns:1fr;margin:1rem 0}
+@media (min-width:640px){.pair{grid-template-columns:1fr 1fr}}
+.pair>div{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:.85rem 1rem}
+.pair .ph{font-family:var(--sans);font-size:.7rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin:0 0 .4rem;color:var(--c-contrast)}
+.pair p{margin:.4em 0}.pair :last-child{margin-bottom:0}
+
+/* tables */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;margin:1rem 0;border:1px solid var(--line);border-radius:var(--r);background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:.94em;min-width:34rem}
+.tw.narrow table{min-width:0}
+th{font-family:var(--sans);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;text-align:left;color:var(--soft)}
+th,td{padding:.6rem .8rem;border-bottom:1px solid var(--hair);vertical-align:top;overflow-wrap:anywhere}
+tr:last-child td{border-bottom:0}
+
+/* ================= TIMELINE LANGUAGE (signature) ================= */
+figure.tl{margin:1.4rem 0;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:1rem .9rem .6rem}
+figure.tl svg{display:block;width:100%;height:auto}
+figcaption{font-family:var(--sans);font-size:.82rem;color:var(--soft);margin-top:.5rem;line-height:1.5}
+.ax{stroke:var(--ink);stroke-width:2}
+.nw{stroke:var(--pres);stroke-width:3}
+.rf{stroke:var(--ink);stroke-width:2;stroke-dasharray:5 4}
+.arc{stroke:var(--ink);stroke-width:1.8;stroke-dasharray:4 4;fill:none;opacity:.75}
+.dP{fill:var(--past)} .dN{fill:var(--pres)} .dF{fill:var(--fut)}
+.bP{fill:var(--past);opacity:.85;rx:6} .bF{fill:var(--fut);opacity:.85;rx:6}
+.zP{fill:var(--past);opacity:.07} .zF{fill:var(--fut);opacity:.07}
+.lb{font-family:var(--sans);font-size:12.5px;fill:var(--ink)}
+.lbs{font-family:var(--sans);font-size:11px;fill:var(--soft)}
+.lbn{font-family:var(--sans);font-size:11px;font-weight:700;fill:var(--pres);letter-spacing:.08em}
+.lbr{font-family:var(--sans);font-size:11px;font-weight:700;fill:var(--ink);letter-spacing:.06em}
+.tick{stroke:var(--past);stroke-width:3;stroke-linecap:round}
+.wave{stroke:var(--past);stroke-width:3;fill:none;stroke-linecap:round}
+
+/* ================= VERDICT CHIPS ================= */
+.v{display:inline-block;font-family:var(--sans);font-size:.72rem;font-weight:800;border-radius:999px;padding:.1rem .55rem;vertical-align:middle;letter-spacing:.02em}
+.v1{background:#d7ebe4;color:#125e46}     /* ✓ default */
+.v2{background:#e6dff6;color:#4e3a94}     /* ◐ construal */
+.v3{background:#f1e6cf;color:#775617}     /* ○ needs context */
+.v4{background:#f3ddd6;color:#8c2f1e}     /* ✗ ungrammatical */
+.v5{background:#e2e6e4;color:#48555f}     /* ≈ variety/register */
+
+/* diagnostic code chips */
+.dx{display:inline-block;font-family:var(--mono);font-size:.68rem;font-weight:700;background:var(--ink);color:var(--paper);border-radius:5px;padding:.12rem .45rem;letter-spacing:.03em;text-decoration:none}
+.dx:focus-visible{outline-color:var(--ink)}
+
+/* ================= EXERCISES ================= */
+ol.qs{padding-left:0;margin:1rem 0;list-style:none;counter-reset:none}
+ol.qs>li{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:1rem 1.1rem;margin:0 0 1rem}
+.qh{font-family:var(--sans);font-size:.72rem;font-weight:800;letter-spacing:.1em;color:var(--c-practice);text-transform:uppercase;margin:0 0 .4rem;display:flex;flex-wrap:wrap;gap:.45rem;align-items:center}
+.qh .qn{background:var(--c-practice);color:#fff;border-radius:6px;padding:.1rem .5rem}
+ol.opts{margin:.5rem 0 .3rem;padding-left:1.4rem}
+ol.opts{list-style:lower-alpha}
+ol.opts li{margin:.25rem 0}
+
+/* answers: native disclosure */
+details.ans{margin-top:.8rem;border-top:1px dashed var(--line);padding-top:.6rem}
+details.ans>summary,details.why>summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:.5rem;min-height:44px;font-family:var(--sans);font-weight:700;font-size:.88rem;color:var(--c-answer);user-select:none;-webkit-user-select:none;padding:.2rem .2rem}
+details.ans>summary::-webkit-details-marker,details.why>summary::-webkit-details-marker{display:none}
+details.ans>summary::before,details.why>summary::before{content:"+";display:inline-grid;place-items:center;width:1.35rem;height:1.35rem;border-radius:50%;background:var(--c-answer);color:#fff;font-weight:800;flex:none}
+details[open].ans>summary::before,details[open].why>summary::before{content:"–"}
+details.ans .abody{border-left:4px solid var(--c-answer);background:#eef4ee;border-radius:0 10px 10px 0;padding:.7rem .9rem;margin:.4rem 0 .2rem}
+details.why{margin:.5rem 0 0}
+details.why>summary{color:var(--soft);font-size:.82rem}
+details.why>summary::before{background:var(--soft)}
+details.why .wbody{padding:.4rem .2rem .1rem;font-size:.97em}
+.quick{margin:.1em 0 .3em}
+.xnote{font-size:.92em;color:#3c4650;border-top:1px dotted var(--line);margin-top:.55rem;padding-top:.45rem}
+.xnote .sub{color:var(--c-contrast)}
+
+/* precision (layer-2) notes */
+details.lay2{border:1px solid var(--line);border-left:5px solid var(--c-contrast);border-radius:var(--r);background:var(--card);margin:1.1rem 0}
+details.lay2>summary{cursor:pointer;list-style:none;min-height:44px;display:flex;align-items:center;gap:.55rem;padding:.55rem 1rem;font-family:var(--sans);font-weight:700;font-size:.85rem;color:var(--c-contrast)}
+details.lay2>summary::-webkit-details-marker{display:none}
+details.lay2>summary::before{content:"▸";transition:transform .15s}
+details[open].lay2>summary::before{transform:rotate(90deg)}
+details.lay2 .l2b{padding:0 1rem .9rem}
+
+/* controls */
+.controls{display:flex;flex-wrap:wrap;gap:.55rem;margin:1rem 0;font-family:var(--sans)}
+.btn{font-family:var(--sans);font-weight:700;font-size:.85rem;border:1.5px solid var(--ink);background:var(--card);color:var(--ink);border-radius:999px;padding:.5rem 1rem;min-height:44px;cursor:pointer}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn:active{transform:translateY(1px)}
+
+/* mastery checks */
+.mkrow{display:flex;gap:.6rem;align-items:flex-start;margin:.5rem 0;font-size:.98em}
+.mkrow input{width:1.25rem;height:1.25rem;margin-top:.28rem;accent-color:var(--c-answer);flex:none}
+
+/* your-turn micro production */
+.yt{border:1.5px dashed var(--c-practice);border-radius:var(--r);padding: .9rem 1rem;margin:1.1rem 0;background:#f5f2ea}
+.yt .bl{font-family:var(--sans);font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--c-practice);margin:0 0 .4rem}
+.yt :last-child{margin-bottom:0}
+
+/* ================= TOP BAR ================= */
+.topbar{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--paper) 88%,#fff);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.topbar .tb-in{max-width:46rem;margin-inline:auto;padding:.4rem clamp(1rem,4vw,2rem);display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+.tb-title{font-family:var(--sans);font-weight:800;font-size:.85rem;letter-spacing:.02em;margin-right:auto}
+.tb-btn{font-family:var(--sans);font-weight:700;font-size:.78rem;border:1.5px solid var(--ink);background:transparent;color:var(--ink);border-radius:999px;padding:.35rem .8rem;min-height:40px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+#pbar{position:absolute;left:0;bottom:-1px;height:3px;background:var(--pres);width:0}
+#tocdrawer{max-width:46rem;margin-inline:auto;padding:.4rem clamp(1rem,4vw,2rem) 1rem;display:none;max-height:60vh;overflow:auto}
+#tocdrawer.open{display:block}
+#tocdrawer input{width:100%;font:inherit;font-family:var(--sans);padding:.55rem .8rem;border:1.5px solid var(--line);border-radius:10px;margin:.3rem 0 .6rem;background:var(--card);color:var(--ink)}
+#tocdrawer ol{margin:0;padding-left:0;list-style:none;columns:2;column-gap:1.5rem}
+@media(max-width:560px){#tocdrawer ol{columns:1}}
+#tocdrawer li{margin:.28rem 0;break-inside:avoid;font-family:var(--sans);font-size:.85rem}
+#tocdrawer a{text-decoration:none;color:var(--ink)}
+#tocdrawer .tpart{font-weight:800;letter-spacing:.1em;text-transform:uppercase;font-size:.68rem;color:var(--soft);margin-top:.7rem}
+
+/* hero */
+.hero{padding:3.2rem 0 1rem}
+.hero .kick{font-family:var(--sans);font-weight:700;letter-spacing:.16em;text-transform:uppercase;font-size:.74rem;color:var(--pres)}
+.hero .lede{font-size:1.08em;max-width:40rem;color:#2c3742}
+.hero .triad{display:flex;gap:1.2rem;flex-wrap:wrap;margin-top:1.2rem;font-family:var(--sans);font-size:.8rem;font-weight:700}
+.hero .triad span::before{content:"";display:inline-block;width:.8rem;height:.8rem;border-radius:50%;margin-right:.4rem;vertical-align:-1px}
+.hero .tp::before{background:var(--past)} .hero .tn::before{background:var(--pres)} .hero .tf::before{background:var(--fut)}
+
+footer{border-top:2px solid var(--ink);margin-top:4rem;padding:1.5rem 0 3rem;font-family:var(--sans);font-size:.85rem;color:var(--soft)}
+
+/* ================= PRINT ================= */
+@media print{
+  .topbar,.controls,.btn,.yt,#tocdrawer{display:none!important}
+  body{background:#fff;font-size:10.5pt}
+  .box,ol.qs>li,figure.tl,.tw{break-inside:avoid;border-color:#999}
+  details:not([open])>*:not(summary){display:none}
+  a{color:inherit;text-decoration:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar" id="topbar">
+  <div class="tb-in">
+    <span class="tb-title">Verb Tense Mastery</span>
+    <button class="tb-btn" id="tocbtn" aria-expanded="false" aria-controls="tocdrawer">Contents</button>
+    <a class="tb-btn" href="#top">Top</a>
+    <div id="pbar" aria-hidden="true"></div>
+  </div>
+  <nav id="tocdrawer" aria-label="Contents">
+    <input type="search" id="tocfilter" placeholder="Filter sections… (e.g. perfect, backshift, modal)" aria-label="Filter sections">
+    <ol id="toclist"></ol>
+  </nav>
+</div>
+
+<div class="wrap">
+
+<header class="hero" id="top">
+  <p class="kick">Second edition · revised after expert review</p>
+  <h1>Verb Tense Mastery</h1>
+  <p class="lede">A complete, self-contained guide to the English temporal system — not twelve formulas, but one way of thinking: <strong>where the situation sits in time, what shape it has, where you are viewing it from, and what you want your listener to feel about it.</strong></p>
+  <p class="lede">Every timeline in this book speaks one visual language, in three colours:</p>
+  <p class="triad"><span class="tp">Past — fixed, already happened</span><span class="tn">Present — now, where you stand</span><span class="tf">Future — not yet, only projected</span></p>
+</header>
+
+<!-- ==================== PART I ==================== -->
+<div class="partband" id="part1">
+  <p class="eyebrow">Part I · Foundations</p>
+  <h2 style="margin:0">The honest map of the system</h2>
+  <p>Five short sections that replace formula-memory with a working model. Everything later stands on these.</p>
+</div>
+
+<section id="s1">
+<p class="eyebrow">Section 1</p>
+<h2>How to use this guide</h2>
+<p>The guide is built in <strong>four layers</strong>, and you should read it that way:</p>
+<div class="tw narrow"><table>
+<tr><th>Layer</th><th>What it is</th><th>How it appears</th></tr>
+<tr><td><strong>Core path</strong></td><td>what every learner must understand</td><td>open text, concept boxes, timelines</td></tr>
+<tr><td><strong>Precision</strong></td><td>exceptions, theory, dialect notes</td><td>collapsed <em>“Precision notes”</em> — open when curious</td></tr>
+<tr><td><strong>Practice</strong></td><td>questions, micro-writing, mastery checks</td><td>numbered <strong>Q1–Q104</strong> + <em>Your turn</em> tasks</td></tr>
+<tr><td><strong>Reference</strong></td><td>grids and summaries</td><td>Part V appendix</td></tr>
+</table></div>
+
+<h3>Answers live under each question</h3>
+<p>Tap <strong>Show answer</strong> for the verdict, then <strong>Why</strong> for the reasoning, and — where it matters — <strong>Why not the alternative</strong>. Attempt first, out loud or on paper, <em>with your reason</em>. Each section has <strong>Reveal all / Hide all</strong> buttons; a <strong>Print with answers</strong> mode (footer) opens every answer for a consolidated printout, so there is one canonical answer per question and no second key to drift out of sync.</p>
+
+<h3>Verdicts, not just “right/wrong”</h3>
+<p>Real tense choice is rarely binary. This guide grades every option on a five-point scale — learn it now; it is used everywhere:</p>
+<div class="tw narrow"><table>
+<tr><th>Chip</th><th>Meaning</th></tr>
+<tr><td><span class="v v1">✓ default</span></td><td>the most natural, most congruent choice in this context</td></tr>
+<tr><td><span class="v v2">◐ construal</span></td><td>also possible — <em>if</em> the speaker frames the situation a particular way</td></tr>
+<tr><td><span class="v v3">○ needs context</span></td><td>grammatical, but unmotivated here; it would need supporting discourse</td></tr>
+<tr><td><span class="v v4">✗ ungrammatical</span></td><td>a genuine form error or a contradiction no context can rescue</td></tr>
+<tr><td><span class="v v5">≈ variety</span></td><td>a dialect or register difference — not an error</td></tr>
+</table></div>
+<div class="box caution"><p class="bl">Caution — the most important habit in the book</p>
+<p>When a sentence sounds wrong, ask <em>which kind of wrong</em>: broken form <span class="v v4">✗</span>, missing context <span class="v v3">○</span>, or just a different variety of English <span class="v v5">≈</span>? Collapsing those three into one “wrong” is how learners come to fear perfectly natural English.</p></div>
+
+<h3>Diagnostic codes</h3>
+<p>Every answer carries a black code chip such as <span class="dx">REF-POINT</span> or <span class="dx">OPEN-CLOSED</span>. Miss a question → note its code → the routing table in <a href="#s22">Section 22</a> tells you exactly which section to re-read and which questions to retry. Your errors, not the table of contents, decide your revision.</p>
+
+<h3>The mastery ladder</h3>
+<p>Recognise → choose in context → contrast neighbours → explain → reason on timelines → edit → produce → transfer. <em>Your turn</em> micro-writing follows every major contrast — production starts on page one, not at the end. Each core section closes with a <strong>Prove it</strong> checkpoint: tick a skill only after passing its three-item test. Progress ticks are stored only on this device (browser local storage); <strong>Clear progress</strong> is in the footer.</p>
+</section>
+
+<section id="s2">
+<p class="eyebrow">Section 2</p>
+<h2>The master mental model</h2>
+<div class="box concept"><p class="bl">Concept — four dials, one choice</p>
+<p>Every tense decision is the product of four interacting dimensions:</p>
+<p><strong>1 · Time location</strong> — where does the situation sit relative to now (or another vantage point)?<br>
+<strong>2 · Situation shape</strong> — is it a state, an open-ended doing, a job with a finish line, an instant flip? (Section 4)<br>
+<strong>3 · Reference point</strong> — from which moment is the speaker viewing it?<br>
+<strong>4 · Speaker focus</strong> — what do you want the listener to attend to: the fact, the process, the result, the plan?</p>
+<p><strong>Tense is the camera setting; time is the scene.</strong> The same scene — a train leaving — can be shot as a snapshot (<span class="f">left</span>), a rolling clip (<span class="f">was leaving</span>), or a look-back from later (<span class="f">had left</span>). The scene never chooses the camera. You do.</p></div>
+<p>The reasoning chain, which every worked answer in this book follows:</p>
+<div class="box practice"><p class="bl">The chain</p>
+<p><strong>Context → time reference → situation shape → reference point → speaker focus → form → meaning produced.</strong></p>
+<p>Notice what is <em>not</em> in the chain: “spot a signal word → paste a memorised tense.” Signal words are witnesses you question, not judges you obey (Section 12 shows exactly when they mislead).</p></div>
+</section>
+
+<section id="s3">
+<p class="eyebrow">Section 3</p>
+<h2>Time, tense, aspect, modality — four different things</h2>
+<p>School grammar sells “twelve tenses.” English actually builds temporal meaning from <strong>four separate strands</strong>, and keeping them apart is what makes everything later click:</p>
+<div class="tw"><table>
+<tr><th>Strand</th><th>What it does</th><th>Machinery</th><th>Examples</th></tr>
+<tr><td><strong>Tense</strong></td><td>locates a situation relative to a temporal viewpoint</td><td>verb <em>marking</em>: only <strong>present</strong> and <strong>past</strong></td><td><span class="f">walks / walked</span>, <span class="f">is / was</span></td></tr>
+<tr><td><strong>Aspect</strong></td><td>presents the internal shape or relevance of the situation</td><td><strong>progressive</strong> <span class="f">be + -ing</span>; <strong>perfect</strong> <span class="f">have + participle</span></td><td><span class="f">is walking</span>, <span class="f">has walked</span></td></tr>
+<tr><td><strong>Modality</strong></td><td>adds prediction, intention, obligation, possibility</td><td>modals: <span class="f">will, would, may, must, could…</span></td><td><span class="f">will walk</span>, <span class="f">must have walked</span></td></tr>
+<tr><td><strong>Future reference</strong></td><td>talks about later time</td><td><em>several constructions</em> — no future tense marking exists</td><td><span class="f">will go</span>, <span class="f">is going to go</span>, <span class="f">is leaving</span>, <span class="f">leaves at 7</span></td></tr>
+</table></div>
+
+<div class="box concept"><p class="bl">Concept — the honest definitions (used throughout)</p>
+<p><strong>Tense</strong> locates a situation relative to a temporal viewpoint, usually through present or past marking on the verb.<br>
+<strong>Aspect</strong> shows how the speaker presents the internal temporal shape — or the later relevance — of that situation.<br>
+These stack. <span class="f">is being written</span> = present tense + progressive aspect + passive voice. <span class="f">will have written</span> = modal <span class="f">will</span> + perfect aspect. One verb phrase, several strands, each doing one job.</p></div>
+
+<div class="box caution"><p class="bl">Caution — a claim this book must immediately qualify</p>
+<p>“Tense locates real-world time” is a first approximation, not a law. Past <em>forms</em> can signal <strong>remoteness from reality</strong> rather than past time: <em>If I <strong>knew</strong>, I would tell you</em> · <em>I wish I <strong>had</strong> more time</em> · <em>It’s time we <strong>left</strong></em>. Section 14 makes this precise. File the exception now so the rule never hardens into dogma.</p></div>
+
+<h3>Anatomy of the verb phrase</h3>
+<p>Every English verb phrase is assembled on one fixed production line. Learn the line once and no construction will ever look exotic again:</p>
+<div class="box concept"><p class="bl">Concept — the assembly order</p>
+<p><span class="f">(modal) + (have -en) + (be -ing) + (be -en) + VERB</span><br>
+<span class="sub">modality · perfect · progressive · passive · main verb</span></p>
+<p><span class="f">writes</span> → <span class="f">has written</span> → <span class="f">has been writing</span> → <span class="f">is being written</span> → <span class="f">will have been written</span>. The full stack — <span class="f">will have been being repaired</span> — is grammatical but so heavy that English almost always rephrases it (Section 16).</p></div>
+<p><strong>The three faces of a verb</strong> still matter: base (<span class="f">go</span>), past (<span class="f">went</span>), participle (<span class="f">gone</span>). The golden distinction: <span class="f">went</span> works alone; <span class="f">gone</span> needs a helper. Mixing them produces <span class="v v4">✗</span> <span class="f">has went</span> and <span class="v v4">✗</span> <span class="f">I seen it</span> — form errors, the one category where a single hard answer really exists.</p>
+
+<details class="lay2"><summary>Precision notes — glossary of terms as this book uses them</summary><div class="l2b">
+<div class="tw"><table>
+<tr><th>Term</th><th>Meaning here</th></tr>
+<tr><td><strong>tense</strong></td><td>grammatical location of a situation relative to a viewpoint, via present/past marking</td></tr>
+<tr><td><strong>aspect (viewpoint)</strong></td><td>the speaker’s framing: whole-and-external (simple), from-inside (progressive), linked-back-from-later (perfect)</td></tr>
+<tr><td><strong>aspect (situation / lexical)</strong></td><td>the inherent temporal contour of the verb phrase itself — Section 4</td></tr>
+<tr><td><strong>modality</strong></td><td>meanings such as prediction, intention, obligation, possibility, carried by modal verbs</td></tr>
+<tr><td><strong>reference point</strong></td><td>the moment the situation is viewed <em>from</em> — stated in the sentence <em>or supplied by surrounding discourse</em></td></tr>
+<tr><td><strong>auxiliary</strong></td><td>a helping verb (<span class="f">be, have, do</span>, the modals) teaming with a main verb</td></tr>
+<tr><td><strong>past participle</strong></td><td>the third form (<span class="f">gone, written, seen</span>) — after <span class="f">have</span>, or after <span class="f">be</span> in passives</td></tr>
+<tr><td><strong>construal</strong></td><td>the speaker’s chosen framing of a situation — the reason one event can wear several forms</td></tr>
+</table></div>
+</div></details>
+</section>
+
+<section id="s4">
+<p class="eyebrow">Section 4</p>
+<h2>The two layers of aspect — the deepest lever in the book</h2>
+<p>Here is the single distinction that explains the stative puzzle, the limits of “simple = photo,” and why the same tense behaves differently with different verbs. Aspect operates on <strong>two layers at once</strong>:</p>
+<div class="box concept"><p class="bl">Concept — layer 1: situation shape (built into the verb phrase)</p>
+<p>Situations come in five inherent contours. Plain names first, technical names for reference:</p></div>
+<figure class="tl"><svg viewBox="0 0 600 264" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Five situation shapes drawn as glyphs on short timelines: a flat line for states, a wave for open-ended activities, a bar ending in a dot for accomplishments, a single spike for instant achievements, and a row of separate ticks for repeatable blips.">
+<text class="lb" x="28" y="44">States</text><line class="ax" x1="180" y1="40" x2="380" y2="40" style="stroke:var(--past);stroke-width:4"/><text class="lbs" x="572" y="44" text-anchor="end">know · own · believe</text>
+<text class="lb" x="28" y="96">Activities</text><path class="wave" d="M180,92 q13,-9 26,0 t26,0 t26,0 t26,0 t26,0 t26,0 t26,0 t26,0"/><text class="lbs" x="572" y="96" text-anchor="end">run · read · wait</text>
+<text class="lb" x="28" y="148">Accomplishments</text><rect class="bP" x="180" y="142" width="180" height="12" rx="6"/><circle class="dP" cx="372" cy="148" r="7"/><text class="lbs" x="572" y="148" text-anchor="end">write a report</text>
+<text class="lb" x="28" y="200">Achievements</text><line class="tick" x1="270" y1="190" x2="270" y2="206"/><circle class="dP" cx="270" cy="198" r="6"/><text class="lbs" x="572" y="200" text-anchor="end">arrive · win · notice</text>
+<text class="lb" x="28" y="252">Blips</text><line class="tick" x1="200" y1="244" x2="200" y2="256"/><line class="tick" x1="235" y1="244" x2="235" y2="256"/><line class="tick" x1="270" y1="244" x2="270" y2="256"/><line class="tick" x1="305" y1="244" x2="305" y2="256"/><text class="lbs" x="572" y="252" text-anchor="end">knock · blink · tap</text>
+</svg><figcaption>The five situation shapes (technically: states, activities, accomplishments, achievements, semelfactives). A flat line has no internal motion; a wave rolls on without a built-in end; a bar-plus-dot must reach its endpoint to count; a spike happens all at once; ticks repeat.</figcaption></figure>
+
+<div class="box concept"><p class="bl">Concept — layer 2: viewpoint (chosen by the speaker)</p>
+<p><strong>Simple</strong> presents a situation from outside, without placing the viewer inside its unfolding.<br>
+<strong>Progressive</strong> presents it from within its development.<br>
+<strong>Perfect</strong> relates a prior situation to a later reference point.<br>
+<strong>Perfect progressive</strong> relates the <em>unfolding or duration</em> of a prior situation to that point.</p>
+<p>Grammatical meaning is <strong>shape × viewpoint</strong>. That is why <span class="f">She was running</span> (activity, from inside) is ordinary; <span class="f">She was reaching the summit</span> (instant flip, from inside) can only mean the <em>run-up</em> to the flip; and <span class="f">She was knowing the answer</span> fails — a flat line has no inside to stand in.</p></div>
+
+<div class="box caution"><p class="bl">Caution — retiring an old anchor honestly</p>
+<p>The first edition taught <em>“Simple = the photo. Continuous = the film.”</em> Keep it as a <strong>starter analogy only</strong>. A photo suggests one bounded event — but simple forms also carry habits (<em>She cycles to school</em>), states (<em>She knows</em>), general truths (<em>Ice melts at 0 °C</em>), schedules (<em>The train leaves at 7</em>), performatives (<em>I apologise</em>), and live commentary (<em>Singh passes to Patel</em>). None of those is a photograph of one event. The durable idea is the one above: simple = <strong>viewed from outside, no interior claimed</strong>.</p></div>
+
+<h3>Coercion — the bridge between the layers</h3>
+<div class="box concept"><p class="bl">Concept — one mechanism, not a pile of exceptions</p>
+<p>When a viewpoint meets a shape it doesn’t naturally fit, English doesn’t always refuse — it <strong>coerces</strong> the situation into a compatible shape:</p>
+<p>· state → <em>temporary state</em>: <span class="f">I’m living in Hyderabad this year</span><br>
+· state → <em>intense current episode</em>: <span class="f">I’m loving this course</span> <span class="v v5">≈ informal</span><br>
+· identity → <em>behaviour</em>: <span class="f">You’re being silly</span> (acting silly now, not being a silly person)<br>
+· instant flip → <em>run-up</em>: <span class="f">The train was arriving</span><br>
+· blip → <em>repetition</em>: <span class="f">He was knocking on the door</span> (again and again)</p>
+<p>So progressive compatibility depends on <strong>how the speaker construes the situation in context</strong> — not on whether the verb “describes visible action.” This one rule replaces every stative-verb list you have ever memorised. Section 11 drills it.</p></div>
+<figure class="tl"><svg viewBox="0 0 600 150" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Coercion: a long flat state line, with a short highlighted temporary slice lifted out above the NOW line, showing the progressive selecting a temporary stretch of a permanent state.">
+<line class="ax" x1="28" y1="96" x2="572" y2="96" style="stroke:var(--past);stroke-width:4"/>
+<text class="lbs" x="28" y="128">the permanent state</text>
+<rect class="bF" x="250" y="40" width="110" height="14"/>
+<line class="nw" x1="305" y1="24" x2="305" y2="110"/><text class="lbn" x="305" y="18" text-anchor="middle">NOW</text>
+<path class="arc" d="M258,58 Q258,80 268,92"/><path class="arc" d="M352,58 Q352,80 342,92"/>
+<text class="lb" x="150" y="32">“is living” — a temporary slice</text>
+</svg><figcaption>Coercion in one picture: the progressive lifts a temporary slice out of a longer situation and puts you inside it — “she lives with her grandparents” (the whole line) versus “she is living with her grandparents” (the slice framed as temporary).</figcaption></figure>
+
+<div class="yt"><p class="bl">Your turn</p><p>Write one pair of sentences about <em>the same person and verb</em> where the simple form states a stable truth and the progressive coerces it into something temporary or in-development. Then say aloud which of the five shapes your verb has.</p></div>
+</section>
+
+<section id="s5">
+<p class="eyebrow">Section 5</p>
+<h2>The traditional twelve-form teaching grid</h2>
+<div class="box caution"><p class="bl">Caution — read this before the grid</p>
+<p>English does <strong>not</strong> literally possess twelve equally grammaticalised tenses. This grid is a <strong>teaching convention</strong>: it crosses two real tenses with two aspects, then adds the modal <span class="f">will</span> to manufacture a “future” row. It is kept here because you already know it, it organises practice well, and every teacher on Earth speaks it — but it combines tense, aspect, and modality into one table. The honest map is Section 3; this is the tourist map.</p></div>
+<div class="tw"><table>
+<tr><th></th><th>Simple</th><th>Progressive</th><th>Perfect</th><th>Perfect progressive</th></tr>
+<tr><td><strong style="color:var(--pres)">Present</strong></td><td><span class="f">writes</span></td><td><span class="f">is writing</span></td><td><span class="f">has written</span></td><td><span class="f">has been writing</span></td></tr>
+<tr><td><strong style="color:var(--past)">Past</strong></td><td><span class="f">wrote</span></td><td><span class="f">was writing</span></td><td><span class="f">had written</span></td><td><span class="f">had been writing</span></td></tr>
+<tr><td><strong style="color:var(--fut)">“Future” (will)</strong></td><td><span class="f">will write</span></td><td><span class="f">will be writing</span></td><td><span class="f">will have written</span></td><td><span class="f">will have been writing</span></td></tr>
+</table></div>
+<p>And the future row is only <em>one</em> of the future devices — Section 10 teaches nine. Here is the shared visual legend for every timeline that follows:</p>
+<figure class="tl"><svg viewBox="0 0 600 185" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Legend for all timelines: the horizontal axis is time; a bold teal vertical line is NOW; a filled circle is an event; a rounded bar is a duration; a dashed vertical line is a reference platform; a dashed arc is a look-back link. Colour marks the time zone.">
+<line class="ax" x1="28" y1="42" x2="572" y2="42"/>
+<rect class="zP" x="28" y="28" width="272" height="28"/><rect class="zF" x="300" y="28" width="272" height="28"/>
+<line class="nw" x1="300" y1="24" x2="300" y2="60"/><text class="lbn" x="300" y="18" text-anchor="middle">NOW</text>
+<text class="lbs" x="34" y="74">PAST</text><text class="lbs" x="566" y="74" text-anchor="end">FUTURE</text>
+<circle class="dP" cx="90" cy="118" r="8"/><text class="lb" x="90" y="150" text-anchor="middle">event</text>
+<rect class="bP" x="210" y="112" width="80" height="12"/><text class="lb" x="250" y="150" text-anchor="middle">duration</text>
+<line class="rf" x1="400" y1="100" x2="400" y2="132"/><text class="lbr" x="400" y="150" text-anchor="middle">REF</text>
+<path class="arc" d="M470,124 Q510,96 550,124"/><text class="lb" x="510" y="150" text-anchor="middle">look-back</text>
+</svg><figcaption>One vocabulary, used in every figure: time runs left to right, the teal line is NOW, a filled circle is an event, a bar is a duration, a dashed line is a reference platform, and a dashed arc is a look-back link (“this still counts there”). Colour marks the zone — ochre past, teal now, violet future. When you can sketch a sentence in these symbols, you understand it.</figcaption></figure>
+</section>
+
+<!-- ==================== PART II ==================== -->
+<div class="partband" id="part2">
+  <p class="eyebrow">Part II · Core decisions</p>
+  <h2 style="margin:0">Choosing between forms that are all grammatical</h2>
+  <p>Six decision territories. Each one: concept → contrast → practice with inline answers → micro-writing → prove-it checkpoint.</p>
+</div>
+
+<section id="s6">
+<p class="eyebrow">Section 6 · Present time</p>
+<h2>Simple present vs present progressive</h2>
+<div class="box concept"><p class="bl">Concept</p>
+<p><strong>Simple present</strong> — a situation viewed from outside, presented as holding true: habits (<em>Ravi plays chess</em>), states (<em>She knows the answer</em>), general truths (<em>Ice melts at 0 °C</em>), official schedules (<em>The train leaves at 7</em> — future use, Section 9), performatives (<em>I apologise</em>), and live commentary (<em>Singh passes to Patel</em>).<br>
+<strong>Present progressive</strong> — the situation viewed from inside its unfolding: right now (<em>Listen — someone is playing the piano</em>), around now (<em>I’m reading a great novel</em>), temporary (<em>She’s living with her grandparents</em>), changing (<em>Prices are rising</em>), fixed arrangements (<em>I’m meeting my teacher tomorrow</em> — Section 9), and, with <span class="f">always</span>, affectionate or irritated repetition (<em>He’s always losing his keys</em>).</p></div>
+<figure class="tl"><svg viewBox="0 0 600 150" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Two rows. Habit: ochre dots spread across past and future either side of NOW. In progress: a single bar straddling the NOW line.">
+<text class="lb" x="28" y="20">Habit</text>
+<line class="ax" x1="28" y1="46" x2="572" y2="46"/><line class="nw" x1="300" y1="30" x2="300" y2="62"/><text class="lbn" x="300" y="24" text-anchor="middle">NOW</text>
+<circle class="dP" cx="80" cy="46" r="5"/><circle class="dP" cx="140" cy="46" r="5"/><circle class="dP" cx="200" cy="46" r="5"/><circle class="dP" cx="255" cy="46" r="5"/><circle class="dF" cx="360" cy="46" r="5"/><circle class="dF" cx="430" cy="46" r="5"/><circle class="dF" cx="500" cy="46" r="5"/>
+<text class="lb" x="28" y="100">In progress</text>
+<line class="ax" x1="28" y1="126" x2="572" y2="126"/><line class="nw" x1="300" y1="110" x2="300" y2="142"/>
+<rect class="bP" x="232" y="120" width="136" height="12"/>
+</svg><figcaption>Same verb, different situation shape. Habit — “Ravi plays chess”: a scatter of instances either side of now; he may be asleep right now and the claim still holds. In progress — “Ravi is playing chess”: one ongoing slice, and the claim is about this very stretch of time.</figcaption></figure>
+
+<div class="box contrast"><p class="bl">Contrast — permanent vs temporary</p>
+<div class="pair">
+<div><p class="ph">Stable</p><p><em>Nina <strong>lives</strong> with her grandparents.</em></p><p>Her normal arrangement; no end in view.</p></div>
+<div><p class="ph">Temporary slice</p><p><em>Nina <strong>is living</strong> with her grandparents.</em></p><p>A current phase — while the flat is repainted, while her parents travel. The progressive coerces the state into a bounded stretch (Section 4).</p></div>
+</div></div>
+
+<div class="yt"><p class="bl">Your turn</p><p>Answer both questions truthfully about yourself, and notice they are different questions: <em>“What do you do?”</em> · <em>“What are you doing?”</em> Then write one <span class="f">always</span>-progressive sentence about a family member’s lovable habit.</p></div>
+
+<h3>Practice — Present time</h3>
+<div class="controls" role="group" aria-label="Answer controls"><button class="btn" data-act="show">Reveal all answers</button><button class="btn" data-act="hide">Hide all answers</button></div>
+<ol class="qs">
+<li id="q1"><p class="qh"><span class="qn">Q1</span> MCQ</p>
+<p>Listen! Someone ___ the piano in the hall.</p>
+<ol class="opts"><li>plays</li><li>is playing</li><li>has played</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>(b) is playing</strong> · <a class="dx" href="#s22">VIEWPOINT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>Listen!</em> points to an action unfolding at this moment; you are inside the stretch, so the progressive viewpoint fits. (a) would claim a habit or general truth; (c) would report a completed event linked to now — nobody would say it while the music is still audible.</p></div></details>
+</div></details></li>
+
+<li id="q2"><p class="qh"><span class="qn">Q2</span> Fill the blank</p>
+<p>Pure water ___ (boil) at 100 °C at sea level.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>boils</strong> · <a class="dx" href="#s22">GEN-TRUTH</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>A general truth: viewed from outside, holding at all times. <em>Is boiling</em> would relocate the claim to one pot on one stove.</p></div></details>
+</div></details></li>
+
+<li id="q3"><p class="qh"><span class="qn">Q3</span> Compare two · justify</p>
+<p>Explain the difference in meaning: <em>“Nina lives with her grandparents.”</em> / <em>“Nina is living with her grandparents.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓</span> Both grammatical — <strong>stable arrangement vs temporary phase</strong> · <a class="dx" href="#s22">TEMP-PERM</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>Lives</em> presents the arrangement as her normal state, no boundary in view. <em>Is living</em> coerces the state into a bounded current slice and implies impermanence — the listener expects a reason or an end date.</p></div></details>
+</div></details></li>
+
+<li id="q4"><p class="qh"><span class="qn">Q4</span> Correction · justify</p>
+<p>Fix it and say why: <em>“I am knowing the answer.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v4">✗ ungrammatical</span> → <strong>I know the answer.</strong> · <a class="dx" href="#s22">STATIVE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>Know</em> is a flat-line state with no internal development to stand inside, and — unlike <em>live</em> or <em>love</em> — no ordinary construal rescues it: knowing cannot be framed as a temporary activity you are midway through. This is one of the few statives that resist coercion almost completely.</p></div></details>
+<p class="xnote"><span class="sub">Expert note</span> · Contrast <span class="f">I’m getting to know her</span> — grammatical, because <em>get to know</em> is a job with a finish line, not a state.</p>
+</div></details></li>
+
+<li id="q5"><p class="qh"><span class="qn">Q5</span> Grade every option</p>
+<p>Ben ___ for the school play these days. Grade each on the five-point scale:</p>
+<ol class="opts"><li>is rehearsing</li><li>rehearses</li><li>has been rehearsing</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">(a) <span class="v v1">✓ default</span> · (b) <span class="v v3">○ needs context</span> · (c) <span class="v v2">◐ construal</span> · <a class="dx" href="#s22">TEMP-PERM</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>These days</em> frames a temporary around-now stretch → progressive (a) is the congruent choice. (b) is grammatical but presents rehearsing as Ben’s standing habit; it would need a context that makes it timetable-like (“Ben rehearses on Tuesdays these days”). (c) works if the speaker’s focus is the accumulating effort up to now — say, explaining why Ben looks exhausted.</p></div></details>
+<p class="xnote"><span class="sub">Expert note</span> · This is the book’s grading philosophy in miniature: three grammatical strings, one context, three different fits.</p>
+</div></details></li>
+
+<li id="q6"><p class="qh"><span class="qn">Q6</span> Fill the blank · register</p>
+<p>Live radio: “Singh ___ (pass) to Patel — and Patel scores!”</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>passes</strong> · <a class="dx" href="#s22">REGISTER</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Sports commentary conventionally uses the simple present for each complete instant action: the event is presented whole, as it lands. <em>Is passing</em> would slow the camera down and put us mid-pass — used for longer build-up phases (<em>United are attacking down the left</em>).</p></div></details>
+</div></details></li>
+
+<li id="q7"><p class="qh"><span class="qn">Q7</span> Judge the variety</p>
+<p>A friend tells a story: <em>“So yesterday he <strong>walks</strong> in and <strong>says</strong>, ‘Where’s my bike?’”</em> Error or not?</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v5">≈ variety</span> — the <strong>narrative present</strong>, fully natural in informal storytelling · <a class="dx" href="#s22">REGISTER</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Speakers pull past events onto the “now” platform to make a story vivid — the listener relives it in real time. It is a register choice, not a tense error. In formal writing or an exam narrative, shift it back to the simple past.</p></div></details>
+</div></details></li>
+
+<li id="q8"><p class="qh"><span class="qn">Q8</span> Micro-production</p>
+<p>Write two truthful sentences about your own city: one general truth in the simple present, one current change in the progressive (<em>…is getting / is becoming / are building…</em>). Then check yourself against the pattern below.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><strong>Model:</strong> <em>Pune sits between two rivers.</em> · <em>The metro line is finally reaching the old city.</em> · <a class="dx" href="#s22">VIEWPOINT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The first is a boundary-free truth viewed from outside; the second is a development viewed from inside its progress. If both your sentences pass that test, tick the checkpoint below.</p></div></details>
+</div></details></li>
+</ol>
+
+<div class="box practice"><p class="bl">Prove it — Section 6 checkpoint</p>
+<p>Tick only what you have <em>demonstrated</em>, not what you feel:</p>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s6-1"><label for="mk-s6-1">I graded all three options in Q5 correctly, including the two non-default verdicts.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s6-2"><label for="mk-s6-2">I can explain why <span class="f">I am knowing</span> fails but <span class="f">I’m living here this year</span> succeeds, using shape + coercion.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s6-3"><label for="mk-s6-3">I produced my own permanent/temporary pair (Q8) and can defend each choice.</label></div></div>
+</section>
+
+<section id="s7">
+<p class="eyebrow">Section 7 · Perfect aspect</p>
+<h2>The viewing platform — one shape, three positions, five readings</h2>
+<div class="box concept"><p class="bl">Concept — the platform</p>
+<p>Every perfect construction relates <strong>an earlier situation</strong> to <strong>a later reference point</strong> — a platform the speaker stands on:</p>
+<p>Platform = <strong>now</strong> → present perfect: <em>She <span class="f">has packed</span></em> (so we can leave now).<br>
+Platform = <strong>a past moment</strong> → past perfect: <em>She <span class="f">had packed</span> when the taxi came.</em><br>
+Platform = <strong>a future moment</strong> → future perfect: <em>She <span class="f">will have packed</span> by noon.</em></p>
+<p><strong>Do not define the perfect as “a completed action.”</strong> Completion alone never earns a perfect — the simple past is full of completed actions. What earns it is the <em>link</em>: the earlier situation still counts at the platform.</p></div>
+<figure class="tl"><svg viewBox="0 0 600 250" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Three stacked timelines with the same look-back pattern. Present perfect: an event dot with a dashed arc to the NOW line. Past perfect: a dot with an arc to a dashed reference line in the past. Future perfect: a dot with an arc to a dashed reference line in the future.">
+<text class="lb" x="28" y="18">1 · present perfect</text>
+<rect class="zP" x="28" y="26" width="272" height="24"/><rect class="zF" x="300" y="26" width="272" height="24"/>
+<line class="ax" x1="28" y1="38" x2="572" y2="38"/><line class="nw" x1="300" y1="20" x2="300" y2="56"/><text class="lbn" x="300" y="15" text-anchor="middle">NOW</text>
+<circle class="dP" cx="150" cy="38" r="7"/><path class="arc" d="M150,29 Q225,2 298,29"/>
+<text class="lb" x="28" y="98">2 · past perfect</text>
+<rect class="zP" x="28" y="106" width="272" height="24"/><rect class="zF" x="300" y="106" width="272" height="24"/>
+<line class="ax" x1="28" y1="118" x2="572" y2="118"/><line class="nw" x1="300" y1="100" x2="300" y2="136"/>
+<circle class="dP" cx="90" cy="118" r="7"/><line class="rf" x1="210" y1="100" x2="210" y2="136"/><text class="lbr" x="210" y="150" text-anchor="middle">REF</text><path class="arc" d="M90,109 Q150,85 208,109"/>
+<text class="lb" x="28" y="182">3 · future perfect</text>
+<rect class="zP" x="28" y="190" width="272" height="24"/><rect class="zF" x="300" y="190" width="272" height="24"/>
+<line class="ax" x1="28" y1="202" x2="572" y2="202"/><line class="nw" x1="300" y1="184" x2="300" y2="220"/>
+<circle class="dF" cx="400" cy="202" r="7"/><line class="rf" x1="490" y1="184" x2="490" y2="220"/><text class="lbr" x="490" y="234" text-anchor="middle">REF</text><path class="arc" d="M400,193 Q445,170 488,193"/>
+</svg><figcaption>The perfect’s single geometry: the dot is the earlier situation; the dashed arc is the claim “this still counts there.” Slide the platform along the axis — NOW, a past moment, or a future moment — and you generate all three perfects. One shape, three positions.</figcaption></figure>
+
+<div class="box concept"><p class="bl">Concept — the platform is the unifying model; the specific relationship varies</p>
+<p>What “still counts” means differs by reading. The five readings of the present perfect:</p></div>
+<div class="tw"><table>
+<tr><th>Reading</th><th>Example</th><th>What the link is</th></tr>
+<tr><td><strong>Result</strong></td><td><em>I’ve lost my keys.</em></td><td>a present state caused by the event — the keys are lost <em>now</em></td></tr>
+<tr><td><strong>Experience</strong></td><td><em>I’ve been to Rome.</em> · <em>The Earth has experienced five mass extinctions.</em></td><td>the event sits in the record of a life or period that reaches now — no immediate practical result required</td></tr>
+<tr><td><strong>Continuation</strong></td><td><em>I’ve lived here for ten years.</em></td><td>the situation began earlier and still holds</td></tr>
+<tr><td><strong>Tally</strong></td><td><em>You’ve had three coffees today.</em></td><td>a count inside an open period — the number can still rise</td></tr>
+<tr><td><strong>Recency</strong></td><td><em>She has just left.</em></td><td>freshness — the event practically touches now</td></tr>
+</table></div>
+<p>Not every perfect involves a consciously felt “look back over the shoulder,” and “present relevance” is often supplied by context rather than baked into the form. Keep the platform as the picture; keep the five readings as the vocabulary.</p>
+
+<div class="box concept"><p class="bl">Concept — the mechanical check learners can actually apply</p>
+<p><strong>The definite-time rule:</strong> the present perfect refuses adverbials that name a <em>finished, definite</em> past time; the simple past demands them.</p>
+<p><span class="v v4">✗</span> <span class="f">I have seen that film last Saturday</span> · <span class="v v1">✓</span> <span class="f">I saw that film last Saturday</span> · <span class="v v1">✓</span> <span class="f">I have seen that film</span></p>
+<p>Ask one question: <em>is the time expression a closed box (yesterday, last week, in 2019, at 3 p.m.) or an open container that still includes now (today, this week, since 2019, ever, so far)?</em> Closed box → simple past. Open container → present perfect available. This check is mechanical, which makes it usable under exam pressure — unlike the feeling of “relevance,” which is not.</p></div>
+<details class="lay2"><summary>Precision notes — where the definite-time rule bends</summary><div class="l2b">
+<p><span class="f">Since</span>-phrases name a definite starting point yet pair with the perfect — because they define an open container stretching from that point to now. <em>This morning</em> is an open container until about noon, then quietly becomes a closed box: <em>I’ve drunk two coffees this morning</em> (said at 11:00) vs <em>I drank two coffees this morning</em> (said at 16:00). And American English relaxes the rule with <span class="f">just / already / yet</span> — <em>I already ate</em> — a variety difference <span class="v v5">≈</span>, not an error (Section 18).</p>
+</div></details>
+
+<div class="box contrast"><p class="bl">Contrast — perfect simple vs perfect progressive (works at every platform)</p>
+<div class="pair">
+<div><p class="ph">Result · completion · quantity</p><p><em>She <strong>has painted</strong> the fence.</em> Look — it’s green. <em>She <strong>has written</strong> three essays.</em> The count is the point.</p></div>
+<div><p class="ph">Duration · process · fresh evidence</p><p><em>She <strong>has been painting</strong> the fence.</em> There’s paint on her hands; whether it’s finished isn’t claimed. <em>She <strong>has been writing</strong> all morning.</em> The effort is the point.</p></div>
+</div>
+<p>Statives take the simple perfect for continuation: <span class="f">I have known her since school</span>, not <span class="v v4">✗</span> <span class="f">have been knowing</span> — layer 1 (Section 4) still rules.</p></div>
+
+<div class="yt"><p class="bl">Your turn</p><p>Write one sentence for each of the five readings about your own life — result, experience, continuation, tally, recency. Say each reading’s name aloud as you write it.</p></div>
+
+<h3>Practice — Perfect aspect</h3>
+<div class="controls" role="group" aria-label="Answer controls"><button class="btn" data-act="show">Reveal all answers</button><button class="btn" data-act="hide">Hide all answers</button></div>
+<ol class="qs">
+<li id="q9"><p class="qh"><span class="qn">Q9</span> Context selection</p>
+<p>You still can’t find your keys, and you’re explaining why you’re stuck outside. Which fits? <em>“I lost my keys.”</em> / <em>“I’ve lost my keys.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>I’ve lost my keys.</strong> · <a class="dx" href="#s22">OPEN-CLOSED</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The result reading: the losing produced a state that holds at the platform — <em>now, at the door</em>. <em>I lost my keys</em> is grammatical but reports a closed past fact; it invites “…and then what?” rather than “let me help you now.”</p></div></details>
+</div></details></li>
+
+<li id="q10"><p class="qh"><span class="qn">Q10</span> Explain the error · justify</p>
+<p>Why is <em>“I have seen that film last Saturday”</em> wrong? Give two corrections and say what each means.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v4">✗</span> — the definite-time rule · <a class="dx" href="#s22">DEF-ADV</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>Last Saturday</em> is a closed box; the present perfect requires an open container reaching now. The clash is mechanical, not stylistic. Corrections: <strong>I saw that film last Saturday</strong> — a located past fact; or <strong>I’ve seen that film</strong> — an experience claim inside your open lifetime, time unstated. Choose by what you want the listener to do with it.</p></div></details>
+</div></details></li>
+
+<li id="q11"><p class="qh"><span class="qn">Q11</span> Fill the blank</p>
+<p>She ___ (write) three essays this week — and the week isn’t over yet.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>has written</strong> · <a class="dx" href="#s22">OPEN-CLOSED</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The tally reading: a count inside an open container (<em>this week</em>), and the sentence itself tells you the container is still open. Change it to <em>last week</em> and only <em>wrote</em> survives.</p></div></details>
+</div></details></li>
+
+<li id="q12"><p class="qh"><span class="qn">Q12</span> Both acceptable? · justify</p>
+<p><em>“I’ve lived in Pune for ten years.”</em> / <em>“I lived in Pune for ten years.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">Both <span class="v v1">✓</span> — different claims · <a class="dx" href="#s22">OPEN-CLOSED</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The perfect is continuative: the ten-year stretch reaches now — you still live there. The simple past seals the stretch inside a closed chapter — you have moved away. Same <span class="f">for</span>-phrase, opposite biographies. This is the clearest proof that signal words are witnesses, not judges.</p></div></details>
+</div></details></li>
+
+<li id="q13"><p class="qh"><span class="qn">Q13</span> Fill the blank · justify</p>
+<p>I ___ (know) Priya since kindergarten.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>have known</strong> · <a class="dx" href="#s22">STATIVE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Continuation of a state from a starting point to now → perfect. And because <em>know</em> is a flat-line state, the perfect stays <em>simple</em>: <span class="v v4">✗</span> <em>have been knowing</em>. Two layers, one answer.</p></div></details>
+</div></details></li>
+
+<li id="q14"><p class="qh"><span class="qn">Q14</span> MCQ</p>
+<p>Milo the dog isn’t in the garden any more — but look at his paws! He ___ in the flowerbed again.</p>
+<ol class="opts"><li>dug</li><li>has dug</li><li>has been digging</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>(c) has been digging</strong> · <a class="dx" href="#s22">RESULT-PROCESS</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The evidence (muddy paws) points at recent <em>activity</em>, not at a completed job — the perfect progressive’s fresh-evidence use. (b) would fit if the focus were a finished result (“he has dug up all the tulips”); (a) reports a closed past fact and ignores the paws entirely.</p></div></details>
+</div></details></li>
+
+<li id="q15"><p class="qh"><span class="qn">Q15</span> Compare two</p>
+<p><em>“She has painted the fence.”</em> / <em>“She has been painting the fence.”</em> What does each let you conclude?</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">Result vs process · <a class="dx" href="#s22">RESULT-PROCESS</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Simple perfect: the job with a finish line reached it — the fence is done. Perfect progressive: you were meant to notice the ongoing effort or its traces (wet paint, tired arms); completion is left open. With finish-line verbs, the simple perfect quietly asserts the finish; the progressive quietly withholds it.</p></div></details>
+</div></details></li>
+
+<li id="q16"><p class="qh"><span class="qn">Q16</span> Rewrite</p>
+<p>Rewrite as one sentence with the same meaning: <em>“Tom started living here in 2020. He still lives here.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓</span> <strong>Tom has lived here since 2020</strong> <em>(or)</em> <strong>has been living here since 2020</strong> · <a class="dx" href="#s22">OPEN-CLOSED</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Continuative perfect: start point + unbroken stretch to now. Both variants are natural; the progressive adds a faint flavour of temporariness or lived texture. <em>Since</em> supplies the open container.</p></div></details>
+</div></details></li>
+
+<li id="q17"><p class="qh"><span class="qn">Q17</span> Name the reading</p>
+<p>Label each sentence with its perfect reading (result · experience · continuation · tally · recency):</p>
+<ol class="opts"><li>Your taxi has just arrived.</li><li>He has climbed Kilimanjaro twice.</li><li>Somebody has broken the window.</li><li>We’ve owned this shop for thirty years.</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">(a) recency · (b) experience/tally · (c) result · (d) continuation · <a class="dx" href="#s22">PERF-READING</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>(a) freshness — go downstairs now. (b) events in the record of an open lifetime, with a count: experience shading into tally. (c) the present state (broken glass) is the message. (d) a state stretching unbroken to now. One platform, four different links — being able to <em>name</em> the link is what separates users from analysts.</p></div></details>
+</div></details></li>
+</ol>
+
+<div class="box practice"><p class="bl">Prove it — Section 7 checkpoint</p>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s7-1"><label for="mk-s7-1">I can state the definite-time rule and apply it to a new sentence in under ten seconds.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s7-2"><label for="mk-s7-2">I named all four readings in Q17 correctly.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s7-3"><label for="mk-s7-3">I can explain why “completed action” is the <em>wrong</em> definition of the perfect, with an example.</label></div></div>
+</section>
+
+<section id="s8">
+<p class="eyebrow">Section 8 · Past time</p>
+<h2>The storyteller’s engine and the flashback</h2>
+<div class="box concept"><p class="bl">Concept — the four past viewpoints</p>
+<p><strong>Simple past</strong> — the engine of narrative: whole events, in order, tied to a finished time. <em>She opened the door, saw the mess, and sighed.</em><br>
+<strong>Past progressive</strong> — the scene from inside: background, atmosphere, and the stretch an event interrupts. <em>Rain was falling. I was reading when the lights went out.</em><br>
+<strong>Past perfect</strong> — the flashback: an earlier situation viewed from a later past platform.<br>
+<strong>Past perfect progressive</strong> — the long run-up to that platform. <em>The ground was wet: it had been raining all night.</em></p></div>
+
+<div class="box concept"><p class="bl">Concept — the corrected rule for the past perfect</p>
+<p>First-edition rule (retire it): <em>“past perfect needs the earlier of two stated events.”</em> Too strong.</p>
+<p><strong>The real rule: past perfect needs an earlier situation and a later past reference point — and that reference point may be stated in the sentence <em>or supplied by the surrounding discourse</em>.</strong> It can be an event, a moment, or even a state.</p>
+<p><em>I looked around the empty room. Everyone <span class="f">had left</span>.</em> — The second sentence names only one event, yet it is perfect English: the platform is the moment of looking, carried over from the previous sentence.</p></div>
+<figure class="tl"><svg viewBox="0 0 600 130" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Implicit reference point: an event dot for everyone-left, a dashed arc to a dashed reference line for the moment of looking, both in the past zone before NOW.">
+<rect class="zP" x="28" y="34" width="272" height="26"/><rect class="zF" x="300" y="34" width="272" height="26"/>
+<line class="ax" x1="28" y1="47" x2="572" y2="47"/><line class="nw" x1="300" y1="28" x2="300" y2="66"/><text class="lbn" x="300" y="22" text-anchor="middle">NOW</text>
+<circle class="dP" cx="90" cy="47" r="7"/><text class="lbs" x="90" y="82" text-anchor="middle">everyone left</text>
+<line class="rf" x1="210" y1="28" x2="210" y2="66"/><text class="lbr" x="210" y="22" text-anchor="middle">REF</text>
+<path class="arc" d="M90,38 Q150,12 208,38"/>
+</svg><figcaption>“I looked around the empty room. Everyone had left.” One overt event — and a perfectly licensed past perfect, because the reference point (REF, the moment of looking) is supplied by the previous sentence, not this one. Discourse supplies reference points all the time.</figcaption></figure>
+
+<div class="box contrast"><p class="bl">Contrast — <span class="f">when</span> is a stage, not a script</p>
+<div class="pair">
+<div><p class="ph">Interruption</p><p><em>When the phone rang, I <strong>was washing</strong> up.</em> The ringing lands inside the stretch.</p></div>
+<div><p class="ph">Sequence</p><p><em>When the phone rang, I <strong>answered</strong> it.</em> Ring, then answer: two whole events in order.</p></div>
+</div>
+<p>And a third reading: <em>When I arrived, the film <strong>had started</strong></em> — the earlier event viewed from the arrival platform. Same connector, three time-shapes: the tenses are the actors; <span class="f">when</span> is only the stage.</p></div>
+
+<div class="box caution"><p class="bl">Caution — over-marking is the advanced learner’s disease</p>
+<p>Once learners discover the past perfect they start spending it everywhere. If the order of events is already obvious — <span class="f">after, before</span>, or plain narrative sequence — the simple past usually reads better: <em>After he finished the test, he slept for an hour</em> is at least as natural as <em>after he had finished</em>. And a chain of dated facts wants no perfect at all: <em>The film started at 6 and ended at 8.</em> Reserve <span class="f">had</span> for when the look-back does work: surprising order, or an earlier cause explaining a later scene.</p></div>
+
+<div class="yt"><p class="bl">Your turn</p><p>Write a two-sentence mini-scene in which the second sentence uses a past perfect whose reference point is <em>implicit</em> — supplied only by sentence one. (Pattern: <em>I opened the fridge. …</em>)</p></div>
+
+<h3>Practice — Past time</h3>
+<div class="controls" role="group" aria-label="Answer controls"><button class="btn" data-act="show">Reveal all answers</button><button class="btn" data-act="hide">Hide all answers</button></div>
+<ol class="qs">
+<li id="q18"><p class="qh"><span class="qn">Q18</span> MCQ</p>
+<p>While I ___ my bike to school, it started to rain.</p>
+<ol class="opts"><li>rode</li><li>was riding</li><li>had ridden</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>(b) was riding</strong> · <a class="dx" href="#s22">NARR-LAYER</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>While</em> opens a stretch for the rain to land inside: background progressive, foreground simple past. (a) is not ungrammatical but reads as two sealed events awkwardly glued; (c) would push the riding entirely before the rain — contradicting <em>while</em>.</p></div></details>
+</div></details></li>
+
+<li id="q19"><p class="qh"><span class="qn">Q19</span> Compare two</p>
+<p><em>“When the bell rang, the students left.”</em> / <em>“When the bell rang, the students were leaving.”</em> What does each claim?</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">Sequence vs already-in-progress · <a class="dx" href="#s22">WHEN-FLEX</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Version one: bell, then departure — the ring triggers it. Version two: the departure was already unfolding as the bell rang — the bell lands mid-stream, and perhaps nobody was even listening. Both correct; different films.</p></div></details>
+</div></details></li>
+
+<li id="q20"><p class="qh"><span class="qn">Q20</span> Timeline reasoning · justify</p>
+<p>Read: <em>“When Mum arrived, we had eaten dinner.”</em> Sketch the timeline: which event is earlier, where is the platform — and how does the picture change with <em>“we ate dinner”</em>?</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">Eating <strong>before</strong> arrival (platform = arrival) → vs eating <strong>at/after</strong> arrival · <a class="dx" href="#s22">REF-POINT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>With <span class="f">had eaten</span>, the arrival is the platform and the meal is the earlier dot linked back to it — Mum found empty plates. With <span class="f">ate</span>, both are whole events read in sequence: she arrived, and dinner followed (perhaps because she arrived). One auxiliary flips who cooked for whom.</p></div></details>
+</div></details></li>
+
+<li id="q21"><p class="qh"><span class="qn">Q21</span> Grade it — the famous sentence</p>
+<p><em>“Yesterday I had visited my cousins.”</em> Place this on the five-point scale, then supply a context that licenses it.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v3">○ needs context</span> — not <span class="v v4">✗</span> · <a class="dx" href="#s22">REF-POINT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Standing alone, the sentence offers no later past platform for <span class="f">had</span> to look back from, so it sounds unmotivated — the classic learner error. But the platform can arrive from discourse: <em>“Why didn’t you visit them again on Tuesday?” — “I <strong>had</strong> visited my cousins (only) yesterday, so I stayed home.”</em> Now the Tuesday decision is the platform and the perfect earns its keep. The fault was never grammar; it was a missing reference point.</p></div></details>
+<p class="xnote"><span class="sub">Expert note</span> · This distinction — <em>ungrammatical</em> vs <em>contextually unmotivated</em> — is the single most important upgrade over first-edition marking. Diagnose which one before you write “wrong.”</p>
+</div></details></li>
+
+<li id="q22"><p class="qh"><span class="qn">Q22</span> Fill both blanks</p>
+<p>At the gate she ___ (realise) that she ___ (leave) her ticket at home.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓</span> <strong>realised · had left</strong> · <a class="dx" href="#s22">REF-POINT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The realising is the platform; the leaving-behind happened earlier at home. Two simple pasts would order the events wrongly — as if she realised first and abandoned the ticket afterwards.</p></div></details>
+</div></details></li>
+
+<li id="q23"><p class="qh"><span class="qn">Q23</span> Error spotting</p>
+<p>Exactly one sentence is unnatural. Which, and what kind of unnatural?</p>
+<ol class="opts"><li>After he had finished the test, he slept for an hour.</li><li>When I reached the hall, the speech had already begun.</li><li>The film had started at 6 and had ended at 8.</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">(c) — <span class="v v3">○</span> over-marking, not a form error · <a class="dx" href="#s22">REF-POINT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>(c) is a chain of dated facts with no later platform in sight; the perfects have no job: <em>The film started at 6 and ended at 8.</em> (a) is fine though <em>after</em> makes <span class="f">had</span> optional; (b) is the past perfect doing exactly its work — surprise about order at the arrival platform.</p></div></details>
+</div></details></li>
+
+<li id="q24"><p class="qh"><span class="qn">Q24</span> MCQ</p>
+<p>The ground was wet because it ___ all night.</p>
+<ol class="opts"><li>rained</li><li>was raining</li><li>had been raining</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>(c) had been raining</strong>; (a) <span class="v v2">◐</span> · <a class="dx" href="#s22">RESULT-PROCESS</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The wet ground is a past platform; the night-long run-up to it wants duration + look-back: past perfect progressive. (a) <em>rained all night</em> is possible if you frame the night as one sealed block explaining the morning, though it loosens the causal link; (b) puts us inside the rain with no link to the wet-ground platform at all.</p></div></details>
+</div></details></li>
+
+<li id="q25"><p class="qh"><span class="qn">Q25</span> Diagnose the error type</p>
+<p>What kind of error is this — tense choice, aspect choice, or verb form? <em>“He had wrote a letter of apology.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v4">✗</span> <strong>Verb form</strong> → <span class="f">had written</span> · <a class="dx" href="#s22">FORM</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The tense-aspect choice (past perfect) may be perfectly right; the machinery is broken: after <span class="f">have/had</span>, English requires the participle (<span class="f">written</span>), never the past form (<span class="f">wrote</span>). Knowing <em>which layer failed</em> is half of fixing it — form errors have one right answer; choice errors have verdicts.</p></div></details>
+</div></details></li>
+
+<li id="q26"><p class="qh"><span class="qn">Q26</span> Discourse fill</p>
+<p><em>“I opened the classroom door and stopped. Someone ___ (rearrange) all the desks into a circle.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>had rearranged</strong> · <a class="dx" href="#s22">REF-POINT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>One overt event in the sentence — and still a textbook past perfect, because the previous sentence supplies the platform (the moment of opening and stopping). The rearranging is the earlier cause of the scene I found. If you wrote <em>rearranged</em>, you made the mysterious circle-maker act while I stood watching.</p></div></details>
+</div></details></li>
+</ol>
+
+<div class="box practice"><p class="bl">Prove it — Section 8 checkpoint</p>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s8-1"><label for="mk-s8-1">I can recite the corrected past-perfect rule — earlier situation + later past reference point, possibly implicit — and give my own two-sentence example (Q26 pattern).</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s8-2"><label for="mk-s8-2">I graded Q21 as ○ (not ✗) and produced a licensing context.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s8-3"><label for="mk-s8-3">I can name the three readings of a <span class="f">when</span>-clause with examples.</label></div></div>
+</section>
+
+<section id="s9">
+<p class="eyebrow">Section 9 · Future time</p>
+<h2>Nine tools, no future tense — and defaults, not laws</h2>
+<div class="box concept"><p class="bl">Concept — the toolbox</p>
+<p>English has no future tense marking; it projects forward with constructions. The choice signals <strong>the source and status of your knowledge</strong>:</p></div>
+<div class="tw"><table>
+<tr><th>Tool</th><th>Core use</th><th>Example</th></tr>
+<tr><td><span class="f">will + base</span></td><td>predictions, promises, offers, decisions made at the moment of speaking</td><td><em>The doorbell! I’ll get it.</em></td></tr>
+<tr><td><span class="f">be going to</span></td><td>prior intentions; predictions from present signs</td><td><em>I’m going to learn the drums. Look at those clouds — it’s going to rain.</em></td></tr>
+<tr><td><span class="f">present progressive</span></td><td>fixed personal arrangements — the diary is written</td><td><em>I’m meeting Dr Sen at ten tomorrow.</em></td></tr>
+<tr><td><span class="f">simple present</span></td><td>timetables and institutional schedules</td><td><em>The exam starts at 9:30. Term ends on the 20th.</em></td></tr>
+<tr><td><span class="f">will be + -ing</span></td><td>in progress at a future moment; expected course; polite enquiry</td><td><em>At 8 I’ll be travelling. Will you be using the printer?</em></td></tr>
+<tr><td><span class="f">will have (been) …</span></td><td>done — or running — before a future platform</td><td><em>By June, she’ll have finished / will have been studying here for two years.</em></td></tr>
+<tr><td><span class="f">be about to / on the point of</span></td><td>immediacy — the edge of the event</td><td><em>Quiet — the film is about to start.</em></td></tr>
+<tr><td><span class="f">be due to / be set to / be likely to</span></td><td>scheduled, slated, or probable futures (news and workplace register)</td><td><em>The train is due to arrive at six. Rates are set to rise.</em></td></tr>
+<tr><td><span class="f">be to + base</span></td><td>official arrangement or destiny (formal)</td><td><em>The president is to visit in May. He was to become a legend.</em></td></tr>
+</table></div>
+<figure class="tl"><svg viewBox="0 0 600 130" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Future zone: NOW at the left of a violet future zone; about-to just after NOW; a plan dot mid-zone; a future-perfect reference line at right with an arc from an earlier dot back to it.">
+<rect class="zF" x="120" y="30" width="452" height="26"/>
+<line class="ax" x1="28" y1="43" x2="572" y2="43"/><line class="nw" x1="120" y1="22" x2="120" y2="64"/><text class="lbn" x="120" y="16" text-anchor="middle">NOW</text>
+<circle class="dF" cx="150" cy="43" r="7"/><text class="lbs" x="150" y="80" text-anchor="middle">about to</text>
+<circle class="dF" cx="310" cy="43" r="7"/><text class="lbs" x="310" y="80" text-anchor="middle">plan</text>
+<circle class="dF" cx="430" cy="43" r="7"/><line class="rf" x1="500" y1="24" x2="500" y2="62"/><text class="lbr" x="500" y="80" text-anchor="middle">REF</text><path class="arc" d="M430,34 Q465,12 498,34"/>
+</svg><figcaption>The future zone with its landmarks: immediacy (“about to”) sits right after now, an arrangement or plan mid-zone, and “will have done” looks back from a future reference point (REF). The further right, the more scaffolding English offers.</figcaption></figure>
+
+<div class="box contrast"><p class="bl">Contrast — the two big decisions</p>
+<div class="pair">
+<div><p class="ph">will vs going to</p><p><em>“We’ve run out of bread.” — “Oh, I<strong>’ll get</strong> some.”</em> Decision born this second. · <em>“I<strong>’m going to get</strong> bread on the way home”</em> — the plan predates the conversation.</p></div>
+<div><p class="ph">Whose calendar is it?</p><p>A person’s diary → progressive: <em>I’m meeting the dentist at five.</em> An institution’s timetable → simple present: <em>The exam starts at 9:30.</em></p></div>
+</div></div>
+
+<div class="box caution"><p class="bl">Caution — these are defaults, not semantic laws</p>
+<p>Real usage overlaps far more than the neat table admits. <em>I’ll meet Sam tomorrow</em> can report a settled plan; <em>I’m going to meet Sam at ten</em> can be a concrete arrangement; <em>It’s going to be difficult</em> needs no visible evidence; <em>The train will leave at seven</em> can be an authoritative schedule statement. That is why this book grades future answers as <span class="v v1">✓ default</span> / <span class="v v2">◐ construal</span> / <span class="v v3">○ needs context</span> — and why any exercise claiming exactly one “natural” future form should be treated with suspicion, including in other books.</p></div>
+
+<div class="yt"><p class="bl">Your turn</p><p>Take one real event from your next week. Express it four ways — <span class="f">will</span>, <span class="f">going to</span>, present progressive, and <span class="f">be due to</span> — and say aloud what each version implies about how the plan came to exist.</p></div>
+
+<h3>Practice — Future time</h3>
+<div class="controls" role="group" aria-label="Answer controls"><button class="btn" data-act="show">Reveal all answers</button><button class="btn" data-act="hide">Hide all answers</button></div>
+<ol class="qs">
+<li id="q27"><p class="qh"><span class="qn">Q27</span> Dialogue</p>
+<p>A: “We’ve run out of milk.” B: “Oh — I ___ (get) some from the corner shop now.”</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>’ll get</strong> · <a class="dx" href="#s22">FUT-SOURCE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The decision is visibly born inside the conversation — <em>Oh</em> is the giveaway. <span class="f">I’m going to get</span> would imply B had already planned it, which the surprise contradicts.</p></div></details>
+</div></details></li>
+
+<li id="q28"><p class="qh"><span class="qn">Q28</span> MCQ · justify</p>
+<p>Look at the length of that queue! We ___ here for ages.</p>
+<ol class="opts"><li>will be</li><li>are going to be</li><li>are being</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>(b) are going to be</strong>; (a) <span class="v v2">◐</span> · <a class="dx" href="#s22">FUT-SOURCE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The future is already visible in the present evidence (the queue) — the classic <span class="f">going to</span> prediction. (a) is grammatical as a plain prediction, just less anchored to the evidence in front of you. (c) fails: <em>be</em> here is a state, and no temporary-behaviour construal is available.</p></div></details>
+</div></details></li>
+
+<li id="q29"><p class="qh"><span class="qn">Q29</span> Fill the blank</p>
+<p>Hurry up! The match ___ (start) at 4 sharp — it says so on the fixture list.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>starts</strong> · <a class="dx" href="#s22">FUT-SOURCE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The fixture list is an institution’s calendar → timetable present. <em>Is starting</em> <span class="v v2">◐</span> shifts it toward an arrangement being reported; <em>will start</em> <span class="v v2">◐</span> reads as an authority announcing the schedule. All grammatical — the sentence’s own appeal to the printed list makes the timetable present most congruent.</p></div></details>
+</div></details></li>
+
+<li id="q30"><p class="qh"><span class="qn">Q30</span> Identify better</p>
+<p>You booked the appointment last week. Better here? <em>“I will meet Dr Sen tomorrow at 10.”</em> / <em>“I’m meeting Dr Sen tomorrow at 10.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>I’m meeting…</strong>; the <span class="f">will</span> version <span class="v v2">◐</span> · <a class="dx" href="#s22">FUT-SOURCE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>A booked slot is a written diary entry — the arrangement progressive’s home ground. <em>I will meet</em> is not wrong: it can state the settled plan with a flavour of resolve or formality (think of confirming in an email). Default vs possible, not right vs wrong.</p></div></details>
+</div></details></li>
+
+<li id="q31"><p class="qh"><span class="qn">Q31</span> MCQ</p>
+<p>This time next week, we ___ down the backwaters on a houseboat.</p>
+<ol class="opts"><li>will float</li><li>will be floating</li><li>will have floated</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>(b) will be floating</strong> · <a class="dx" href="#s22">FUT-SOURCE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>This time next week</em> plants a future moment and asks what will be in progress <em>at</em> it → future progressive. (a) would schedule the floating to begin at that instant; (c) would finish it before then — both fight the time phrase.</p></div></details>
+</div></details></li>
+
+<li id="q32"><p class="qh"><span class="qn">Q32</span> Fill the blank</p>
+<p>By December, Anita ___ (teach) here for twenty years.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>will have been teaching</strong> <em>(or)</em> <strong>will have taught</strong> · <a class="dx" href="#s22">FUT-SOURCE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>By December</em> plants a future platform; the twenty-year stretch runs up to it. The progressive foregrounds the ongoing career; the simple perfect states the achievement. Both natural — duration verbs like <em>teach</em> accept either, with a nuance of texture vs milestone.</p></div></details>
+</div></details></li>
+
+<li id="q33"><p class="qh"><span class="qn">Q33</span> Politeness contrast</p>
+<p>Why does <em>“Will you be using the computer tonight?”</em> feel softer than <em>“Will you use the computer tonight?”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">Course-of-events vs request · <a class="dx" href="#s22">FUT-SOURCE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The future progressive asks about the expected flow of your evening — no pressure attached. Plain <em>will you use…?</em> can be heard as a request or a challenge, because <span class="f">will</span> carries willingness. Asking about the current of events instead of the person’s will is a small grammatical act of courtesy.</p></div></details>
+</div></details></li>
+
+<li id="q34"><p class="qh"><span class="qn">Q34</span> Context selection — redesigned classic</p>
+<p>Tomorrow’s school event. Complete each context with the most congruent form of the verb given:</p>
+<ol class="opts"><li>You decide this second to help: “Don’t worry — I ___ (introduce) the speaker tomorrow.”</li><li>Arranged with the teacher last week: “I ___ (introduce) the speaker tomorrow.”</li><li>Reading from the printed programme: “The keynote ___ (begin) at ten tomorrow.”</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓</span> (i) <strong>’ll introduce</strong> · (ii) <strong>’m introducing</strong> · (iii) <strong>begins</strong> · <a class="dx" href="#s22">FUT-SOURCE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>Tomorrow</em> appears in all three and decides none of them: the source of your knowledge does. Moment-of-speech decision → <span class="f">will</span>; diary arrangement → progressive; institutional programme → timetable present. Note the item deliberately switches to a subject the programme naturally owns (<em>the keynote</em>) for (iii) — a first-person <em>I bring the snacks tomorrow</em> fights the timetable use, which is why this exercise was rebuilt.</p></div></details>
+<p class="xnote"><span class="sub">Expert note</span> · Timetable present prefers subjects an institution schedules: trains, exams, keynotes, terms. People’s one-off actions resist it.</p>
+</div></details></li>
+
+<li id="q35"><p class="qh"><span class="qn">Q35</span> Grade every option</p>
+<p>News register: “Interest rates ___ next month.” Grade each:</p>
+<ol class="opts"><li>are set to rise</li><li>are rising</li><li>will rise</li><li>are about to rise</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">(a) <span class="v v1">✓ default</span> · (b) <span class="v v2">◐</span> · (c) <span class="v v1">✓</span> · (d) <span class="v v3">○</span> · <a class="dx" href="#s22">FUT-SOURCE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>(a) is the news-register slating device — expected, near-official. (c) is a clean prediction, equally at home in a report. (b) works only under a construal where the rise is treated as an unfolding trend already in motion. (d) clashes with <em>next month</em>: <em>about to</em> means the edge of the event, minutes-to-days, and needs the time phrase removed to breathe.</p></div></details>
+</div></details></li>
+</ol>
+
+<div class="box practice"><p class="bl">Prove it — Section 9 checkpoint</p>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s9-1"><label for="mk-s9-1">I can name all nine future tools with one example each, from memory.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s9-2"><label for="mk-s9-2">In Q34 I chose by knowledge-source, not by the word <em>tomorrow</em>.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s9-3"><label for="mk-s9-3">I can give one context where <span class="f">will</span> and <span class="f">going to</span> are <em>both</em> acceptable and explain the shade of difference.</label></div></div>
+</section>
+
+<section id="s10">
+<p class="eyebrow">Section 10 · States and construal</p>
+<h2>Progressive compatibility is about framing, not verb lists</h2>
+<div class="box concept"><p class="bl">Concept — the rule that replaces the list</p>
+<p><strong>Progressive compatibility depends on how the speaker construes the situation in context — not on whether the verb “describes visible action.”</strong></p>
+<p>The old classroom test — “can you do it on purpose for five minutes, then stop?” — measures <em>deliberateness</em>, and deliberateness is the wrong dimension: <em>sleep</em> is not deliberate but happily progressive (<em>she’s sleeping</em>); <em>wait</em> shows almost no visible action yet is an activity (<em>we’re waiting</em>). What matters is whether the situation, <em>as framed here</em>, has an inside to stand in (Section 4).</p></div>
+<div class="tw"><table>
+<tr><th>Class</th><th>Progressive?</th><th>Examples</th></tr>
+<tr><td><strong>Stable states</strong></td><td>resist strongly</td><td><span class="f">know, own, believe, consist of</span> — <span class="v v4">✗</span> <em>am knowing</em></td></tr>
+<tr><td><strong>Temporary-friendly states</strong></td><td>coercible</td><td><span class="f">live, feel, hope, expect</span> — <em>I’m living in Hyderabad this year</em>; <em>I’m hoping you can help</em> (tentative, polite)</td></tr>
+<tr><td><strong>Chameleon verbs</strong></td><td>depends on the meaning in play</td><td><span class="f">see, think, have, taste, be</span> — different senses, different classes (table below)</td></tr>
+<tr><td><strong>Activities</strong></td><td>natural home</td><td><span class="f">run, read, wait, sleep, rain</span></td></tr>
+<tr><td><strong>Instant flips</strong></td><td>progressive = run-up or repetition</td><td><em>The train is arriving</em> · <em>He was knocking</em></td></tr>
+</table></div>
+<div class="box contrast"><p class="bl">Contrast — one verb, several situations: <span class="f">see</span></p>
+<div class="tw narrow"><table>
+<tr><th>Sense</th><th>Class</th><th>Natural form</th></tr>
+<tr><td>= understand</td><td>state</td><td><em>I <strong>see</strong> what you mean.</em></td></tr>
+<tr><td>= meet by arrangement</td><td>activity/event</td><td><em>I<strong>’m seeing</strong> the dentist at five.</em></td></tr>
+<tr><td>= perceive</td><td>state (often with <span class="f">can</span>)</td><td><em>I (can) <strong>see</strong> three mistakes.</em></td></tr>
+<tr><td>= date someone</td><td>activity</td><td><em>They<strong>’re seeing</strong> each other.</em></td></tr>
+</table></div>
+<p>Same spelling, four situation shapes. The dictionary entry doesn’t choose the aspect — the sense in play does.</p></div>
+<div class="yt"><p class="bl">Your turn</p><p>Pick <span class="f">have</span> or <span class="f">think</span>. Write one state sentence (simple) and one activity sentence (progressive) with it — e.g. <em>I have a bike</em> / <em>I’m having lunch</em> — and name the two senses.</p></div>
+
+<h3>Practice — States and construal</h3>
+<div class="controls" role="group" aria-label="Answer controls"><button class="btn" data-act="show">Reveal all answers</button><button class="btn" data-act="hide">Hide all answers</button></div>
+<ol class="qs">
+<li id="q36"><p class="qh"><span class="qn">Q36</span> Grade every option — repaired classic</p>
+<p>Grade each on the five-point scale:</p>
+<ol class="opts"><li>I see what you mean.</li><li>I am seeing what you mean.</li><li>I’m seeing the dentist at five.</li><li>I am seeing three mistakes in this line.</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">(a) <span class="v v1">✓</span> · (b) <span class="v v4">✗</span> · (c) <span class="v v1">✓</span> · (d) <span class="v v2">◐</span>, default is <em>I (can) see</em> · <a class="dx" href="#s22">STATIVE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>(a) <em>see</em> = understand, a state → simple. (b) tries to put the understanding-state into progress; no construal rescues it. (c) <em>see</em> = meet, an arrangement → progressive is its home. (d) <em>see</em> = perceive: the default is the simple form, but a marked live-analysis construal exists — a reviewer scanning a page and narrating emerging findings (<em>“Hmm, I’m seeing three mistakes in this line”</em>) — the same coercion family as <em>I’m loving it</em>. Default it is not; hallucination it is not either.</p></div></details>
+<p class="xnote"><span class="sub">Expert note</span> · The first edition’s key marked (d) both natural <em>and</em> unnatural in the same paragraph — a genuine answer-key error. The graded scale is what makes a consistent verdict possible.</p>
+</div></details></li>
+
+<li id="q37"><p class="qh"><span class="qn">Q37</span> Correction · justify</p>
+<p><em>“This soup is tasting delicious.”</em> Fix or defend it.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v3">○</span> as written → default <strong>This soup tastes delicious</strong> · <a class="dx" href="#s22">STATIVE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>Taste</em> = “have a flavour” is a state → simple. The progressive belongs to the activity sense — <em>The chef is tasting the soup</em> (sampling it). A marked informal construal (<em>this is tasting better already</em> — flavour developing as you season) exists, which is why the verdict is ○ rather than ✗.</p></div></details>
+</div></details></li>
+
+<li id="q38"><p class="qh"><span class="qn">Q38</span> Compare two</p>
+<p><em>“You’re silly.”</em> / <em>“You’re being silly.”</em> What changes?</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">Identity vs current behaviour · <a class="dx" href="#s22">STATIVE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Progressive <span class="f">be</span> coerces the state into an activity: what you are <em>doing right now</em>, not what you <em>are</em>. That is why <em>you’re being silly</em> is gentler — it leaves the person’s character intact and complains only about the behaviour.</p></div></details>
+</div></details></li>
+
+<li id="q39"><p class="qh"><span class="qn">Q39</span> Judge the variety</p>
+<p><em>“I’m loving this course.”</em> Error, or something else?</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v5">≈ variety/register</span> — coercion, informal, fully current · <a class="dx" href="#s22">REGISTER</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The progressive frames the loving as a temporary, intense, ongoing episode rather than a settled state. It thrives in speech and advertising; formal writing still prefers <em>I love this course</em>. A register choice, not broken grammar — mark it ≈, and switch registers deliberately.</p></div></details>
+</div></details></li>
+
+<li id="q40"><p class="qh"><span class="qn">Q40</span> Explain the pair</p>
+<p><em>“She was reaching the summit.”</em> / <em>“She reached the summit.”</em> Why does the first not simply mean a slower version of the second?</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">Run-up vs the flip itself · <a class="dx" href="#s22">SHAPE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>Reach</em> is an instant flip — it has no internal duration to film. So the progressive is forced to mean the approach phase: she was in the final metres, and the sentence does not even guarantee she made it. The simple form asserts the flip occurred. Shape × viewpoint (Section 4), doing real semantic work.</p></div></details>
+</div></details></li>
+
+<li id="q41"><p class="qh"><span class="qn">Q41</span> Fill the blank · justify</p>
+<p>Sorry, she can’t come to the phone — she ___ (sleep).</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>is sleeping</strong> · <a class="dx" href="#s22">STATIVE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The point of this item is to kill the old “deliberate action” test: sleeping is involuntary, invisible-as-action — and a perfectly ordinary activity in progress. Construal, not volition, governs.</p></div></details>
+</div></details></li>
+
+<li id="q42"><p class="qh"><span class="qn">Q42</span> Sort the senses</p>
+<p>For each, say whether <span class="f">think</span> is a state (opinion) or an activity (mental work), and pick the form: (i) I ___ this plan is risky. (ii) Quiet — I ___ about the last clue.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">(i) state → <strong>think</strong> · (ii) activity → <strong>’m thinking</strong> · <a class="dx" href="#s22">STATIVE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Opinion-<em>think</em> is a flat line: no inside. Deliberation-<em>think</em> is effortful mental activity with duration — the progressive’s natural tenant. One verb, two shapes; context tells you which one showed up.</p></div></details>
+</div></details></li>
+</ol>
+
+<div class="box practice"><p class="bl">Prove it — Section 10 checkpoint</p>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s10-1"><label for="mk-s10-1">I graded all four options of Q36, including ◐ for (d) with the construal that licenses it.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s10-2"><label for="mk-s10-2">I can explain why the “do it on purpose for five minutes” test fails, with <em>sleep</em> or <em>wait</em>.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s10-3"><label for="mk-s10-3">I produced my own chameleon-verb pair (Your turn) and named both senses.</label></div></div>
+</section>
+
+<section id="s11">
+<p class="eyebrow">Section 11 · Signal words and adverbial scope</p>
+<h2>Witnesses, not judges</h2>
+<div class="box concept"><p class="bl">Concept</p>
+<p>Time expressions are <strong>evidence</strong>. Good detectives weigh evidence; they never let one witness dictate the verdict. Every marker below usually suggests a form — and every one of them can be overruled by context:</p></div>
+<div class="tw"><table>
+<tr><th>Witness</th><th>Usually points to</th><th>When it misleads</th></tr>
+<tr><td><span class="f">yesterday, last week, in 2019</span></td><td>simple past (closed box)</td><td>reliable for the clause it modifies — but check <em>which</em> clause it modifies (scope, below)</td></tr>
+<tr><td><span class="f">for</span></td><td>perfect (duration to a platform)</td><td>the stretch may be sealed in the past: <em>I <strong>lived</strong> there for ten years</em> (Q12)</td></tr>
+<tr><td><span class="f">since</span></td><td>perfect (open container from a start point)</td><td>as a conjunction it can mean <em>because</em>: <em>Since you ask, no.</em> — no tense force at all</td></tr>
+<tr><td><span class="f">when</span></td><td>—</td><td>compatible with interruption, sequence, and anteriority (Section 8); it never fixes order by itself</td></tr>
+<tr><td><span class="f">every Sunday, always</span></td><td>simple present habit</td><td>rides happily inside past habits: <em>Every Sunday we <strong>walked</strong> to the lake</em> — the time frame outranks the marker</td></tr>
+<tr><td><span class="f">by / by the time</span></td><td>a platform → past or future perfect</td><td><span class="f">by</span> meaning “beside/via” is unrelated: <em>a walk by the river</em></td></tr>
+<tr><td><span class="f">this morning / today</span></td><td>open container → perfect available</td><td>the container closes as the day moves on: <em>I’ve had two coffees this morning</em> (at 11:00) → <em>I had two coffees this morning</em> (at 16:00)</td></tr>
+</table></div>
+
+<h3>Adverbial scope — which verb does the time phrase touch?</h3>
+<div class="box concept"><p class="bl">Concept</p>
+<p>A time expression modifies <strong>one clause</strong>, not the whole sentence by default — and sometimes the sentence lets it attach to either, creating real ambiguity:</p>
+<p><em>“Yesterday I heard that she resigned.”</em> — Did the hearing happen yesterday, the resigning, or both? Fronted <em>yesterday</em> most naturally scopes over the hearing; the resigning is timed only by inference.</p>
+<p><em>“I’m still working on the essay I started yesterday.”</em> — <span class="f">yesterday</span> governs only the relative clause (<em>started</em>); the main clause sits calmly in the present.</p></div>
+<div class="box caution"><p class="bl">Caution</p>
+<p>Half of all “signal word” errors are really <strong>scope</strong> errors: the learner sees <em>yesterday</em> anywhere in the sentence and pastes past tense everywhere. Ask: <em>which verb is this witness testifying about?</em></p></div>
+
+<div class="yt"><p class="bl">Your turn</p><p>Write one deliberately ambiguous sentence where a time phrase could attach to either of two clauses. Then rewrite it twice, disambiguated each way.</p></div>
+
+<h3>Practice — Signals and scope</h3>
+<div class="controls" role="group" aria-label="Answer controls"><button class="btn" data-act="show">Reveal all answers</button><button class="btn" data-act="hide">Hide all answers</button></div>
+<ol class="qs">
+<li id="q43"><p class="qh"><span class="qn">Q43</span> Fill the blank</p>
+<p>When we lived in Chennai, we ___ (visit) the beach every Sunday.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>visited</strong> · <a class="dx" href="#s22">SIGNAL</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>Every Sunday</em> screams “habit” — but the frame <em>when we lived in Chennai</em> seals the habit inside a closed past chapter. Frame outranks marker: past habit, simple past. (Section 17 adds <span class="f">used to</span> and habitual <span class="f">would</span> here.)</p></div></details>
+</div></details></li>
+
+<li id="q44"><p class="qh"><span class="qn">Q44</span> Two jobs of one word</p>
+<p>Explain the difference in what <span class="f">since</span> is doing: (i) <em>“She has led the team since March.”</em> (ii) <em>“Since you’re here, help me lift this.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">(i) time — open container · (ii) reason — no tense force · <a class="dx" href="#s22">SIGNAL</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Temporal <span class="f">since</span> defines a stretch from a start point to now, inviting the perfect. Causal <span class="f">since</span> = <em>because</em> and pairs with any tense the logic wants. Same witness, two entirely different testimonies.</p></div></details>
+</div></details></li>
+
+<li id="q45"><p class="qh"><span class="qn">Q45</span> Scope ambiguity</p>
+<p><em>“On Tuesday she said she would call.”</em> What are the two readings, and what creates them?</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">Saying on Tuesday vs calling on Tuesday · <a class="dx" href="#s22">ADV-SCOPE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>On Tuesday</em> can attach to the main clause (<em>said</em>: the announcement happened Tuesday) or to the embedded clause (<em>would call</em>: the promised call was scheduled for Tuesday). Move the phrase — <em>She said she would call on Tuesday</em> — and the ambiguity flips its bias but survives. Only rewording kills it: <em>“It was on Tuesday that she said…”</em> / <em>“She said she would call this Tuesday.”</em></p></div></details>
+</div></details></li>
+
+<li id="q46"><p class="qh"><span class="qn">Q46</span> Fill the blank</p>
+<p>I ___ (finish) still ___ the report you asked about — I started it only this morning.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓</span> <strong>haven’t finished</strong> (…still haven’t finished…) · <a class="dx" href="#s22">OPEN-CLOSED</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>Still</em> + negation lives on the now-platform: the expected completion has not arrived <em>yet</em>. And note the scope lesson riding along: <em>this morning</em> times only the starting, not the finishing.</p></div></details>
+</div></details></li>
+
+<li id="q47"><p class="qh"><span class="qn">Q47</span> Grade every option</p>
+<p><em>“I ___ my homework already.”</em> Grade:</p>
+<ol class="opts"><li>have done</li><li>did</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">(a) <span class="v v1">✓ default (BrE)</span> · (b) <span class="v v5">≈ AmE informal</span> · <a class="dx" href="#s22">DIALECT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>Already</em> links the completion to now → perfect in British and exam English. American English routinely says <em>I already did my homework</em> — a systematic variety pattern, not a mistake (Section 18). Know your audience; in formal exams, choose the perfect.</p></div></details>
+</div></details></li>
+
+<li id="q48"><p class="qh"><span class="qn">Q48</span> Repair the reasoning</p>
+<p>A study partner says: “The sentence has <em>for three hours</em>, so it must be present perfect.” Give a counter-example and the better rule.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><em>We waited for three hours</em> — sealed past stretch · <a class="dx" href="#s22">SIGNAL</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><span class="f">for</span> measures a stretch; it says nothing about whether the stretch reaches now. The better rule: locate the stretch first (open container or closed box?), then choose. Witnesses inform; the timeline decides.</p></div></details>
+</div></details></li>
+</ol>
+
+<div class="box practice"><p class="bl">Prove it — Section 11 checkpoint</p>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s11-1"><label for="mk-s11-1">I can state, with an example, how <span class="f">for</span>, <span class="f">since</span>, and <span class="f">every Sunday</span> each mislead.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s11-2"><label for="mk-s11-2">I built and disambiguated my own scope-ambiguous sentence (Your turn).</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s11-3"><label for="mk-s11-3">I can explain Q45’s two readings without re-reading the answer.</label></div></div>
+</section>
+
+<!-- ==================== PART III ==================== -->
+<div class="partband" id="part3">
+  <p class="eyebrow">Part III · Advanced temporal grammar</p>
+  <h2 style="margin:0">The machinery the twelve-form grid never shows</h2>
+  <p>Seven systems that separate exam-passers from genuinely fluent users. Each is short, visual, and drilled.</p>
+</div>
+
+<section id="s12">
+<p class="eyebrow">Section 12 · Future in the past</p>
+<h2>Standing in the past, looking forward</h2>
+<div class="box concept"><p class="bl">Concept</p>
+<p>Stories are told from past vantage points — and from any vantage point you can look <em>forward</em>. English shifts its future toolbox one step back:</p></div>
+<div class="tw"><table>
+<tr><th>Now-based</th><th>Past-based</th><th>Flavour</th></tr>
+<tr><td><span class="f">will leave</span></td><td><span class="f">would leave</span></td><td>later-than-then: <em>She promised she <strong>would</strong> write.</em></td></tr>
+<tr><td><span class="f">is going to leave</span></td><td><span class="f">was going to leave</span></td><td>a then-intention — often unfulfilled: <em>I <strong>was going to</strong> call you, but…</em></td></tr>
+<tr><td><span class="f">is about to leave</span></td><td><span class="f">was about to leave</span></td><td>the then-edge of an event: <em>I <strong>was about to</strong> lock up when the phone rang.</em></td></tr>
+<tr><td><span class="f">is due to leave</span></td><td><span class="f">was due to leave</span></td><td>then-scheduled: <em>The flight <strong>was due to</strong> depart at six.</em></td></tr>
+<tr><td><span class="f">is to leave</span></td><td><span class="f">was to leave</span></td><td>destiny or formal plan, seen from later: <em>He <strong>was to become</strong> president.</em></td></tr>
+</table></div>
+<figure class="tl"><svg viewBox="0 0 600 130" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Future in the past: a dashed reference line THEN in the past zone, a forward arc to a later dot that is still before NOW.">
+<rect class="zP" x="28" y="34" width="272" height="26"/><rect class="zF" x="300" y="34" width="272" height="26"/>
+<line class="ax" x1="28" y1="47" x2="572" y2="47"/><line class="nw" x1="300" y1="28" x2="300" y2="66"/><text class="lbn" x="300" y="22" text-anchor="middle">NOW</text>
+<line class="rf" x1="90" y1="28" x2="90" y2="66"/><text class="lbr" x="90" y="22" text-anchor="middle">THEN</text>
+<circle class="dP" cx="210" cy="47" r="7"/><path class="arc" d="M94,38 Q152,10 206,38"/>
+</svg><figcaption>Future in the past: the arrow leaves a past platform (THEN) and points right. “She promised she would write” — the writing is future from THEN, and may already be past from NOW. Two clocks, one sentence.</figcaption></figure>
+<details class="lay2"><summary>Precision notes — destiny <span class="f">was to</span> and the unrealised <span class="f">was to have</span></summary><div class="l2b">
+<p><span class="f">was to + base</span> reports a plan or fate later fulfilled: <em>He was to become a legend.</em> <span class="f">was to have + participle</span> marks the plan as <strong>unrealised</strong>: <em>She was to have sung the lead, but she fell ill.</em> Likewise <span class="f">would have done</span> and <span class="f">was going to</span> often carry the melancholy of futures that never arrived — grammar has a tense for broken plans.</p>
+</div></details>
+
+<h3>Practice — Future in the past</h3>
+<div class="controls" role="group" aria-label="Answer controls"><button class="btn" data-act="show">Reveal all answers</button><button class="btn" data-act="hide">Hide all answers</button></div>
+<ol class="qs">
+<li id="q49"><p class="qh"><span class="qn">Q49</span> Fill the blank</p>
+<p>As a boy he often said that one day he ___ (own) a bookshop.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>would own</strong> · <a class="dx" href="#s22">FUT-PAST</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The saying is the past platform; the owning lies later than it. <span class="f">will</span> would jump clocks — anchoring the prediction to <em>your</em> now instead of the boy’s then.</p></div></details>
+</div></details></li>
+
+<li id="q50"><p class="qh"><span class="qn">Q50</span> Choose and justify</p>
+<p>I ___ (call) you last night — honestly — but my phone died.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>was going to call</strong> · <a class="dx" href="#s22">FUT-PAST</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>A then-intention overtaken by events — the signature use of <span class="f">was going to</span>, and the reason it so often keeps company with <em>but</em>. <em>Would call</em> here needs a reporting frame (<em>I said I would call</em>) to work.</p></div></details>
+</div></details></li>
+
+<li id="q51"><p class="qh"><span class="qn">Q51</span> MCQ</p>
+<p>The ferry ___ at noon, but the storm kept it in the harbour all day.</p>
+<ol class="opts"><li>was due to leave</li><li>would leave</li><li>was leaving</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>(a) was due to leave</strong>; (c) <span class="v v2">◐</span> · <a class="dx" href="#s22">FUT-PAST</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>A schedule seen from the past, then broken — exactly what <span class="f">was due to</span> is for. (c) <em>was leaving at noon</em> can carry a past arrangement reading and is acceptable; (b) <em>would leave</em> wants a reporting or narrative frame and sits oddly against the plain fact of the storm.</p></div></details>
+</div></details></li>
+
+<li id="q52"><p class="qh"><span class="qn">Q52</span> Explain the nuance</p>
+<p>Biography style: <em>“The shy boy from Porbandar was to change history.”</em> What does <span class="f">was to</span> add that <span class="f">later changed</span> lacks?</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">Destiny viewed from the story’s own moment · <a class="dx" href="#s22">FUT-PAST</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><span class="f">was to</span> plants you beside the shy boy while pointing at his future like fate — the narrator knows the ending, the character doesn’t. <em>Later changed</em> reports the same fact from outside, with the drama drained. This is a register instrument: biography, history writing, sports epics.</p></div></details>
+</div></details></li>
+
+<li id="q53"><p class="qh"><span class="qn">Q53</span> Contrast pair</p>
+<p>What is the difference? <em>“She was to sing the lead.”</em> / <em>“She was to have sung the lead.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">Plan (fate-neutral) vs plan <strong>unrealised</strong> · <a class="dx" href="#s22">FUT-PAST</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The first states the arrangement as history saw it. The second — <span class="f">was to have + participle</span> — bakes the cancellation into the grammar: the singing never happened. English keeps a special shelf for futures that died.</p></div></details>
+</div></details></li>
+</ol>
+<div class="box practice"><p class="bl">Prove it — Section 12 checkpoint</p>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s12-1"><label for="mk-s12-1">I can convert all five now-based future tools into their past-based twins from memory.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s12-2"><label for="mk-s12-2">I can explain the “two clocks” of Q49 on a timeline sketch.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s12-3"><label for="mk-s12-3">I wrote one <span class="f">was going to… but…</span> sentence about my own last week.</label></div></div>
+</section>
+
+<section id="s13">
+<p class="eyebrow">Section 13 · Time clauses, conditionals, and remoteness</p>
+<h2>Where past forms stop meaning past time</h2>
+<div class="box concept"><p class="bl">Concept — rule 1: the no-<span class="f">will</span> zone</p>
+<p>Inside future-referring clauses opened by <span class="f">when, after, before, until, as soon as, once, while, if, unless</span> — use the <strong>present</strong>, not <span class="f">will</span>:</p>
+<p><span class="v v1">✓</span> <em>I’ll call you <strong>when I arrive</strong>.</em> · <span class="v v4">✗</span> <em>when I will arrive</em><br>
+<span class="v v1">✓</span> <em>We’ll leave <strong>as soon as the rain stops</strong>.</em> · and for completion-before: <em>I’ll lend it to you <strong>when I’ve finished</strong> it</em> — present perfect, same zone.</p>
+<p>The main clause carries the future; the subordinate clause borrows its time and stays in present clothing.</p></div>
+<div class="box concept"><p class="bl">Concept — rule 2: remoteness, the second life of the past tense</p>
+<p>Past forms mark <strong>distance</strong> — and English exploits three kinds:</p>
+<p><strong>Distance in time</strong>: <em>She <span class="f">left</span> yesterday.</em><br>
+<strong>Distance from reality</strong>: <em>If I <span class="f">knew</span>, I’d tell you</em> · <em>I wish I <span class="f">had</span> more time</em> · <em>It’s time we <span class="f">left</span></em> · <em>Suppose she <span class="f">came</span> tomorrow?</em> — past forms, present or future time, unreal or tentative meaning.<br>
+<strong>Social distance (politeness)</strong>: <em>I <span class="f">wondered</span> if you <span class="f">could</span> help me</em> — the “past” backs respectfully away from the hearer.</p>
+<p>One mechanism, three uses. This is why “tense = time” had to be filed as an approximation back in Section 3.</p></div>
+<figure class="tl"><svg viewBox="0 0 600 180" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Two-axis remoteness diagram: horizontal axis is time; vertical axis is distance from reality. She-left-yesterday on the real line in the past. If-I-knew lifted above NOW. If-I-had-known lifted above the past zone.">
+<line class="ax" x1="40" y1="132" x2="576" y2="132"/><line class="nw" x1="300" y1="118" x2="300" y2="146"/><text class="lbn" x="300" y="162" text-anchor="middle">NOW</text>
+<line class="ax" x1="40" y1="132" x2="40" y2="22" style="stroke-width:1.5"/>
+<text class="lbs" x="48" y="30">unreal &#8593;</text>
+<text class="lbs" x="576" y="126" text-anchor="end">time &#8594;</text>
+<circle class="dP" cx="150" cy="132" r="7"/><text class="lb" x="150" y="124" text-anchor="middle">left</text>
+<circle class="dN" cx="300" cy="74" r="7"/><text class="lb" x="316" y="70">if I knew</text>
+<circle class="dP" cx="130" cy="46" r="7"/><text class="lb" x="146" y="42">if I had known</text>
+<path class="arc" d="M150,123 Q225,90 292,80"/><path class="arc" d="M150,123 Q120,86 128,54"/>
+</svg><figcaption>Remoteness in two dimensions. “She left yesterday” sits on the real line in the past. The “past” of “if I knew” travels vertically — unreal now, not past. “If I had known” travels both ways: back in time and off the real line. Each past form is one step of distance.</figcaption></figure>
+
+<h3>Practice — Time clauses and remoteness</h3>
+<div class="controls" role="group" aria-label="Answer controls"><button class="btn" data-act="show">Reveal all answers</button><button class="btn" data-act="hide">Hide all answers</button></div>
+<ol class="qs">
+<li id="q54"><p class="qh"><span class="qn">Q54</span> Correction</p>
+<p><em>“I’ll message you as soon as the results will come out.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v4">✗</span> → <strong>…as soon as the results come out</strong> · <a class="dx" href="#s22">TIME-CLAUSE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>As soon as</em> opens a no-<span class="f">will</span> zone: future time, present form. One <span class="f">will</span> per sentence-future is usually all English wants — in the main clause.</p></div></details>
+</div></details></li>
+
+<li id="q55"><p class="qh"><span class="qn">Q55</span> Fill the blank</p>
+<p>You can borrow the novel when I ___ (finish) it — I’m on the last chapter.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>’ve finished</strong> <em>(or)</em> <strong>finish</strong> · <a class="dx" href="#s22">TIME-CLAUSE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Both live legally in the no-<span class="f">will</span> zone. The present perfect adds “fully done first, then hand-over” — completion before the main event; plain <em>finish</em> leaves that sequencing implicit.</p></div></details>
+</div></details></li>
+
+<li id="q56"><p class="qh"><span class="qn">Q56</span> Explain the grammar</p>
+<p><em>“If I knew her number, I would call her.”</em> The speaker is talking about <em>now</em> — so why <span class="f">knew</span>?</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">Remoteness: distance from reality, not from now · <a class="dx" href="#s22">REMOTE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The past form lifts the clause off the real line: I don’t know her number; this is the unreal-now shelf. Move one more step — <em>If I <strong>had known</strong>, I <strong>would have called</strong></em> — and you are distant in both dimensions: unreal <em>and</em> past.</p></div></details>
+</div></details></li>
+
+<li id="q57"><p class="qh"><span class="qn">Q57</span> Fill the blank</p>
+<p>It’s late. It’s time we ___ (go) home.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓ default</span> <strong>went</strong> · <a class="dx" href="#s22">REMOTE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><span class="f">It’s time + past form</span>: the going hasn’t happened (that’s the complaint), so it sits at one remove from reality. <em>It’s time to go</em> is the neutral alternative; <em>it’s time we went</em> adds gentle reproach.</p></div></details>
+</div></details></li>
+
+<li id="q58"><p class="qh"><span class="qn">Q58</span> Register analysis</p>
+<p>Why does a shop assistant say <em>“I was wondering if you needed any help?”</em> — plainly about right now?</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">Social distance — politeness by grammatical remoteness · <a class="dx" href="#s22">REMOTE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Past forms step back from the hearer, making the offer easy to decline: the same remoteness machinery as <em>if I knew</em>, aimed socially instead of at reality. Compare the pressure gradient: <em>Do you need help? → Did you need any help? → I was wondering if you needed any help.</em></p></div></details>
+</div></details></li>
+
+<li id="q59"><p class="qh"><span class="qn">Q59</span> Grade every option</p>
+<p><em>“Unless it ___ , the match goes ahead on Saturday.”</em></p>
+<ol class="opts"><li>rains</li><li>will rain</li><li>rained</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">(a) <span class="v v1">✓</span> · (b) <span class="v v4">✗</span> · (c) <span class="v v3">○</span> · <a class="dx" href="#s22">TIME-CLAUSE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>(a) open condition, no-<span class="f">will</span> zone. (b) breaks the zone. (c) <em>rained</em> is the remote form — grammatical only in a different sentence about an unlikely hypothesis (<em>unless it rained non-stop for a week, the reservoir wouldn’t fill</em>), where the main clause would shift to <span class="f">would</span> too. Context here (real fixture, real Saturday) doesn’t license it.</p></div></details>
+</div></details></li>
+</ol>
+<div class="box practice"><p class="bl">Prove it — Section 13 checkpoint</p>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s13-1"><label for="mk-s13-1">I can list six no-<span class="f">will</span> subordinators and use two in future-referring sentences.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s13-2"><label for="mk-s13-2">I can name the three kinds of distance the past form marks, with one example each.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s13-3"><label for="mk-s13-3">I can place <em>if I knew</em> and <em>if I had known</em> on the two-axis diagram from memory.</label></div></div>
+</section>
+
+<section id="s14">
+<p class="eyebrow">Section 14 · Reported speech</p>
+<h2>Backshift — and when not to</h2>
+<div class="box concept"><p class="bl">Concept — the shift</p>
+<p>Reporting from a past platform slides forms one step back: <span class="f">am → was</span>, <span class="f">have done → had done</span>, <span class="f">did → had done</span> (often optional), <span class="f">will → would</span>, <span class="f">can → could</span>, <span class="f">may → might</span>. <em>“I’m tired,”</em> she said → <em>She said she <strong>was</strong> tired.</em></p>
+<p><strong>Backshift is a courtesy to the past platform, not a law.</strong> When the reported content still holds — or is a standing truth — the present may stay: <em>She said the library <strong>closes</strong> at eight.</em> · <em>He told me he <strong>is</strong> Canadian.</em></p></div>
+<details class="lay2"><summary>Precision notes — the double-access reading</summary><div class="l2b">
+<p>Keeping the present inside a past report — <em>He told me he <strong>is</strong> Canadian</em> — makes a <strong>double claim</strong>: true at the telling <em>and</em> true now, on the speaker’s own authority. Backshifted <em>he said he <strong>was</strong> Canadian</em> commits you only to what was said then. That is why journalism backshifts contested claims (<em>the minister said the figures <strong>were</strong> accurate</em>) and keeps the present for what the writer also endorses. The choice is an act of vouching.</p>
+</div></details>
+<div class="box contrast"><p class="bl">Contrast — questions and commands</p>
+<div class="pair">
+<div><p class="ph">Reported questions</p><p>Statement order, no <span class="f">do</span>, no question mark: <em>“Where do you live?” → He asked where I <strong>lived</strong>.</em> · <em>“Did you finish?” → She asked <strong>if I had finished</strong>.</em></p></div>
+<div><p class="ph">Reported commands</p><p><span class="f">told/asked + object + to-infinitive</span>: <em>“Wait outside.” → She told us <strong>to wait</strong> outside.</em> Negative: <em>told us <strong>not to wait</strong>.</em></p></div>
+</div></div>
+
+<h3>Practice — Reported speech</h3>
+<div class="controls" role="group" aria-label="Answer controls"><button class="btn" data-act="show">Reveal all answers</button><button class="btn" data-act="hide">Hide all answers</button></div>
+<ol class="qs">
+<li id="q60"><p class="qh"><span class="qn">Q60</span> Convert</p>
+<p>Report it: <em>“I have lost the spare key,”</em> Dad admitted.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓</span> <strong>Dad admitted (that) he had lost the spare key.</strong> · <a class="dx" href="#s22">BACKSHIFT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Present perfect backshifts to past perfect: the admitting is the platform, the losing is earlier still. The pronoun shifts with the viewpoint too — reporting moves the whole camera, not just the verb.</p></div></details>
+</div></details></li>
+
+<li id="q61"><p class="qh"><span class="qn">Q61</span> Grade every option</p>
+<p>Yesterday your teacher said: “The exam is on Friday.” It is now Wednesday; the exam is still on Friday. Report it:</p>
+<ol class="opts"><li>She said the exam was on Friday.</li><li>She said the exam is on Friday.</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">(a) <span class="v v1">✓</span> · (b) <span class="v v1">✓</span> — different commitments · <a class="dx" href="#s22">BACKSHIFT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Both natural. (a) reports the past announcement, safely sealed. (b) keeps the present because the fact still holds — the double-access reading: true then, and I vouch it is true now. If the exam had since moved, (b) would become misleading while (a) stayed accurate.</p></div></details>
+</div></details></li>
+
+<li id="q62"><p class="qh"><span class="qn">Q62</span> Correction</p>
+<p><em>“He asked me where did I live.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v4">✗</span> → <strong>He asked me where I lived.</strong> · <a class="dx" href="#s22">BACKSHIFT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Reported questions abandon question syntax: no inversion, no <span class="f">do</span>. The asking is already marked by <em>asked</em>; the embedded clause returns to plain statement order.</p></div></details>
+</div></details></li>
+
+<li id="q63"><p class="qh"><span class="qn">Q63</span> Convert</p>
+<p>Report it: <em>“Don’t touch the wet paint,”</em> the caretaker warned us.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓</span> <strong>The caretaker warned us not to touch the wet paint.</strong> · <a class="dx" href="#s22">BACKSHIFT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Commands report with the to-infinitive; negation slots in front of <span class="f">to</span>. No tense to shift — infinitives are tenseless, which is precisely why commands reach for them.</p></div></details>
+</div></details></li>
+
+<li id="q64"><p class="qh"><span class="qn">Q64</span> Analysis</p>
+<p>A journalist writes: <em>“The minister said the figures <strong>were</strong> accurate.”</em> The minister spoke yesterday; the figures haven’t changed. What is the backshift doing?</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">Declining to vouch · <a class="dx" href="#s22">BACKSHIFT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Keeping the claim in past clothing confines it to the minister’s mouth at the minister’s moment. Writing <em>said the figures <strong>are</strong> accurate</em> would double-access the claim — endorsing it in the journalist’s own now. Backshift here is epistemic hygiene, not time-keeping.</p></div></details>
+</div></details></li>
+</ol>
+<div class="box practice"><p class="bl">Prove it — Section 14 checkpoint</p>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s14-1"><label for="mk-s14-1">I can backshift statements, questions, and commands — one each, from memory.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s14-2"><label for="mk-s14-2">I can explain the double-access reading and when a reporter should avoid it.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s14-3"><label for="mk-s14-3">I know why reported questions lose <span class="f">do</span> and inversion.</label></div></div>
+</section>
+
+<section id="s15">
+<p class="eyebrow">Section 15 · Passive voice across the grid</p>
+<h2>Same timeline, different spotlight</h2>
+<div class="box concept"><p class="bl">Concept</p>
+<p>Voice never moves an event in time — it moves the <strong>spotlight</strong> onto the receiver: <span class="f">be</span> carries the tense-aspect machinery, the participle carries the action. The whole grid passivises:</p></div>
+<div class="tw"><table>
+<tr><th></th><th>Simple</th><th>Progressive</th><th>Perfect</th></tr>
+<tr><td><strong style="color:var(--pres)">Present</strong></td><td><span class="f">is written</span></td><td><span class="f">is being written</span></td><td><span class="f">has been written</span></td></tr>
+<tr><td><strong style="color:var(--past)">Past</strong></td><td><span class="f">was written</span></td><td><span class="f">was being written</span></td><td><span class="f">had been written</span></td></tr>
+<tr><td><strong style="color:var(--fut)">will</strong></td><td><span class="f">will be written</span></td><td>— avoided</td><td><span class="f">will have been written</span></td></tr>
+</table></div>
+<details class="lay2"><summary>Precision notes — the gaps in the passive grid</summary><div class="l2b">
+<p>Perfect-progressive passives (<span class="f">has been being written</span>) and future-progressive passives (<span class="f">will be being written</span>) are grammatical in principle but so heavy that English routinely rephrases: <em>The report has been in preparation for weeks</em> · <em>They will still be repairing the bridge</em> (active). Knowing which cells native usage abandons is itself expert knowledge.</p>
+</div></details>
+
+<h3>Practice — Passive</h3>
+<div class="controls" role="group" aria-label="Answer controls"><button class="btn" data-act="show">Reveal all answers</button><button class="btn" data-act="hide">Hide all answers</button></div>
+<ol class="qs">
+<li id="q65"><p class="qh"><span class="qn">Q65</span> Fill the blank</p>
+<p>Mind the corridor — the floors ___ (clean) right now.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓</span> <strong>are being cleaned</strong> · <a class="dx" href="#s22">PASSIVE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>In progress now + spotlight on the floors: present progressive passive. <em>Are cleaned</em> would state a routine, not the wet floor in front of you.</p></div></details>
+</div></details></li>
+<li id="q66"><p class="qh"><span class="qn">Q66</span> Fill the blank</p>
+<p>When we reached the hall, all the chairs ___ already ___ (arrange) in circles.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓</span> <strong>had already been arranged</strong> · <a class="dx" href="#s22">PASSIVE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Earlier arranging, viewed from the past platform of arrival, doer unknown or unimportant → past perfect passive: the same Section 8 geometry wearing passive clothes.</p></div></details>
+</div></details></li>
+<li id="q67"><p class="qh"><span class="qn">Q67</span> Convert</p>
+<p>Make the project the subject: <em>“By Friday, the team will have completed the project.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓</span> <strong>By Friday, the project will have been completed (by the team).</strong> · <a class="dx" href="#s22">PASSIVE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Future perfect passive: <span class="f">will + have + been + participle</span> — assembly-line order from Section 3, every slot doing its one job. The <em>by</em>-phrase is optional; drop it when the doer is obvious.</p></div></details>
+</div></details></li>
+<li id="q68"><p class="qh"><span class="qn">Q68</span> Diagnose</p>
+<p>What exactly is wrong here — time, aspect, or machinery? <em>“The letters are been delivered at noon every day.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v4">✗ form</span> → <strong>are delivered</strong> · <a class="dx" href="#s22">FORM</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The time choice (routine → present simple) was right; the machinery misfired: <span class="f">been</span> belongs after <span class="f">have</span>, never directly after <span class="f">are</span>. Passive present simple is just <span class="f">be + participle</span>. Naming the broken layer is the repair.</p></div></details>
+</div></details></li>
+</ol>
+<div class="box practice"><p class="bl">Prove it — Section 15 checkpoint</p>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s15-1"><label for="mk-s15-1">I can passivise any cell of the grid by rule, not memory.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s15-2"><label for="mk-s15-2">I know which passive cells English avoids, and how it rephrases them.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s15-3"><label for="mk-s15-3">I can explain why voice changes the spotlight but never the timeline.</label></div></div>
+</section>
+
+<section id="s16">
+<p class="eyebrow">Section 16 · Modal perfects</p>
+<h2>Reasoning backwards in time</h2>
+<div class="box concept"><p class="bl">Concept</p>
+<p><span class="f">modal + have + participle</span> aims a present judgement at a past event — deduction, possibility, criticism, relief, regret:</p></div>
+<div class="tw"><table>
+<tr><th>Form</th><th>Meaning</th><th>Example</th></tr>
+<tr><td><span class="f">must have</span></td><td>confident deduction about the past</td><td><em>The lights are off — they must have left.</em></td></tr>
+<tr><td><span class="f">can’t / couldn’t have</span></td><td>confident negative deduction</td><td><em>She can’t have taken it; she was with me.</em></td></tr>
+<tr><td><span class="f">may / might / could have</span></td><td>open past possibility</td><td><em>He might have missed the bus.</em></td></tr>
+<tr><td><span class="f">should have</span></td><td>right thing, not done (criticism/regret)</td><td><em>You should have called me.</em></td></tr>
+<tr><td><span class="f">could have</span></td><td>possible, not done (missed chance)</td><td><em>We could have won that game.</em></td></tr>
+<tr><td><span class="f">would have</span></td><td>counterfactual outcome</td><td><em>I would have helped, if you’d asked.</em></td></tr>
+<tr><td><span class="f">needn’t have</span></td><td>done, but unnecessary</td><td><em>You needn’t have brought a gift.</em></td></tr>
+</table></div>
+<div class="box contrast"><p class="bl">Contrast — the pair everyone confuses</p>
+<div class="pair">
+<div><p class="ph">needn’t have done</p><p>You <strong>did</strong> it; it wasn’t necessary. <em>You needn’t have waited — I had my key.</em> (You waited.)</p></div>
+<div><p class="ph">didn’t need to do</p><p>It wasn’t necessary; whether you did it is open — usually you <strong>didn’t</strong>. <em>I didn’t need to wait, so I went home.</em></p></div>
+</div></div>
+
+<h3>Practice — Modal perfects</h3>
+<div class="controls" role="group" aria-label="Answer controls"><button class="btn" data-act="show">Reveal all answers</button><button class="btn" data-act="hide">Hide all answers</button></div>
+<ol class="qs">
+<li id="q69"><p class="qh"><span class="qn">Q69</span> MCQ</p>
+<p>The streets are completely dry. It ___ last night after all.</p>
+<ol class="opts"><li>can’t have rained</li><li>must have rained</li><li>shouldn’t have rained</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓</span> <strong>(a) can’t have rained</strong> · <a class="dx" href="#s22">MODAL-TIME</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Present evidence (dry streets) → confident negative deduction about the past. (b) reasons the wrong way from the evidence; (c) would scold the weather for raining — a criticism, not a deduction.</p></div></details>
+</div></details></li>
+<li id="q70"><p class="qh"><span class="qn">Q70</span> Fill the blank</p>
+<p>I ___ (bring) my umbrella — it didn’t rain at all and I carried it around all day.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓</span> <strong>needn’t have brought</strong> · <a class="dx" href="#s22">MODAL-TIME</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The carrying happened; hindsight declares it unnecessary — exactly the <span class="f">needn’t have</span> slot. <em>Didn’t need to bring</em> would clash with “carried it around all day.”</p></div></details>
+</div></details></li>
+<li id="q71"><p class="qh"><span class="qn">Q71</span> Compare two</p>
+<p><em>“You should have told me.”</em> / <em>“You could have told me.”</em> What does each accuse?</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">Duty missed vs opportunity missed · <a class="dx" href="#s22">MODAL-TIME</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><span class="f">should have</span>: telling me was the right thing, and you failed it — moral weight. <span class="f">could have</span>: telling me was possible and you chose not to — exasperation at a wasted option. Both look back from now at a road not taken; they differ in what the road was paved with.</p></div></details>
+</div></details></li>
+<li id="q72"><p class="qh"><span class="qn">Q72</span> Fill the blank</p>
+<p>If you had told me earlier, I ___ (arrange) everything in time.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓</span> <strong>would have arranged</strong> · <a class="dx" href="#s22">MODAL-TIME</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Unreal past condition → counterfactual outcome: <span class="f">would have + participle</span>. This is Section 13’s remoteness at maximum distance — off the real line <em>and</em> back in time — with the modal carrying the consequence.</p></div></details>
+</div></details></li>
+<li id="q73"><p class="qh"><span class="qn">Q73</span> Grade every option</p>
+<p>Rhea isn’t answering her phone. She ___ .</p>
+<ol class="opts"><li>might have gone to bed</li><li>must have gone to bed</li><li>had gone to bed</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">(a) <span class="v v1">✓</span> · (b) <span class="v v2">◐</span> · (c) <span class="v v4">✗ here</span> · <a class="dx" href="#s22">MODAL-TIME</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>One unanswered call supports an open possibility (a). (b) needs stronger evidence — it’s 2 a.m., her light is off — to earn its confidence. (c) is a plain past perfect: it needs a past platform, and this sentence stands in the present. Standalone, it isn’t a deduction at all.</p></div></details>
+</div></details></li>
+</ol>
+<div class="box practice"><p class="bl">Prove it — Section 16 checkpoint</p>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s16-1"><label for="mk-s16-1">I can produce all seven modal-perfect meanings with my own examples.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s16-2"><label for="mk-s16-2">I can state the <span class="f">needn’t have / didn’t need to</span> difference without checking.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s16-3"><label for="mk-s16-3">I matched evidence strength to modal strength in Q73.</label></div></div>
+</section>
+
+<section id="s17">
+<p class="eyebrow">Section 17 · Habitual past</p>
+<h2>used to, would, and the irritated progressive</h2>
+<div class="box concept"><p class="bl">Concept — four instruments for old habits</p>
+<p><span class="f">used to + base</span> — discontinued states <em>and</em> actions: <em>I used to live near the sea. I used to swim daily.</em><br>
+<span class="f">would + base</span> — <strong>actions only</strong>, and only inside an established past frame; nostalgic-narrative flavour: <em>Every summer we’d cycle to the lake, and Grandpa would tell the same story.</em><br>
+<span class="f">simple past + frequency</span> — the neutral workhorse: <em>We often walked to school.</em><br>
+<span class="f">past progressive + always</span> — coloured repetition, usually fond or irritated: <em>He was always losing his keys.</em></p></div>
+<figure class="tl"><svg viewBox="0 0 600 110" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Habitual past: a bracket labelled the frame encloses a row of repeated ochre dots deep in the past zone, well before NOW.">
+<rect class="zP" x="28" y="34" width="272" height="26"/><rect class="zF" x="300" y="34" width="272" height="26"/>
+<line class="ax" x1="28" y1="47" x2="572" y2="47"/><line class="nw" x1="300" y1="28" x2="300" y2="66"/><text class="lbn" x="300" y="22" text-anchor="middle">NOW</text>
+<path class="arc" d="M50,26 L50,18 L230,18 L230,26"/><text class="lbr" x="140" y="14" text-anchor="middle">the frame</text>
+<circle class="dP" cx="60" cy="47" r="5"/><circle class="dP" cx="100" cy="47" r="5"/><circle class="dP" cx="140" cy="47" r="5"/><circle class="dP" cx="180" cy="47" r="5"/><circle class="dP" cx="220" cy="47" r="5"/>
+</svg><figcaption>Habitual “would” needs a named past frame to live inside: “When we stayed with our aunt, we would…”. The dots repeat, but only once the frame is on stage. “used to” builds its own frame; a bare “we would go to the beach” leaves the listener asking when.</figcaption></figure>
+<div class="box caution"><p class="bl">Caution — the <span class="f">would</span> trap</p>
+<p><span class="v v4">✗</span> <em>I would live in Nagpur as a child</em> — <em>live</em> is a state, and habitual <span class="f">would</span> refuses states: say <em>I used to live in Nagpur</em>. And opening a story cold with <em>“We would go to the beach”</em> leaves the listener asking <em>when?</em> — establish the frame first (<em>When we stayed with our aunt, we would…</em>).</p></div>
+
+<h3>Practice — Habitual past</h3>
+<div class="controls" role="group" aria-label="Answer controls"><button class="btn" data-act="show">Reveal all answers</button><button class="btn" data-act="hide">Hide all answers</button></div>
+<ol class="qs">
+<li id="q74"><p class="qh"><span class="qn">Q74</span> Grade every option</p>
+<p><em>“I ___ a big dog when I was small.”</em></p>
+<ol class="opts"><li>used to have</li><li>would have</li><li>had</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">(a) <span class="v v1">✓</span> · (b) <span class="v v4">✗ here</span> · (c) <span class="v v1">✓</span> · <a class="dx" href="#s22">HABIT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Owning is a state: <span class="f">used to</span> and the plain past both serve; habitual <span class="f">would</span> rejects it (and this string collides with conditional <em>would have</em>, doubling the confusion). The state/action test is the gatekeeper.</p></div></details>
+</div></details></li>
+<li id="q75"><p class="qh"><span class="qn">Q75</span> Fill the blanks</p>
+<p>Every Diwali we ___ (travel) to my grandmother’s house, and she ___ (make) sweets for a whole week beforehand.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓</span> <strong>would travel (…) would make</strong> — or <span class="f">used to</span> / simple past throughout · <a class="dx" href="#s22">HABIT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>Every Diwali</em> raises the frame, so narrative <span class="f">would</span> can carry both repeated actions with its storybook glow. All three habitual instruments are grammatical here; <span class="f">would</span> is the most evocative once the frame exists.</p></div></details>
+</div></details></li>
+<li id="q76"><p class="qh"><span class="qn">Q76</span> What changed?</p>
+<p><em>“He always lost his keys.”</em> / <em>“He was always losing his keys.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">Report vs eye-roll · <a class="dx" href="#s22">HABIT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The simple past states the frequency as fact. The progressive with <span class="f">always</span> paints the habit as an ongoing atmosphere you lived inside — and carries attitude: exasperation or affection. Grammar encoding a sigh.</p></div></details>
+</div></details></li>
+<li id="q77"><p class="qh"><span class="qn">Q77</span> Correction · justify</p>
+<p><em>“I use to play cricket on Sundays.”</em> (about the past)</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v4">✗ form</span> → <strong>used to play</strong> · <a class="dx" href="#s22">FORM</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The habitual marker is <span class="f">used to</span> with the past <em>-d</em> — the <em>d</em> merges with <em>t</em> in speech, which is why the spelling error is so common. (After <span class="f">did</span>, the base surfaces: <em>Did you use to play?</em>)</p></div></details>
+</div></details></li>
+</ol>
+<div class="box practice"><p class="bl">Prove it — Section 17 checkpoint</p>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s17-1"><label for="mk-s17-1">I can state why <span class="f">would live</span> fails but <span class="f">would visit</span> works.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s17-2"><label for="mk-s17-2">I wrote a three-sentence childhood memory using a frame + two habitual <span class="f">would</span>s.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s17-3"><label for="mk-s17-3">I can hear the attitude difference in Q76 and reproduce it about someone I know.</label></div></div>
+</section>
+
+<section id="s18">
+<p class="eyebrow">Section 18 · Dialect, register, variation</p>
+<h2>One system, many Englishes</h2>
+<div class="box concept"><p class="bl">Concept — the ≈ verdict’s home</p>
+<p>Differences between standard varieties are <strong>systematic patterns, not errors</strong>. The skill is matching variety to audience:</p></div>
+<div class="tw"><table>
+<tr><th>Pattern</th><th>British-leaning</th><th>American-leaning</th></tr>
+<tr><td>recent past with <span class="f">just/already/yet</span></td><td><em>I’ve just eaten. Have you finished yet?</em></td><td><em>I just ate. Did you finish yet?</em></td></tr>
+<tr><td>participle of <span class="f">get</span></td><td><em>has got</em></td><td><em>has gotten</em> (obtained/become); <em>has got</em> survives for possession</td></tr>
+<tr><td>collective subjects</td><td><em>The team are playing well.</em></td><td><em>The team is playing well.</em></td></tr>
+<tr><td><span class="f">shall</span></td><td><em>Shall we begin?</em> (offers/suggestions)</td><td>rare; <em>Should we begin?</em></td></tr>
+</table></div>
+<p>Register cuts across geography: <em>I’m loving it</em>, narrative present, and <em>gonna</em> are informal everywhere; exam and formal writing everywhere prefer the conservative options. When in doubt in Indian academic settings, British-leaning exam conventions are the safe default.</p>
+
+<h3>Practice — Variation</h3>
+<div class="controls" role="group" aria-label="Answer controls"><button class="btn" data-act="show">Reveal all answers</button><button class="btn" data-act="hide">Hide all answers</button></div>
+<ol class="qs">
+<li id="q78"><p class="qh"><span class="qn">Q78</span> Judge it</p>
+<p>An American friend texts: <em>“I already saw that movie.”</em> Error?</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v5">≈ variety</span> — standard AmE · <a class="dx" href="#s22">DIALECT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>American English pairs <span class="f">already/just/yet</span> freely with the simple past; British and exam English keep the perfect (<em>I’ve already seen it</em>). Same system, different default settings — translate for your audience, don’t “correct” the friend.</p></div></details>
+</div></details></li>
+<li id="q79"><p class="qh"><span class="qn">Q79</span> Choose for the context</p>
+<p>Formal school report — pick and justify: <em>“The class ___ (make) excellent progress since January.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓</span> <strong>has made</strong> · <a class="dx" href="#s22">DIALECT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>Since January</em> opens the container → perfect; a formal report takes the conservative register. (BrE would also accept plural <em>have made</em> with a collective read; the singular is safest across audiences.)</p></div></details>
+</div></details></li>
+<li id="q80"><p class="qh"><span class="qn">Q80</span> Translate the register</p>
+<p>Rewrite this text-message future for a formal notice: <em>“Heads up — we’re gonna start the meeting at 3, it’ll prob run late.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓</span> <strong>“Please note: the meeting will begin at 3 p.m. and is likely to run late.”</strong> · <a class="dx" href="#s22">REGISTER</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><span class="f">gonna → will</span> (or <span class="f">is scheduled to</span>), <span class="f">prob → is likely to</span>: the future tools have register ranks, and Section 9’s <span class="f">be likely to / be due to</span> family is the formal shelf. Meaning preserved; clothing changed.</p></div></details>
+</div></details></li>
+</ol>
+<div class="box practice"><p class="bl">Prove it — Section 18 checkpoint</p>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s18-1"><label for="mk-s18-1">I can name three BrE/AmE tense-system differences from memory.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s18-2"><label for="mk-s18-2">I applied the ≈ verdict correctly at least twice in this book without prompting.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s18-3"><label for="mk-s18-3">I can shift one sentence across three registers (text / speech / formal notice).</label></div></div>
+</section>
+
+<!-- ==================== PART IV ==================== -->
+<div class="partband" id="part4">
+  <p class="eyebrow">Part IV · Discourse mastery</p>
+  <h2 style="margin:0">Tense beyond the sentence</h2>
+  <p>Where the system pays off: whole stories, real messages, genuine ambiguity.</p>
+</div>
+
+<section id="s19">
+<p class="eyebrow">Section 19 · Narrative layering</p>
+<h2>The three-camera shoot</h2>
+<div class="box concept"><p class="bl">Concept</p>
+<p>A well-told past story runs three cameras at once:<br>
+<strong>Background camera</strong> — past progressive: scene, weather, atmosphere.<br>
+<strong>Action camera</strong> — simple past: the events, in order — the story’s spine.<br>
+<strong>Flashback camera</strong> — past perfect: what was already true or done before the scene.</p></div>
+<figure class="tl"><svg viewBox="0 0 600 165" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Three layered rows over one past timeline: a long background bar; three sequential action dots above it; one earlier flashback dot with an arc back to the action row.">
+<rect class="zP" x="28" y="118" width="272" height="24"/><rect class="zF" x="300" y="118" width="272" height="24"/>
+<line class="ax" x1="28" y1="130" x2="572" y2="130"/><line class="nw" x1="300" y1="112" x2="300" y2="148"/><text class="lbn" x="300" y="162" text-anchor="middle">NOW</text>
+<rect class="bP" x="60" y="94" width="220" height="12" opacity=".45"/><text class="lbs" x="60" y="88">background</text>
+<circle class="dP" cx="110" cy="66" r="6"/><circle class="dP" cx="160" cy="66" r="6"/><circle class="dP" cx="210" cy="66" r="6"/><text class="lbs" x="88" y="52">action</text>
+<circle class="dP" cx="45" cy="26" r="6"/><path class="arc" d="M50,24 Q80,10 108,58"/><text class="lbs" x="64" y="22">flashback</text>
+</svg><figcaption>One scene, three layers. Background (past progressive) — “the rain was drumming.” Action (simple past), the spine — “woke, unzipped, stepped out.” Flashback (past perfect) — “we had arrived the night before.” Readers never see the scaffolding; they just feel oriented.</figcaption></figure>
+
+<h3>Practice — Narrative layering</h3>
+<div class="controls" role="group" aria-label="Answer controls"><button class="btn" data-act="show">Reveal all answers</button><button class="btn" data-act="hide">Hide all answers</button></div>
+<ol class="qs">
+<li id="q81"><p class="qh"><span class="qn">Q81</span> Label the cameras</p>
+<p>Name the layer of each verb: <em>“The station clock <u>was striking</u> six when Meera <u>ran</u> onto the platform. The train <u>had left</u>.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">background · action · flashback · <a class="dx" href="#s22">NARR-LAYER</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>Was striking</em> sets the scene; <em>ran</em> is the spine event; <em>had left</em> is what was already true at that platform — three cameras in twenty words, and the tragedy lives entirely in the third.</p></div></details>
+</div></details></li>
+<li id="q82"><p class="qh"><span class="qn">Q82</span> Complete the scene</p>
+<p>Fill all three, one per camera: “Snow ___ (fall) softly. Arun ___ (open) the gate — someone ___ (shovel) the path already.”</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓</span> <strong>was falling · opened · had shovelled</strong> <span class="v v5">≈ shoveled AmE</span> · <a class="dx" href="#s22">NARR-LAYER</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Atmosphere in progressive, event in simple past, prior work in past perfect — the shovelling’s platform is Arun’s opening, supplied by the sentence before: Section 8’s implicit reference point working inside a story.</p></div></details>
+</div></details></li>
+<li id="q83"><p class="qh"><span class="qn">Q83</span> Edit the flat draft</p>
+<p>Improve by re-layering (keep the facts): <em>“I walked home. It rained. I forgot my umbrella at school.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓</span> <strong>“As I walked home, it was raining — and I had forgotten my umbrella at school.”</strong> · <a class="dx" href="#s22">NARR-LAYER</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The rain becomes weather-in-progress around the walk; the forgetting moves before the scene where it belongs. Three sealed boxes become one inhabited moment. (Other layerings are fine if each verb sits on a deliberate camera.)</p></div></details>
+</div></details></li>
+<li id="q84"><p class="qh"><span class="qn">Q84</span> Spot the deliberate shift</p>
+<p>A memoirist writes: <em>“We buried him on a Tuesday. He <strong>loved</strong> Tuesdays. He always <strong>said</strong> the week finally got honest on a Tuesday.”</em> Why simple past for the loving — and would <em>had loved</em> be wrong?</p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">Both grammatical — different griefs · <a class="dx" href="#s22">NARR-LAYER</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>Loved</em> keeps the man inside the story’s time, alive in his habits beside the funeral. <em>Had loved</em> would file his loving as background completed before the burial — more distant, more final. Neither is an error; the choice is the eulogy. Tense at this level is not correctness but meaning-craft.</p></div></details>
+</div></details></li>
+</ol>
+<div class="box practice"><p class="bl">Prove it — Section 19 checkpoint</p>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s19-1"><label for="mk-s19-1">I can label any past-narrative verb with its camera in one read.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s19-2"><label for="mk-s19-2">I re-layered Q83 and can defend every verb’s camera.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s19-3"><label for="mk-s19-3">I wrote a four-sentence scene of my own using all three cameras.</label></div></div>
+</section>
+
+<section id="s20">
+<p class="eyebrow">Section 20 · The editing and ambiguity laboratory</p>
+<h2>Where single right answers honestly end</h2>
+<div class="box concept"><p class="bl">Concept</p>
+<p>Real text work is not “pick the tense” but <strong>“what does each tense fix, what stays open, and what would pin it down?”</strong> This lab practises exactly that — including on a task the first edition got wrong by pretending it had one answer.</p></div>
+
+<div class="controls" role="group" aria-label="Answer controls"><button class="btn" data-act="show">Reveal all answers</button><button class="btn" data-act="hide">Hide all answers</button></div>
+<ol class="qs">
+<li id="q85"><p class="qh"><span class="qn">Q85</span> Repair the message</p>
+<p>Fix every tense fault in this workplace message and keep the meaning: <em>“Hi sir, I have submitted the report yesterday. I am working on the slides since Monday and I will send them when I will finish.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><span class="v v1">✓</span> <strong>“Hi sir, I submitted the report yesterday. I have been working on the slides since Monday, and I’ll send them when I finish.”</strong> · <a class="dx" href="#s22">DEF-ADV</a> <a class="dx" href="#s22">TIME-CLAUSE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Three separate systems failed: definite-time rule (<em>yesterday</em> → simple past, Section 7); open-container duration (<em>since Monday</em> → perfect progressive, not present progressive); the no-<span class="f">will</span> zone (<em>when I finish</em>, Section 13). Diagnosing per-system beats “fixing the tenses” blindfolded.</p></div></details>
+</div></details></li>
+<li id="q86"><p class="qh"><span class="qn">Q86</span> Preserve the meaningful shift</p>
+<p>A reviewer “corrects” this to all-past. What is lost? <em>“Kalpana Chawla grew up in Karnal. Her journey shows students everywhere that the sky is not the limit.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">The shift is the point — biography past + legacy present · <a class="dx" href="#s22">GEN-TRUTH</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Life events sit in the past; the inspiration is claimed as true <em>now</em>, so the present tense is doing deliberate work. Flattening to <em>showed</em> buries the legacy with the biography. Editing rule: before unifying tenses, ask whether the writer meant the seam.</p></div></details>
+</div></details></li>
+<li id="q87"><p class="qh"><span class="qn">Q87</span> Find the genuine error</p>
+<p>One shift here is meaningful, one is broken. Which is which? <em>“The experiment shows that plants grow faster in blue light. We <strong>measured</strong> each stem daily. The results <strong>suggested</strong> that light colour <strong>was mattering</strong> a great deal.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick"><em>shows/measured</em> = meaningful · <span class="v v4">✗</span> <em>was mattering</em> → <strong>mattered / matters</strong> · <a class="dx" href="#s22">STATIVE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Report grammar legitimately splits: standing findings in the present, method steps in the past. The breakage is aspect: <em>matter</em> is a flat-line state and refuses the progressive. (<em>Suggested</em> vs <em>suggest</em> is a register choice; both defensible.)</p></div></details>
+</div></details></li>
+<li id="q88"><p class="qh"><span class="qn">Q88</span> Ambiguity analysis — the rebuilt classic</p>
+<p>These four sentences arrived shuffled. Do <strong>not</strong> hunt for “the” order — instead: (1) state what each tense fixes about the timeline, (2) give the orderings that remain readable, (3) name one added anchor that would force a unique order.</p>
+<ol class="opts"><li>By then, the rain had stopped.</li><li>We packed the tents while the others were cooking breakfast.</li><li>We had arrived at the campsite the night before, soaked to the skin.</li><li>At sunrise, I unzipped the tent and looked out.</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody">
+<p class="quick">Fixed: (c) earliest; (a) is a <em>state at a reference point</em>, not a datable event. Readable orders: <strong>c–d–a–b</strong> and <strong>c–d–b–a</strong> · <a class="dx" href="#s22">REF-POINT</a> <a class="dx" href="#s22">NARR-LAYER</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>What each tense fixes: (c)’s past perfect + <em>the night before</em> nails the arrival before everything told at sunrise. (d)’s simple past + <em>at sunrise</em> plants the morning platform. (b)’s simple-past-inside-progressive is a morning action wrapped in a cooking backdrop — after (d), but its exact slot relative to (a) is loose. (a)’s <em>by then</em> is a pointer with no clock of its own: it reports the rain already over at whatever moment the neighbouring sentence supplies, so it can sit after (d) (“I looked out; by then the rain had stopped”) or after (b) as a closing observation. That is why the first edition’s single-answer version was unanswerable: the grammar genuinely underdetermines one slot. Forcing anchor: rewrite (a) as <em>“By the time we started packing, the rain had stopped”</em> — now <em>then</em> has an owner and c–d–a–b is the only reading.</p></div></details>
+<p class="xnote"><span class="sub">Expert note</span> · The upgraded skill isn’t sorting sentences; it is knowing <em>which</em> relations tense pins down (anteriority, platforms, backdrops) and which it leaves to discourse — and how to add an anchor when you need to close the gap in your own writing.</p>
+</div></details></li>
+</ol>
+<div class="box practice"><p class="bl">Prove it — Section 20 checkpoint</p>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s20-1"><label for="mk-s20-1">In Q85 I named all three failed systems, not just the fixes.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s20-2"><label for="mk-s20-2">I can explain when a tense shift inside a text is a feature, with Q86 or my own example.</label></div>
+<div class="mkrow"><input type="checkbox" class="mk" id="mk-s20-3"><label for="mk-s20-3">For Q88 I stated what each tense fixes <em>and</em> supplied a forcing anchor.</label></div></div>
+</section>
+
+<!-- ==================== PART V ==================== -->
+<div class="partband" id="part5">
+  <p class="eyebrow">Part V · The mastery system</p>
+  <h2 style="margin:0">Mixed retrieval, diagnosis, production, reference</h2>
+  <p>Interleaved practice across everything — because discrimination between forms, not recall of one form, is the real skill.</p>
+</div>
+
+<section id="s21">
+<p class="eyebrow">Section 21 · Cumulative mixed retrieval</p>
+<h2>Two interleaved sets — no section labels to lean on</h2>
+<p>Do Set A today and Set B after a gap of days. Every item is deliberately drawn from a different section than its neighbours.</p>
+<h3>Set A</h3>
+<div class="controls" role="group" aria-label="Answer controls"><button class="btn" data-act="show">Reveal all answers</button><button class="btn" data-act="hide">Hide all answers</button></div>
+<ol class="qs">
+<li id="q89"><p class="qh"><span class="qn">Q89</span> Fill</p><p>I stepped into the kitchen and smiled — someone ___ (bake) bread that morning.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody"><p class="quick"><span class="v v1">✓</span> <strong>had baked</strong> (or <strong>had been baking</strong> for the lingering smell) · <a class="dx" href="#s22">REF-POINT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Implicit platform = stepping in; the baking precedes it. The progressive variant trades the finished loaves for the activity’s traces — both licensed, differently focused.</p></div></details></div></details></li>
+<li id="q90"><p class="qh"><span class="qn">Q90</span> Grade every option</p><p>“The ceremony ___ at nine, so don’t be late.” (printed invitation in hand)</p>
+<ol class="opts"><li>begins</li><li>is beginning</li><li>will begin</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody"><p class="quick">(a) <span class="v v1">✓</span> · (b) <span class="v v2">◐</span> · (c) <span class="v v1">✓</span> · <a class="dx" href="#s22">FUT-SOURCE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Programme in hand → timetable present is most congruent; <em>will begin</em> states the schedule with authority and is equally at home on the invitation itself; <em>is beginning</em> needs an arrangement construal and sounds odd for a ceremony’s fixed hour.</p></div></details></div></details></li>
+<li id="q91"><p class="qh"><span class="qn">Q91</span> Correction</p><p><em>“She is knowing the answer since yesterday.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody"><p class="quick"><span class="v v4">✗</span> → <strong>She has known the answer since yesterday.</strong> · <a class="dx" href="#s22">STATIVE</a> <a class="dx" href="#s22">OPEN-CLOSED</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Two faults, one clause: <em>know</em> refuses the progressive, and <em>since yesterday</em> opens a container reaching now → continuative perfect, kept simple because the verb is a state.</p></div></details></div></details></li>
+<li id="q92"><p class="qh"><span class="qn">Q92</span> Convert</p><p>Report: <em>“Will you help me tomorrow?”</em> she asked her brother.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody"><p class="quick"><span class="v v1">✓</span> <strong>She asked her brother if/whether he would help her the next day.</strong> · <a class="dx" href="#s22">BACKSHIFT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Yes/no question → <span class="f">if/whether</span> + statement order; <span class="f">will → would</span>; <em>tomorrow</em> re-anchors to <em>the next day</em> because the reporting platform moved.</p></div></details></div></details></li>
+<li id="q93"><p class="qh"><span class="qn">Q93</span> Fill</p><p>Her bag is gone but her scooter’s here — she ___ (take, can’t) it far.</p>
+<details class="ans"><summary>Show answer</summary><div class="abody"><p class="quick"><span class="v v1">✓</span> <strong>can’t have taken</strong> · <a class="dx" href="#s22">MODAL-TIME</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Present evidence → confident negative deduction about a past act: modal perfect, the backwards-reasoning tool of Section 16.</p></div></details></div></details></li>
+<li id="q94"><p class="qh"><span class="qn">Q94</span> Correction</p><p><em>“Wait here until the nurse will call your name.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody"><p class="quick"><span class="v v4">✗</span> → <strong>…until the nurse calls your name.</strong> · <a class="dx" href="#s22">TIME-CLAUSE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>Until</em> opens the no-<span class="f">will</span> zone: future time, present form.</p></div></details></div></details></li>
+<li id="q95"><p class="qh"><span class="qn">Q95</span> Fill</p><p>By the time the inspectors arrive next week, every classroom ___ (repaint).</p>
+<details class="ans"><summary>Show answer</summary><div class="abody"><p class="quick"><span class="v v1">✓</span> <strong>will have been repainted</strong> · <a class="dx" href="#s22">PASSIVE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Future platform (<em>by the time…</em>) + completion before it + spotlight on the rooms: future perfect passive — three sections cooperating in one verb phrase.</p></div></details></div></details></li>
+<li id="q96"><p class="qh"><span class="qn">Q96</span> Compare two</p><p><em>“What did you do when the alarm rang?”</em> / <em>“What were you doing when the alarm rang?”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody"><p class="quick">Response vs backdrop · <a class="dx" href="#s22">WHEN-FLEX</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>The first asks what you did <em>next</em> — your reaction. The second asks what the alarm interrupted. Investigators ask both, in that order, for exactly this reason.</p></div></details></div></details></li>
+</ol>
+<h3>Set B — after a gap</h3>
+<div class="controls" role="group" aria-label="Answer controls"><button class="btn" data-act="show">Reveal all answers</button><button class="btn" data-act="hide">Hide all answers</button></div>
+<ol class="qs">
+<li id="q97"><p class="qh"><span class="qn">Q97</span> Micro-narrative fill</p><p>“Dusk ___ (fall) as we reached the fort. The gates ___ (lock) hours earlier, and a guard ___ (doze) in the archway.”</p>
+<details class="ans"><summary>Show answer</summary><div class="abody"><p class="quick"><span class="v v1">✓</span> <strong>was falling · had been locked · was dozing</strong> · <a class="dx" href="#s22">NARR-LAYER</a> <a class="dx" href="#s22">PASSIVE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Background camera, flashback camera (passive — the locker doesn’t matter), background again. The single action verb, <em>reached</em>, was given to you: the spine the layers hang from.</p></div></details></div></details></li>
+<li id="q98"><p class="qh"><span class="qn">Q98</span> Grade every option</p><p>“As a child, I ___ afraid of the dark.”</p>
+<ol class="opts"><li>used to be</li><li>would be</li><li>was</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody"><p class="quick">(a) <span class="v v1">✓</span> · (b) <span class="v v4">✗ here</span> · (c) <span class="v v1">✓</span> · <a class="dx" href="#s22">HABIT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Being afraid is a state: <span class="f">used to</span> (with its now-it’s-over flavour) and plain past both fit; habitual <span class="f">would</span> rejects states. (<em>Would be afraid whenever the power failed</em> rescues it only by rebuilding the sentence around repeated episodes.)</p></div></details></div></details></li>
+<li id="q99"><p class="qh"><span class="qn">Q99</span> Spot and name</p><p>Name the rule each error breaks: (i) <em>“We have visited the museum last month.”</em> (ii) <em>“I’ll call you after I will land.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody"><p class="quick">(i) definite-time rule · (ii) no-<span class="f">will</span> zone · <a class="dx" href="#s22">DEF-ADV</a> <a class="dx" href="#s22">TIME-CLAUSE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Naming the rule — not just fixing the sentence (<em>visited</em>; <em>after I land</em>) — is what makes the correction transfer to the next thousand sentences.</p></div></details></div></details></li>
+<li id="q100"><p class="qh"><span class="qn">Q100</span> Explain</p><p>Two polite versions of one request — what is the grammar doing? <em>“I want to ask something.”</em> → <em>“I wanted to ask something.”</em> → <em>“I was wanting to ask something.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody"><p class="quick">Stacked remoteness · <a class="dx" href="#s22">REMOTE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Each step adds distance: past form (social remove), then progressive (tentative, in-passing). The desire is entirely present; the grammar is bowing. The third is informal-friendly <span class="v v5">≈</span>; the second is the all-purpose polite default.</p></div></details></div></details></li>
+<li id="q101"><p class="qh"><span class="qn">Q101</span> Complete text — the repaired science log</p><p>Fill all four blanks: “Yesterday we ___ (test) how paper planes fly. Before each throw, we ___ (fold) the wings at the same angle. The plane with folded wingtips ___ (fly) the farthest. From this, we can conclude that small flaps ___ (help) planes glide.”</p>
+<details class="ans"><summary>Show answer</summary><div class="abody"><p class="quick"><span class="v v1">✓</span> <strong>tested · folded · flew · help</strong> · <a class="dx" href="#s22">GEN-TRUTH</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Method and results anchored by <em>yesterday</em> → simple past throughout; the conclusion is wrapped in <em>“we can conclude that…”</em>, which frames a standing truth → present <em>help</em>. The first edition’s version left the last blank genuinely ambiguous (<em>learnt</em> or <em>learn</em>); this rewrite closes the leak so each blank has exactly one defensible answer — the honest way to build a single-answer item.</p></div></details></div></details></li>
+<li id="q102"><p class="qh"><span class="qn">Q102</span> Scope check</p><p>Is this sentence about a past study habit or a present one? <em>“The routine I followed last year still works: I revise each topic twice.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody"><p class="quick">Present habit; <em>last year</em> scopes only the relative clause · <a class="dx" href="#s22">ADV-SCOPE</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p><em>Followed</em> lives with <em>last year</em> inside the relative clause; <em>works</em> and <em>revise</em> stand on the now-platform. One sentence, two time zones, zero contradiction — scope keeps the books.</p></div></details></div></details></li>
+<li id="q103"><p class="qh"><span class="qn">Q103</span> Judge it</p><p>Chennai colleague, informal chat: <em>“I have sent you the file just now.”</em></p>
+<details class="ans"><summary>Show answer</summary><div class="abody"><p class="quick"><span class="v v5">≈ variety</span> — common in Indian English; BrE/AmE defaults differ · <a class="dx" href="#s22">DIALECT</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>Perfect + <em>just now</em> is widespread and comprehensible in Indian English. British English prefers <em>I’ve just sent it</em>; American, <em>I just sent it</em>. For international formal writing choose one of those defaults; among colleagues, communication succeeded — grade varieties by audience, not by one textbook.</p></div></details></div></details></li>
+<li id="q104"><p class="qh"><span class="qn">Q104</span> Capstone — grade the quartet</p><p>Your friend moved to Pune in 2021 and still lives there. Grade each report:</p>
+<ol class="opts"><li>She has lived in Pune since 2021.</li><li>She has been living in Pune since 2021.</li><li>She lived in Pune since 2021.</li><li>She is living in Pune since 2021.</li></ol>
+<details class="ans"><summary>Show answer</summary><div class="abody"><p class="quick">(a) <span class="v v1">✓</span> · (b) <span class="v v1">✓</span> (temporary flavour) · (c) <span class="v v4">✗</span> · (d) <span class="v v4">✗</span> · <a class="dx" href="#s22">OPEN-CLOSED</a></p>
+<details class="why"><summary>Why</summary><div class="wbody"><p>(a) continuative perfect, the plain claim; (b) adds lived-in texture and a hint the arrangement may not be forever. (c) seals the stretch in a closed box while <em>since 2021</em> holds the container open — a genuine contradiction, the ✗ kind no context repairs; (d) same clash from the present progressive, which cannot host a since-container. Two verdicts of each polarity: if you graded all four with reasons, the system is yours.</p></div></details></div></details></li>
+</ol>
+</section>
+
+<section id="s22">
+<p class="eyebrow">Section 22 · Diagnosis and routing</p>
+<h2>Your errors choose your revision</h2>
+<p>Each code below appears on answers throughout the book. Missed a question? Find its code, re-read the routed section, then retry the listed questions <em>after a day’s gap</em>.</p>
+<div class="tw"><table>
+<tr><th>Code</th><th>The confusion it names</th><th>Re-read</th><th>Retry</th></tr>
+<tr><td><span class="dx">VIEWPOINT</span></td><td>outside vs inside view (simple vs progressive)</td><td><a href="#s6">§6</a>, <a href="#s4">§4</a></td><td>Q1, Q6, Q8</td></tr>
+<tr><td><span class="dx">GEN-TRUTH</span></td><td>general truths and standing conclusions</td><td><a href="#s6">§6</a>, <a href="#s20">§20</a></td><td>Q2, Q86, Q101</td></tr>
+<tr><td><span class="dx">TEMP-PERM</span></td><td>stable vs temporary framing</td><td><a href="#s6">§6</a></td><td>Q3, Q5</td></tr>
+<tr><td><span class="dx">STATIVE</span> / <span class="dx">SHAPE</span></td><td>situation shape, construal, coercion</td><td><a href="#s10">§10</a>, <a href="#s4">§4</a></td><td>Q4, Q36–Q42, Q87, Q91</td></tr>
+<tr><td><span class="dx">PERF-READING</span></td><td>which perfect reading is in play</td><td><a href="#s7">§7</a></td><td>Q17, Q9</td></tr>
+<tr><td><span class="dx">OPEN-CLOSED</span></td><td>open container vs closed box periods</td><td><a href="#s7">§7</a></td><td>Q11, Q12, Q104</td></tr>
+<tr><td><span class="dx">DEF-ADV</span></td><td>the definite-time rule</td><td><a href="#s7">§7</a></td><td>Q10, Q85, Q99</td></tr>
+<tr><td><span class="dx">RESULT-PROCESS</span></td><td>perfect simple vs perfect progressive</td><td><a href="#s7">§7</a></td><td>Q14, Q15, Q24</td></tr>
+<tr><td><span class="dx">REF-POINT</span></td><td>past perfect platforms, incl. implicit ones</td><td><a href="#s8">§8</a></td><td>Q20–Q23, Q26, Q88, Q89</td></tr>
+<tr><td><span class="dx">WHEN-FLEX</span></td><td>the three readings of <span class="f">when</span></td><td><a href="#s8">§8</a></td><td>Q19, Q96</td></tr>
+<tr><td><span class="dx">FUT-SOURCE</span></td><td>future tool ↔ source of knowledge</td><td><a href="#s9">§9</a></td><td>Q27–Q35, Q90</td></tr>
+<tr><td><span class="dx">FUT-PAST</span></td><td>future viewed from a past platform</td><td><a href="#s12">§12</a></td><td>Q49–Q53</td></tr>
+<tr><td><span class="dx">TIME-CLAUSE</span></td><td>the no-<span class="f">will</span> zone</td><td><a href="#s13">§13</a></td><td>Q54, Q55, Q59, Q94</td></tr>
+<tr><td><span class="dx">REMOTE</span></td><td>past forms marking unreality or politeness</td><td><a href="#s13">§13</a></td><td>Q56–Q58, Q100</td></tr>
+<tr><td><span class="dx">BACKSHIFT</span></td><td>reported speech, double access</td><td><a href="#s14">§14</a></td><td>Q60–Q64, Q92</td></tr>
+<tr><td><span class="dx">PASSIVE</span></td><td>voice across the grid</td><td><a href="#s15">§15</a></td><td>Q65–Q67, Q95, Q97</td></tr>
+<tr><td><span class="dx">MODAL-TIME</span></td><td>modal perfects, counterfactuals</td><td><a href="#s16">§16</a></td><td>Q69–Q73, Q93</td></tr>
+<tr><td><span class="dx">HABIT</span></td><td><span class="f">used to</span> / habitual <span class="f">would</span></td><td><a href="#s17">§17</a></td><td>Q74–Q76, Q98</td></tr>
+<tr><td><span class="dx">SIGNAL</span> / <span class="dx">ADV-SCOPE</span></td><td>signal-word traps; which clause an adverbial touches</td><td><a href="#s11">§11</a></td><td>Q43–Q48, Q102</td></tr>
+<tr><td><span class="dx">NARR-LAYER</span></td><td>background / action / flashback cameras</td><td><a href="#s19">§19</a></td><td>Q18, Q81–Q84, Q97</td></tr>
+<tr><td><span class="dx">DIALECT</span> / <span class="dx">REGISTER</span></td><td>variety and formality differences (the ≈ zone)</td><td><a href="#s18">§18</a></td><td>Q7, Q39, Q47, Q78–Q80, Q103</td></tr>
+<tr><td><span class="dx">FORM</span></td><td>broken machinery: participles, auxiliaries, spelling</td><td><a href="#s3">§3</a></td><td>Q25, Q68, Q77</td></tr>
+</table></div>
+</section>
+
+<section id="s23">
+<p class="eyebrow">Section 23 · The production ladder</p>
+<h2>From judging sentences to owning them</h2>
+<div class="box practice"><p class="bl">Task 1 — the layered memory (150–200 words)</p>
+<p>Write about a childhood place you loved. Requirements: an established frame + two habitual <span class="f">would</span>s (§17); one past-progressive backdrop; one past perfect with an <em>implicit</em> reference point (§8); one sentence whose present tense deliberately survives into today (<em>“The house still stands…”</em>). Then annotate your own draft with camera labels from §19.</p></div>
+<div class="box practice"><p class="bl">Task 2 — the professional update (100–150 words)</p>
+<p>Write a project update to a teacher or manager covering: what you completed and when (definite-time rule, §7); what has been in progress since a start point; what is arranged for next week vs what you predict (§9 — use two <em>different</em> future tools and be able to say why); one conditional; one polite remote request (§13). Audit it afterwards with the routing codes — every verb should survive interrogation.</p></div>
+<div class="box practice"><p class="bl">Task 3 — the editor’s pass</p>
+<p>Take any page of your own older writing. Mark every verb: camera, platform, container. Find one tense that is <em>grammatical but not what you meant</em> — the ○ and ◐ zone — and fix it. That single act, repeated weekly, is the whole method.</p></div>
+</section>
+
+<section id="s24">
+<p class="eyebrow">Section 24 · Reference appendix</p>
+<h2>The one-glance summaries</h2>
+<h3>Irregular participles that break most exam answers</h3>
+<div class="tw narrow"><table>
+<tr><th>Base</th><th>Past</th><th>Participle</th></tr>
+<tr><td>go</td><td>went</td><td>gone</td></tr>
+<tr><td>write</td><td>wrote</td><td>written</td></tr>
+<tr><td>see</td><td>saw</td><td>seen</td></tr>
+<tr><td>do</td><td>did</td><td>done</td></tr>
+<tr><td>take</td><td>took</td><td>taken</td></tr>
+<tr><td>begin</td><td>began</td><td>begun</td></tr>
+<tr><td>drink</td><td>drank</td><td>drunk</td></tr>
+<tr><td>ring</td><td>rang</td><td>rung</td></tr>
+<tr><td>fly</td><td>flew</td><td>flown</td></tr>
+<tr><td>choose</td><td>chose</td><td>chosen</td></tr>
+</table></div>
+<p>Golden rule, once more: the middle column works alone; the right column needs a helper (<span class="f">have/had/be</span>).</p>
+<h3>The decision chain (pocket edition)</h3>
+<div class="box concept"><p class="bl">Concept</p>
+<p>1 · Which zone — and from which platform? 2 · What shape is the situation? 3 · Outside, inside, or linked-back view? 4 · What should the listener feel — fact, process, result, plan, distance? 5 · Assemble: <span class="f">(modal)+(have -en)+(be -ing)+(be -en)+VERB</span>. 6 · Verdict-check the neighbours you rejected.</p></div>
+<h3>The verdict scale, the twelve-form grid, and the nine future tools</h3>
+<p>Verdicts: <a href="#s1">§1</a> · grid with its caveat: <a href="#s5">§5</a> · future toolbox: <a href="#s9">§9</a> · remoteness map: <a href="#s13">§13</a> · routing: <a href="#s22">§22</a>. For a consolidated answer sheet, use <strong>Print with answers</strong> below — it opens every answer and prints one canonical copy, so the key can never drift from the questions.</p>
+</section>
+
+<footer>
+<div class="controls">
+<button class="btn primary" id="printall">Print with answers</button>
+<button class="btn" id="clearprog">Clear progress</button>
+</div>
+<p>Verb Tense Mastery · Second edition. Self-contained: no external fonts, scripts, or connections. Answers are inline and canonical; progress ticks live only in this browser. Revised throughout after expert linguistic review: corrected definitions of tense and aspect, graded five-point verdicts, implicit reference points, the two-layer aspect model with coercion, the definite-time rule, remoteness, backshift and double access, and four repaired assessment items (now Q36, Q34, Q88, Q101).</p>
+</footer>
+
+</div><!-- /wrap -->
+
+<script>
+(function(){
+  "use strict";
+  var PFX="vtm2:";
+  /* Reveal/hide per section */
+  document.addEventListener("click",function(e){
+    var b=e.target.closest("[data-act]");
+    if(!b)return;
+    var sec=b.closest("section");if(!sec)return;
+    var open=b.getAttribute("data-act")==="show";
+    var scope=b.closest(".controls").nextElementSibling;
+    var list=(scope&&scope.matches("ol.qs"))?scope:sec;
+    list.querySelectorAll("details.ans").forEach(function(d){
+      d.open=open;
+      if(!open)d.querySelectorAll("details").forEach(function(w){w.open=false;});
+    });
+  });
+  /* Summary label swap */
+  document.querySelectorAll("details.ans").forEach(function(d){
+    d.addEventListener("toggle",function(){
+      var s=d.querySelector("summary");
+      if(s)s.textContent=d.open?"Hide answer":"Show answer";
+    });
+  });
+  /* Progress bar */
+  var pbar=document.getElementById("pbar");
+  function prog(){
+    var h=document.documentElement;
+    var max=h.scrollHeight-h.clientHeight;
+    pbar.style.width=(max>0?(h.scrollTop/max)*100:0)+"%";
+  }
+  addEventListener("scroll",prog,{passive:true});prog();
+  /* TOC */
+  var btn=document.getElementById("tocbtn"),dr=document.getElementById("tocdrawer"),
+      list=document.getElementById("toclist"),filter=document.getElementById("tocfilter");
+  document.querySelectorAll(".partband, section[id]").forEach(function(el){
+    var li=document.createElement("li");
+    if(el.classList.contains("partband")){
+      li.className="tpart";
+      li.textContent=el.querySelector(".eyebrow").textContent;
+    }else{
+      var a=document.createElement("a");
+      a.href="#"+el.id;
+      var eb=el.querySelector(".eyebrow"),h=el.querySelector("h2");
+      a.textContent=(eb?eb.textContent.replace("Section","§").replace(" · ",": ")+" — ":"")+(h?h.textContent:el.id);
+      a.addEventListener("click",function(){dr.classList.remove("open");btn.setAttribute("aria-expanded","false");});
+      li.appendChild(a);
+    }
+    list.appendChild(li);
+  });
+  btn.addEventListener("click",function(){
+    var open=dr.classList.toggle("open");
+    btn.setAttribute("aria-expanded",open?"true":"false");
+    if(open)filter.focus();
+  });
+  filter.addEventListener("input",function(){
+    var q=filter.value.trim().toLowerCase();
+    list.querySelectorAll("li").forEach(function(li){
+      li.style.display=(!q||li.classList.contains("tpart")||li.textContent.toLowerCase().indexOf(q)>-1)?"":"none";
+    });
+  });
+  /* Mastery checkboxes: persist locally (optional feature; Clear resets) */
+  var store=null;
+  try{store=window.localStorage;}catch(e){}
+  document.querySelectorAll("input.mk").forEach(function(c){
+    if(store&&store.getItem(PFX+c.id)==="1")c.checked=true;
+    c.addEventListener("change",function(){
+      if(!store)return;
+      if(c.checked)store.setItem(PFX+c.id,"1");else store.removeItem(PFX+c.id);
+    });
+  });
+  document.getElementById("clearprog").addEventListener("click",function(){
+    if(store){Object.keys(store).forEach(function(k){if(k.indexOf(PFX)===0)store.removeItem(k);});}
+    document.querySelectorAll("input.mk").forEach(function(c){c.checked=false;});
+  });
+  /* Print with answers */
+  document.getElementById("printall").addEventListener("click",function(){
+    document.querySelectorAll("details").forEach(function(d){d.open=true;});
+    setTimeout(function(){window.print();},60);
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1837 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>The One In Charge — how an Operating System runs your computer</title>
+<meta name="description" content="A visual, first-principles journey that shows a young learner where the Operating System sits inside a computer, and why nothing works without it.">
+<style>
+/* ============================================================
+   TOKENS
+   Every part of the computer keeps the same colour, everywhere,
+   on every diagram, for the whole page.
+   ============================================================ */
+:root{
+  --ink:#070C18;
+  --ink-1:#0C1326;
+  --ink-2:#111B33;
+  --ink-3:#17233F;
+  --line:#243255;
+  --line-soft:#1B2743;
+  --cream:#E9EEFB;
+  --dim:#9AA8C7;
+  --dimmer:#6D7C9C;
+
+  --cpu:#FF8A3D;      /* the doer      */
+  --ram:#2FD9C6;      /* the workbench */
+  --store:#A97BFF;    /* the cupboard  */
+  --os:#FFC94A;       /* the keyholder */
+  --app:#FF6FA5;      /* the programs  */
+  --dev:#7FA9FF;      /* the devices   */
+  --warn:#FF5566;
+  --ok:#5BE49B;
+
+  --display:"Avenir Next","Futura","Trebuchet MS","Segoe UI",system-ui,-apple-system,sans-serif;
+  --body:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,"Cascadia Mono","Segoe UI Mono",Menlo,Consolas,monospace;
+
+  --r:14px;
+  --r-lg:22px;
+  --pad:clamp(1rem,3.5vw,2rem);
+  --gap:clamp(1rem,2.5vw,1.6rem);
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:
+    radial-gradient(1200px 700px at 78% -8%, rgba(255,201,74,.10), transparent 62%),
+    radial-gradient(1000px 620px at 6% 12%, rgba(47,217,198,.07), transparent 60%),
+    var(--ink);
+  color:var(--cream);
+  font-family:var(--body);
+  font-size:clamp(16.5px,1.02rem + .18vw,19px);
+  line-height:1.72;
+  letter-spacing:.005em;
+  overflow-x:hidden;
+}
+img,svg{max-width:100%}
+p{margin:0 0 1.05em}
+p:last-child{margin-bottom:0}
+b,strong{color:#fff;font-weight:700}
+a{color:var(--os)}
+
+h1,h2,h3,h4{font-family:var(--display);font-weight:800;letter-spacing:-.022em;line-height:1.08;margin:0}
+h2{font-size:clamp(1.85rem,1.2rem + 2.6vw,3.1rem)}
+h3{font-size:clamp(1.2rem,1rem + 1vw,1.6rem);line-height:1.2;letter-spacing:-.015em}
+h4{font-size:1.02rem;letter-spacing:-.005em}
+
+.eyebrow{
+  font-family:var(--mono);
+  font-size:.72rem;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--dimmer);
+  margin:0 0 .85rem;
+  display:flex;align-items:center;gap:.6rem;
+}
+.eyebrow::before{
+  content:"";width:1.6rem;height:2px;border-radius:2px;
+  background:var(--os);opacity:.85;flex:none;
+}
+.lead{font-size:1.1em;color:#F3F6FF}
+.muted{color:var(--dim)}
+.small{font-size:.86rem;line-height:1.6;color:var(--dim)}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.wrap{width:min(100% - 2.2rem,1120px);margin-inline:auto}
+.col{width:min(100%,66ch);margin-inline:auto}
+
+.skip{
+  position:absolute;left:-999px;top:0;z-index:99;
+  background:var(--os);color:#1B1400;padding:.7rem 1.1rem;border-radius:0 0 12px 0;
+  font-family:var(--mono);font-size:.8rem;text-decoration:none;
+}
+.skip:focus{left:0}
+
+:focus-visible{outline:3px solid var(--os);outline-offset:3px;border-radius:6px}
+
+/* --- the gold thread: the OS is always present, running down the page --- */
+.rail{
+  position:fixed;left:0;top:0;height:100vh;width:250px;z-index:20;
+  padding:2.2rem 1rem 2.2rem 1.6rem;
+  display:none;flex-direction:column;justify-content:center;
+  background:linear-gradient(90deg,rgba(7,12,24,.92),rgba(7,12,24,0));
+  pointer-events:none;
+}
+.rail__title{
+  font-family:var(--mono);font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--dimmer);margin:0 0 1rem .1rem;
+}
+.rail__track{position:relative;padding-left:1.15rem;pointer-events:auto}
+.rail__track::before{
+  content:"";position:absolute;left:3px;top:6px;bottom:6px;width:2px;
+  background:var(--line);border-radius:2px;
+}
+.rail__list{list-style:none;margin:0;padding:0}
+.rail__fill{
+  position:absolute;left:3px;top:6px;width:2px;height:0;border-radius:2px;
+  background:linear-gradient(180deg,var(--os),#FFE9A8);
+  box-shadow:0 0 12px rgba(255,201,74,.55);
+  transition:height .35s var(--ease);
+}
+.rail__list a{
+  position:relative;display:flex;align-items:center;
+  padding:.24rem 0;color:var(--dimmer);text-decoration:none;
+  font-size:.79rem;line-height:1.3;letter-spacing:.005em;
+  transition:color .2s var(--ease);
+}
+.rail__list a::before{
+  content:"";position:absolute;left:-1.15rem;top:50%;transform:translateY(-50%);
+  width:8px;height:8px;border-radius:50%;
+  background:var(--ink);border:2px solid var(--line);transition:background .25s var(--ease),border-color .25s var(--ease),box-shadow .25s var(--ease);
+}
+.rail__list a:hover{color:var(--cream)}
+.rail__list a[aria-current="true"]{color:#fff;font-weight:600}
+.rail__list a[aria-current="true"]::before{background:var(--os);border-color:var(--os);box-shadow:0 0 0 4px rgba(255,201,74,.18)}
+.rail__list a.seen::before{border-color:var(--os)}
+
+/* mobile progress bar */
+.topbar{
+  position:fixed;inset:0 0 auto 0;height:3px;z-index:30;background:rgba(255,255,255,.06);
+}
+.topbar span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--os),#FFE9A8);box-shadow:0 0 10px rgba(255,201,74,.6);transition:width .25s var(--ease)}
+
+@media (min-width:1180px){
+  .rail{display:flex}
+  main{padding-left:250px}
+  .topbar{display:none}
+}
+
+/* ============================================================
+   STOPS
+   ============================================================ */
+.stop{padding:clamp(3.4rem,9vw,6.4rem) 0;position:relative}
+.stop + .stop{border-top:1px solid var(--line-soft)}
+.stop__head{margin-bottom:clamp(1.6rem,4vw,2.6rem)}
+.stop__n{
+  font-family:var(--mono);font-size:.74rem;letter-spacing:.2em;color:var(--os);
+  display:block;margin-bottom:.7rem;
+}
+.stop h2 + p{margin-top:1.1rem}
+
+/* reveal on scroll (only when JS is on, so the page still reads with JS off) */
+.js .rise{opacity:0;transform:translateY(20px)}
+.js .rise.in{opacity:1;transform:none;transition:opacity .7s var(--ease),transform .7s var(--ease)}
+
+/* ============================================================
+   PANELS & FIGURES
+   ============================================================ */
+.panel{
+  background:linear-gradient(180deg,var(--ink-2),var(--ink-1));
+  border:1px solid var(--line);
+  border-radius:var(--r-lg);
+  padding:var(--pad);
+  margin:clamp(1.4rem,3.5vw,2.2rem) auto;
+}
+.panel--wide{width:100%}
+figure{margin:0}
+figcaption{
+  margin-top:1.1rem;font-size:.88rem;line-height:1.6;color:var(--dim);
+  border-left:2px solid var(--os);padding-left:.85rem;
+}
+.fig-label{
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--dimmer);margin-bottom:1.2rem;display:block;
+}
+
+/* ============================================================
+   THE COMPONENT CHIP — one persistent visual identity per part
+   ============================================================ */
+.chip{
+  --c:var(--dim);
+  display:flex;align-items:center;gap:.6rem;
+  padding:.72rem .9rem;border-radius:var(--r);
+  background:color-mix(in srgb,var(--c) 11%,var(--ink-1));
+  border:1.5px solid color-mix(in srgb,var(--c) 45%,transparent);
+  color:var(--cream);font-weight:600;font-size:.92rem;line-height:1.25;
+  text-align:left;min-width:0;
+}
+.chip .ico{width:1.35em;height:1.35em;flex:none;color:var(--c)}
+.chip small{display:block;font-weight:400;font-size:.76em;color:var(--dim);letter-spacing:0}
+.chip--cpu{--c:var(--cpu)} .chip--ram{--c:var(--ram)} .chip--store{--c:var(--store)}
+.chip--os{--c:var(--os)} .chip--app{--c:var(--app)} .chip--dev{--c:var(--dev)}
+.chip--warn{--c:var(--warn)}
+.chip--tall{flex-direction:column;align-items:flex-start;gap:.45rem;padding:1rem}
+.chip--tall .ico{width:1.7em;height:1.7em}
+
+.ico{width:1em;height:1em;display:inline-block;vertical-align:-.14em;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+
+/* ============================================================
+   FLOWS — arrows that turn downward on small screens
+   ============================================================ */
+.flow{display:flex;align-items:stretch;gap:.55rem;flex-wrap:wrap}
+.flow > *{flex:1 1 150px}
+.arrow{
+  flex:0 0 auto;align-self:center;color:var(--dimmer);
+  display:grid;place-items:center;width:1.8rem;
+}
+.arrow svg{width:1.1rem;height:1.1rem}
+@media (max-width:640px){
+  .flow{flex-direction:column}
+  .flow > *{flex:1 1 auto}
+  .arrow{width:100%;transform:rotate(90deg)}
+}
+
+/* ============================================================
+   GRID HELPERS
+   ============================================================ */
+.grid{display:grid;gap:var(--gap)}
+.g2{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(165px,1fr))}
+
+/* ============================================================
+   CONNECT BACK — the same three questions every time
+   ============================================================ */
+.connect{
+  margin:clamp(1.4rem,3.5vw,2rem) auto 0;
+  border:1px solid color-mix(in srgb,var(--os) 32%,transparent);
+  background:color-mix(in srgb,var(--os) 6%,var(--ink-1));
+  border-radius:var(--r-lg);padding:var(--pad);
+}
+.connect h4{
+  font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--os);margin-bottom:1rem;font-weight:600;
+}
+.connect dl{margin:0;display:grid;gap:1rem}
+.connect dt{font-weight:700;color:#fff;font-size:.88rem;font-family:var(--display);letter-spacing:-.01em}
+.connect dd{margin:.15rem 0 0;font-size:.94rem;line-height:1.62;color:var(--dim)}
+@media (min-width:760px){.connect dl{grid-template-columns:repeat(3,1fr);gap:1.4rem}}
+
+/* ============================================================
+   PREDICT → REVEAL
+   ============================================================ */
+.predict{
+  border:1px dashed color-mix(in srgb,var(--app) 45%,transparent);
+  background:color-mix(in srgb,var(--app) 6%,var(--ink-1));
+  border-radius:var(--r-lg);padding:var(--pad);margin:clamp(1.4rem,3.5vw,2rem) auto;
+}
+.predict__q{font-family:var(--display);font-weight:800;font-size:1.12rem;letter-spacing:-.015em;margin:0 0 1rem;color:#fff}
+.predict__opts{display:grid;gap:.6rem;margin-bottom:0}
+@media (min-width:700px){.predict__opts{grid-template-columns:1fr 1fr}}
+.opt{
+  font:inherit;font-size:.94rem;font-weight:600;text-align:left;color:var(--cream);
+  background:var(--ink-2);border:1.5px solid var(--line);border-radius:var(--r);
+  padding:.85rem 1rem;cursor:pointer;transition:all .2s var(--ease);
+}
+.opt:hover:not(:disabled){border-color:var(--app);transform:translateY(-2px)}
+.opt:disabled{cursor:default;opacity:.55}
+.opt[data-picked]{opacity:1;border-color:var(--os);background:color-mix(in srgb,var(--os) 12%,var(--ink-2))}
+.js .predict__ans{display:none}
+.predict__ans{margin-top:1.1rem;padding-top:1.1rem;border-top:1px solid var(--line)}
+.predict__ans.show{display:block;animation:fade .5s var(--ease)}
+.verdict{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--os);margin-bottom:.5rem}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ============================================================
+   MYTH CARDS
+   ============================================================ */
+.myth{margin:clamp(1.4rem,3.5vw,2rem) auto;border-radius:var(--r-lg);border:1px solid var(--line);overflow:hidden;background:var(--ink-1)}
+.myth__top{padding:1.1rem var(--pad);background:color-mix(in srgb,var(--warn) 9%,transparent);border-bottom:1px solid var(--line)}
+.myth__bot{padding:1.1rem var(--pad)}
+.myth__tag{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;display:block;margin-bottom:.4rem}
+.myth__top .myth__tag{color:var(--warn)}
+.myth__bot .myth__tag{color:var(--ok)}
+.myth p{font-size:.95rem;margin:0;line-height:1.6}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn{
+  font:inherit;font-weight:700;font-size:.9rem;font-family:var(--display);letter-spacing:-.005em;
+  background:var(--os);color:#1B1400;border:none;border-radius:999px;
+  padding:.72rem 1.35rem;cursor:pointer;transition:transform .18s var(--ease),box-shadow .18s var(--ease);
+  display:inline-flex;align-items:center;gap:.45rem;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,201,74,.25)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+.btn--ghost{background:transparent;color:var(--cream);border:1.5px solid var(--line)}
+.btn--ghost:hover{border-color:var(--os);box-shadow:none}
+.btn .ico{width:1.05em;height:1.05em}
+.controls{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-top:1.3rem}
+
+/* ============================================================
+   RANGE SLIDER
+   ============================================================ */
+.slider{margin-top:1.4rem}
+.slider label{display:block;font-family:var(--mono);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dimmer);margin-bottom:.7rem}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:99px;
+  background:linear-gradient(90deg,var(--ram),var(--os));outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:26px;height:26px;border-radius:50%;
+  background:#fff;border:4px solid var(--os);cursor:grab;box-shadow:0 4px 14px rgba(0,0,0,.5);
+}
+input[type=range]::-moz-range-thumb{
+  width:20px;height:20px;border-radius:50%;background:#fff;border:4px solid var(--os);cursor:grab;
+}
+.scale{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.68rem;color:var(--dimmer);margin-top:.55rem}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+  .js .rise{opacity:1;transform:none}
+}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero{padding:clamp(3.5rem,11vh,7rem) 0 clamp(3rem,8vw,5rem);position:relative}
+.hero h1{
+  font-size:clamp(2.6rem,1.1rem + 8.4vw,6rem);
+  line-height:.94;letter-spacing:-.035em;margin:.6rem 0 0;
+}
+.hero h1 em{
+  font-style:normal;display:block;
+  background:linear-gradient(100deg,var(--os),#FFF0BF 55%,var(--os));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hero__sub{margin-top:1.5rem;font-size:clamp(1.05rem,.95rem + .6vw,1.35rem);line-height:1.55;color:#F2F5FF;max-width:34ch}
+.hero__note{margin-top:1.9rem;font-family:var(--mono);font-size:.76rem;letter-spacing:.05em;color:var(--dimmer);max-width:40ch;line-height:1.7}
+.hero__parts{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:2.2rem}
+.tag{
+  --c:var(--dim);
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+  padding:.35rem .7rem;border-radius:99px;
+  border:1px solid color-mix(in srgb,var(--c) 45%,transparent);
+  background:color-mix(in srgb,var(--c) 10%,transparent);color:var(--c);
+}
+.tag--os{--c:var(--os);border-style:dashed}
+.thread{
+  position:absolute;left:50%;bottom:-1px;width:2px;height:clamp(40px,7vw,72px);
+  background:linear-gradient(180deg,transparent,var(--os));
+}
+.thread::after{
+  content:"";position:absolute;left:50%;bottom:-4px;translate:-50% 0;
+  width:9px;height:9px;border-radius:50%;background:var(--os);
+  box-shadow:0 0 14px 3px rgba(255,201,74,.6);
+  animation:bob 2.6s var(--ease) infinite;
+}
+@keyframes bob{0%,100%{transform:translateY(0);opacity:1}50%{transform:translateY(-8px);opacity:.55}}
+
+/* ============================================================
+   THE MACHINE (recap diagram)
+   ============================================================ */
+.machine{display:grid;gap:.7rem}
+.mrow{display:grid;gap:.7rem}
+@media (min-width:720px){.mrow--3{grid-template-columns:1.4fr 1fr 1fr}}
+.part{
+  --c:var(--dim);
+  border:1.5px solid color-mix(in srgb,var(--c) 45%,transparent);
+  background:color-mix(in srgb,var(--c) 9%,var(--ink-1));
+  border-radius:var(--r);padding:1rem;
+}
+.part--cpu{--c:var(--cpu)} .part--ram{--c:var(--ram)} .part--store{--c:var(--store)}
+.part--dev{--c:var(--dev)} .part--app{--c:var(--app)} .part--os{--c:var(--os)}
+.part__hd{display:flex;align-items:center;gap:.5rem;margin-bottom:.55rem}
+.part__hd .ico{width:1.25em;height:1.25em;color:var(--c);flex:none}
+.part__nm{font-family:var(--display);font-weight:800;font-size:.98rem;letter-spacing:-.01em;color:#fff}
+.part__nm span{display:block;font-family:var(--mono);font-weight:400;font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;color:var(--c);margin-top:.15rem}
+.part p{font-size:.86rem;line-height:1.55;color:var(--dim);margin:0}
+.subparts{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:.4rem;margin-top:.8rem}
+.subpart{
+  background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);
+  border-radius:9px;padding:.5rem .6rem;
+}
+.subpart b{display:block;font-size:.76rem;color:#fff;font-family:var(--display);letter-spacing:-.005em}
+.subpart span{font-size:.7rem;color:var(--dimmer);line-height:1.4;display:block}
+
+/* numbered memory cells */
+.cells{display:flex;gap:3px;margin-top:.7rem;overflow:hidden;border-radius:6px}
+.cell{
+  flex:1 1 0;min-width:0;height:34px;border-radius:4px;
+  background:rgba(47,217,198,.13);border:1px solid rgba(47,217,198,.3);
+  display:grid;place-items:center;
+  font-family:var(--mono);font-size:.58rem;color:var(--dim);
+  transition:all .3s var(--ease);
+}
+.cell.hide-sm{display:none}
+@media (min-width:520px){.cell.hide-sm{display:grid}}
+
+/* ============================================================
+   CHAOS PANELS
+   ============================================================ */
+.chaos{border-color:color-mix(in srgb,var(--warn) 35%,transparent)}
+.crash{
+  border:1px solid color-mix(in srgb,var(--warn) 30%,transparent);
+  background:color-mix(in srgb,var(--warn) 7%,var(--ink-1));
+  border-radius:var(--r);padding:1.1rem;
+}
+.crash__n{font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;color:var(--warn);display:block;margin-bottom:.5rem}
+.crash h4{color:#fff;margin-bottom:.4rem;font-size:1rem}
+.crash p{font-size:.87rem;line-height:1.58;color:var(--dim);margin:0}
+.crash__vis{
+  margin-top:.85rem;padding:.6rem;border-radius:9px;background:rgba(0,0,0,.3);
+  font-family:var(--mono);font-size:.7rem;color:var(--warn);line-height:1.7;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+}
+.crash__vis b{color:#fff;font-weight:600}
+
+/* ============================================================
+   THE OS BAND — the signature motif. Gold, always in the middle.
+   ============================================================ */
+.osband{
+  position:relative;border-radius:var(--r);padding:1.05rem 1.15rem;
+  background:linear-gradient(100deg,rgba(255,201,74,.22),rgba(255,201,74,.1) 45%,rgba(255,201,74,.22));
+  border:1.5px solid var(--os);
+  box-shadow:0 0 34px rgba(255,201,74,.14),inset 0 0 26px rgba(255,201,74,.07);
+  overflow:hidden;
+}
+.osband::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(100deg,transparent 35%,rgba(255,255,255,.16) 50%,transparent 65%);
+  transform:translateX(-100%);animation:sweep 5.5s var(--ease) infinite;
+}
+@keyframes sweep{0%,55%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.osband__hd{display:flex;align-items:center;gap:.6rem;position:relative;z-index:1}
+.osband__hd .ico{width:1.4em;height:1.4em;color:var(--os);flex:none}
+.osband__nm{font-family:var(--display);font-weight:800;font-size:1.02rem;color:#fff;letter-spacing:-.01em;line-height:1.15}
+.osband__nm span{display:block;font-family:var(--mono);font-weight:400;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--os);margin-top:.2rem}
+.osband__jobs{
+  display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.85rem;position:relative;z-index:1;
+}
+.job{
+  font-family:var(--mono);font-size:.63rem;letter-spacing:.08em;text-transform:uppercase;
+  padding:.3rem .6rem;border-radius:99px;background:rgba(255,201,74,.16);
+  border:1px solid rgba(255,201,74,.42);color:#FFE9A8;white-space:nowrap;
+}
+.gate{
+  display:grid;place-items:center;font-family:var(--mono);font-size:.64rem;
+  letter-spacing:.15em;text-transform:uppercase;color:var(--os);padding:.45rem 0;
+}
+
+/* ============================================================
+   TURN-TAKING SIMULATOR
+   ============================================================ */
+.sim__stage{display:grid;gap:.7rem}
+@media (min-width:760px){.sim__stage{grid-template-columns:1fr auto 1fr;align-items:center}}
+.lamps{display:grid;gap:.55rem}
+.lamp{
+  --c:var(--app);
+  display:flex;align-items:center;gap:.65rem;padding:.7rem .85rem;border-radius:var(--r);
+  border:1.5px solid color-mix(in srgb,var(--c) 30%,transparent);
+  background:color-mix(in srgb,var(--c) 6%,var(--ink-1));
+  transition:border-color .12s linear,background .12s linear,box-shadow .12s linear;
+}
+.lamp[data-hot="1"]{
+  border-color:var(--c);
+  background:color-mix(in srgb,var(--c) 20%,var(--ink-1));
+  box-shadow:0 0 26px color-mix(in srgb,var(--c) 28%,transparent);
+}
+.lamp .ico{width:1.3em;height:1.3em;color:var(--c);flex:none}
+.lamp b{font-size:.9rem;color:#fff;font-family:var(--display);letter-spacing:-.01em}
+.lamp small{display:block;font-family:var(--mono);font-size:.64rem;color:var(--dim);letter-spacing:.06em}
+.lamp--1{--c:#FF6FA5}.lamp--2{--c:#7FA9FF}.lamp--3{--c:#5BE49B}
+.core{
+  border:1.5px solid var(--cpu);border-radius:var(--r);padding:1rem;text-align:center;
+  background:color-mix(in srgb,var(--cpu) 12%,var(--ink-1));min-width:150px;
+}
+.core .ico{width:2em;height:2em;color:var(--cpu)}
+.core__lbl{font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--cpu);margin-top:.3rem}
+.core__now{font-family:var(--display);font-weight:800;font-size:1.05rem;color:#fff;margin-top:.4rem;min-height:1.3em}
+.swapnote{
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;color:var(--os);
+  margin-top:.35rem;min-height:1.4em;opacity:0;transition:opacity .18s linear;
+}
+.swapnote.on{opacity:1}
+.timeline{
+  display:flex;gap:2px;height:44px;margin-top:1.2rem;border-radius:8px;overflow:hidden;
+  background:rgba(0,0,0,.35);padding:5px;
+}
+.tick{flex:1 1 0;min-width:0;border-radius:2px;background:rgba(255,255,255,.05);transition:background .15s linear}
+.readout{
+  display:flex;flex-wrap:wrap;gap:1.2rem;margin-top:1rem;
+  font-family:var(--mono);font-size:.72rem;color:var(--dim);letter-spacing:.05em;
+}
+.readout b{color:var(--os);font-weight:600}
+
+/* ============================================================
+   MEMORY FENCES
+   ============================================================ */
+.memrow{display:flex;gap:4px;border-radius:12px;background:rgba(0,0,0,.3);padding:6px;overflow:hidden}
+.region{
+  --c:var(--app);
+  flex:1 1 0;min-width:0;border-radius:8px;padding:.75rem .6rem;text-align:center;position:relative;
+  background:color-mix(in srgb,var(--c) 16%,transparent);
+  border:1.5px solid color-mix(in srgb,var(--c) 55%,transparent);
+  transition:all .3s var(--ease);
+}
+.region b{display:block;font-size:.8rem;color:#fff;font-family:var(--display);letter-spacing:-.01em;line-height:1.2}
+.region span{font-family:var(--mono);font-size:.6rem;color:var(--dim);letter-spacing:.05em;display:block;margin-top:.25rem}
+.region--1{--c:#FF6FA5}.region--2{--c:#7FA9FF}.region--3{--c:#5BE49B}.region--free{--c:#4A5878}
+.region.blocked{--c:var(--warn);animation:shake .4s var(--ease)}
+.region.blocked b::after{content:" ✕";color:var(--warn)}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.fence{
+  flex:0 0 8px;border-radius:99px;background:repeating-linear-gradient(180deg,var(--os) 0 5px,transparent 5px 10px);
+  opacity:.45;transition:opacity .25s var(--ease),box-shadow .25s var(--ease);
+}
+.fence.flash{opacity:1;box-shadow:0 0 16px 3px rgba(255,201,74,.65)}
+@media (max-width:520px){.region{padding:.6rem .25rem}.region b{font-size:.68rem}.region span{font-size:.52rem}.memrow{gap:2px}.fence{flex-basis:6px}}
+.osverdict{
+  margin-top:1.1rem;padding:.85rem 1rem;border-radius:var(--r);min-height:3.4rem;
+  border:1px solid var(--line);background:var(--ink-2);font-size:.9rem;line-height:1.55;color:var(--dim);
+}
+.osverdict b{color:var(--os)}
+
+/* ============================================================
+   FILE MAP
+   ============================================================ */
+.mapcard{
+  border:1.5px solid color-mix(in srgb,var(--os) 45%,transparent);
+  background:color-mix(in srgb,var(--os) 7%,var(--ink-1));border-radius:var(--r);padding:1rem;
+}
+.maprow{
+  display:flex;align-items:center;gap:.6rem;padding:.5rem 0;
+  border-bottom:1px dashed rgba(255,201,74,.2);font-family:var(--mono);font-size:.76rem;
+}
+.maprow:last-child{border-bottom:none}
+.maprow b{color:#fff;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.maprow span{color:var(--store);white-space:nowrap;font-size:.72rem}
+.disk{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(26px,1fr));gap:3px;
+  padding:.6rem;border-radius:12px;background:rgba(0,0,0,.3);
+  border:1px solid color-mix(in srgb,var(--store) 30%,transparent);
+}
+.blk{aspect-ratio:1;border-radius:4px;background:rgba(169,123,255,.09);border:1px solid rgba(169,123,255,.16)}
+.blk[data-of]{background:color-mix(in srgb,var(--store) 45%,transparent);border-color:var(--store)}
+.blk[data-of="cat"]{background:rgba(255,111,165,.55);border-color:#FF6FA5}
+.blk[data-of="song"]{background:rgba(127,169,255,.5);border-color:#7FA9FF}
+.blk[data-of="story"]{background:rgba(91,228,155,.5);border-color:#5BE49B}
+
+/* ============================================================
+   TRANSLATOR
+   ============================================================ */
+.babel{display:grid;gap:.7rem;align-items:center}
+@media (min-width:820px){.babel{grid-template-columns:1fr 1.5rem 1.15fr 1.5rem 1fr}}
+.speech{
+  font-family:var(--mono);font-size:.72rem;letter-spacing:.02em;
+  padding:.5rem .7rem;border-radius:9px;margin-top:.5rem;line-height:1.5;
+  background:rgba(0,0,0,.28);color:var(--dim);
+}
+.speech b{color:#fff;font-weight:600}
+.books{display:grid;gap:.4rem;margin-top:.8rem}
+.book{
+  display:flex;align-items:center;gap:.5rem;font-family:var(--mono);font-size:.68rem;
+  padding:.42rem .6rem;border-radius:7px;background:rgba(255,201,74,.1);
+  border:1px solid rgba(255,201,74,.28);color:#FFE9A8;
+}
+.book .ico{width:1em;height:1em;flex:none}
+@media (max-width:819px){.babel .arrow{width:100%;transform:rotate(90deg)}}
+
+/* ============================================================
+   QUEUE / REFEREE
+   ============================================================ */
+.queue{display:flex;gap:.45rem;flex-wrap:wrap;margin-top:.9rem}
+.qitem{
+  --c:var(--app);
+  font-family:var(--mono);font-size:.68rem;padding:.45rem .7rem;border-radius:8px;
+  background:color-mix(in srgb,var(--c) 15%,transparent);
+  border:1px solid color-mix(in srgb,var(--c) 45%,transparent);color:#fff;
+}
+.qitem--1{--c:#FF6FA5}.qitem--2{--c:#7FA9FF}.qitem--3{--c:#5BE49B}.qitem--4{--c:#FFC94A}
+
+/* ============================================================
+   TRACE (follow one keypress)
+   ============================================================ */
+.trace__map{display:grid;gap:.5rem;margin-bottom:1.3rem;grid-template-columns:repeat(auto-fit,minmax(106px,1fr))}
+.node{
+  --c:var(--dim);
+  border:1.5px solid var(--line);background:var(--ink-2);border-radius:var(--r);
+  padding:.8rem .7rem;text-align:center;transition:all .35s var(--ease);opacity:.42;
+}
+.node .ico{width:1.5em;height:1.5em;color:var(--c)}
+.node b{display:block;font-size:.78rem;color:#fff;margin-top:.3rem;font-family:var(--display);letter-spacing:-.01em}
+.node.on{
+  opacity:1;border-color:var(--c);
+  background:color-mix(in srgb,var(--c) 16%,var(--ink-2));
+  box-shadow:0 0 26px color-mix(in srgb,var(--c) 25%,transparent);transform:translateY(-3px);
+}
+.node--dev{--c:var(--dev)}.node--os{--c:var(--os)}.node--app{--c:var(--app)}
+.node--cpu{--c:var(--cpu)}.node--out{--c:var(--dev)}
+.step{
+  border:1px solid var(--line);border-radius:var(--r);background:var(--ink-2);padding:var(--pad);
+  min-height:9.5rem;display:flex;flex-direction:column;justify-content:center;
+}
+.step__n{font-family:var(--mono);font-size:.66rem;letter-spacing:.2em;color:var(--os);margin-bottom:.55rem}
+.step p{font-size:1rem;line-height:1.62;margin:0;color:#F2F5FF}
+.step p + p{margin-top:.6rem;font-size:.87rem;color:var(--dim)}
+.dots{display:flex;gap:.35rem;margin-left:auto}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--line);transition:all .25s var(--ease)}
+.dot.on{background:var(--os);box-shadow:0 0 10px rgba(255,201,74,.6)}
+.dot.done{background:rgba(255,201,74,.42)}
+
+/* ============================================================
+   THE ONE BIG PICTURE
+   ============================================================ */
+.big{display:grid;gap:.55rem}
+.big__lane{
+  font-family:var(--mono);font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--dimmer);margin-bottom:.15rem;
+}
+.big__row{display:grid;gap:.5rem;grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+.big__thru{
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--os);
+  padding:.3rem 0;
+}
+.big__thru::before,.big__thru::after{content:"";height:1px;flex:1;background:linear-gradient(90deg,transparent,rgba(255,201,74,.45),transparent)}
+.mini{
+  --c:var(--dim);
+  border:1.5px solid color-mix(in srgb,var(--c) 42%,transparent);
+  background:color-mix(in srgb,var(--c) 10%,var(--ink-1));
+  border-radius:12px;padding:.7rem .55rem;text-align:center;
+}
+.mini .ico{width:1.35em;height:1.35em;color:var(--c)}
+.mini b{display:block;font-size:.76rem;color:#fff;margin-top:.25rem;font-family:var(--display);letter-spacing:-.01em}
+.mini small{display:block;font-size:.66rem;color:var(--dim);line-height:1.35;margin-top:.15rem}
+.mini--app{--c:var(--app)}.mini--cpu{--c:var(--cpu)}.mini--ram{--c:var(--ram)}
+.mini--store{--c:var(--store)}.mini--dev{--c:var(--dev)}
+
+/* ============================================================
+   FINALE
+   ============================================================ */
+.finale{
+  border:1.5px solid color-mix(in srgb,var(--os) 40%,transparent);
+  background:radial-gradient(700px 320px at 50% 0%,rgba(255,201,74,.13),transparent 70%),var(--ink-1);
+  border-radius:var(--r-lg);padding:clamp(1.5rem,5vw,3rem);text-align:center;
+}
+.seal{
+  width:104px;height:104px;margin:0 auto 1.4rem;border-radius:50%;display:grid;place-items:center;
+  border:2px solid var(--os);background:radial-gradient(circle at 35% 30%,rgba(255,201,74,.3),rgba(255,201,74,.07));
+  box-shadow:0 0 44px rgba(255,201,74,.28);position:relative;
+}
+.seal .ico{width:2.6rem;height:2.6rem;color:var(--os)}
+.seal.locked{opacity:.3;filter:grayscale(1);box-shadow:none}
+.seal.pop{animation:pop .9s var(--ease)}
+@keyframes pop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.14)}100%{transform:scale(1);opacity:1}}
+.spark{position:absolute;left:50%;top:50%;width:7px;height:7px;border-radius:50%;background:var(--os);opacity:0;pointer-events:none}
+.spark.go{animation:fly .95s var(--ease) forwards}
+@keyframes fly{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.2)}}
+.taskbox{text-align:left;margin-top:1.6rem}
+.taskbox label{display:block;font-family:var(--display);font-weight:800;font-size:1.02rem;color:#fff;margin-bottom:.3rem;letter-spacing:-.01em}
+.taskbox .small{margin-bottom:.7rem}
+textarea{
+  width:100%;min-height:6.2rem;resize:vertical;font:inherit;font-size:.95rem;line-height:1.6;
+  background:var(--ink-2);color:var(--cream);border:1.5px solid var(--line);
+  border-radius:var(--r);padding:.9rem 1rem;
+}
+textarea:focus{border-color:var(--os);outline:none}
+.saved{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ok);margin-top:.5rem;opacity:0;transition:opacity .3s}
+.saved.on{opacity:1}
+.checklist{display:grid;gap:.5rem;margin:1.4rem auto 0;max-width:26rem;text-align:left}
+.check{
+  display:flex;align-items:center;gap:.6rem;font-size:.88rem;color:var(--dim);
+  padding:.55rem .8rem;border-radius:10px;border:1px solid var(--line);background:var(--ink-2);
+  transition:all .3s var(--ease);
+}
+.check .ico{width:1.1em;height:1.1em;color:var(--dimmer);flex:none}
+.check.done{color:#fff;border-color:color-mix(in srgb,var(--ok) 45%,transparent);background:color-mix(in srgb,var(--ok) 8%,var(--ink-2))}
+.check.done .ico{color:var(--ok)}
+
+.tracelist{list-style:none;margin:0;padding:0;counter-reset:t}
+.tracelist li{
+  border:1px solid var(--line);border-radius:var(--r);background:var(--ink-2);
+  padding:var(--pad);margin-bottom:.6rem;
+}
+.tracelist li::before{
+  content:"Step " counter(t);counter-increment:t;
+  font-family:var(--mono);font-size:.66rem;letter-spacing:.2em;color:var(--os);
+  display:block;margin-bottom:.55rem;
+}
+.tracelist b{
+  display:block;font-family:var(--display);font-weight:800;font-size:clamp(1.05rem,.98rem + .4vw,1.25rem);
+  letter-spacing:-.018em;color:#fff;margin-bottom:.5rem;line-height:1.25;
+}
+.tracelist p{font-size:.95rem;line-height:1.62;color:var(--dim);margin:0}
+.js .tracelist{min-height:12rem}
+.js .tracelist li{display:none;margin-bottom:0;animation:fade .4s var(--ease)}
+.js .tracelist li.on{display:block}
+
+.idea{
+  border-left:3px solid var(--os);padding:.15rem 0 .15rem 1.25rem;
+  margin:clamp(1.5rem,4.5vw,2.6rem) auto;
+  font-family:var(--display);font-weight:800;letter-spacing:-.022em;
+  font-size:clamp(1.15rem,1rem + 1.15vw,1.8rem);line-height:1.26;color:#fff;
+}
+.idea span{
+  display:block;font-family:var(--body);font-weight:400;letter-spacing:0;
+  font-size:.6em;line-height:1.62;color:var(--dim);margin-top:.7rem;
+}
+
+footer{padding:3rem 0 4.5rem;border-top:1px solid var(--line-soft);margin-top:2rem}
+.reset{
+  font:inherit;font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+  background:none;border:none;color:var(--dimmer);cursor:pointer;padding:.3rem 0;text-decoration:underline;
+}
+.reset:hover{color:var(--os)}
+</style>
+</head>
+<body>
+<script>document.documentElement.className="js"</script>
+
+<!-- ICON SET: one shape per idea, reused everywhere -->
+<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+<defs>
+<g id="i-cpu"><rect x="4" y="4" width="16" height="16" rx="3"/><rect x="8.5" y="8.5" width="7" height="7" rx="1.5"/><path d="M9 1.5v2.5M15 1.5v2.5M9 20v2.5M15 20v2.5M1.5 9H4M1.5 15H4M20 9h2.5M20 15h2.5"/></g>
+<g id="i-ram"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M6.5 7v10M11 7v10M15.5 7v10"/></g>
+<g id="i-store"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></g>
+<g id="i-key"><circle cx="7.5" cy="12" r="4"/><path d="M11.5 12H21M18 12v3.5M21 12v3"/></g>
+<g id="i-app"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9h18M6.4 6.5h.01M9.4 6.5h.01"/></g>
+<g id="i-dev"><rect x="2" y="6" width="20" height="12" rx="2.5"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8.5 14h7"/></g>
+<g id="i-arrow"><path d="M4 12h15M13 6l6 6-6 6"/></g>
+<g id="i-shield"><path d="M12 2.8l8 3v6.2c0 4.9-3.3 8.2-8 9.6-4.7-1.4-8-4.7-8-9.6V5.8z"/></g>
+<g id="i-clock"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.3l3.2 2"/></g>
+<g id="i-map"><path d="M9 3.8L3 6.4v13.8L9 17.6l6 2.6 6-2.6V3.8L15 6.4z"/><path d="M9 3.8v13.8M15 6.4v13.8"/></g>
+<g id="i-lang"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/></g>
+<g id="i-scales"><path d="M12 3.5v17M5.5 20.5h13M5 7.5h14M7 7.5l-3 6h6zM17 7.5l-3 6h6z"/></g>
+<g id="i-check"><path d="M4.5 12.5l5 5.2L19.5 6.6"/></g>
+<g id="i-circle"><circle cx="12" cy="12" r="8.5"/></g>
+<g id="i-bolt"><path d="M13.5 2.5L4.5 14h6.2l-1.2 7.5L19.5 10h-6.4z"/></g>
+<g id="i-alert"><path d="M12 3.2l9.4 16.6H2.6z"/><path d="M12 9.6v4.2M12 17.2h.01"/></g>
+<g id="i-music"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></g>
+<g id="i-brush"><path d="M3 21c0-3 1.8-4.2 4-4.2L17.2 6.6l3.2 3.2L10.2 20c0 2.2-1.2 4-4 4z"/><path d="M15 4.8l4.2 4.2"/></g>
+<g id="i-screen"><rect x="2" y="4" width="20" height="13" rx="2.5"/><path d="M8.5 21h7M12 17v4"/></g>
+<g id="i-lock"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 018 0v3"/></g>
+<g id="i-power"><path d="M12 3v9"/><path d="M18.4 6.6a9 9 0 11-12.8 0"/></g>
+<g id="i-file"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M13.6 3v5.2h5.2"/></g>
+<g id="i-eye"><path d="M2 12s3.7-7 10-7 10 7 10 7-3.7 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3.2"/></g>
+</defs>
+</svg>
+
+<a class="skip" href="#s1">Skip to the first stop</a>
+<div class="topbar" aria-hidden="true"><span id="topFill"></span></div>
+
+<nav class="rail" aria-label="Where you are in the journey">
+  <p class="rail__title">The journey</p>
+  <div class="rail__track">
+  <span class="rail__fill" id="railFill" aria-hidden="true"></span>
+  <ol class="rail__list" id="railList">
+    <li><a href="#s1">The parts you know</a></li>
+    <li><a href="#s2">Nobody in charge</a></li>
+    <li><a href="#s3">Meet the one in charge</a></li>
+    <li><a href="#s4">The one big rule</a></li>
+    <li><a href="#s5">Taking turns</a></li>
+    <li><a href="#s6">Fences in the memory</a></li>
+    <li><a href="#s7">The map of the cupboard</a></li>
+    <li><a href="#s8">Speaking every language</a></li>
+    <li><a href="#s9">The referee</a></li>
+    <li><a href="#s10">The secret</a></li>
+    <li><a href="#s11">Follow one keypress</a></li>
+    <li><a href="#s12">The whole picture</a></li>
+    <li><a href="#s13">Your turn</a></li>
+  </ol>
+  </div>
+</nav>
+
+<main>
+<header class="hero wrap" id="top">
+  <div class="col">
+    <p class="eyebrow">A journey in 13 stops</p>
+    <h1>Your computer has a<em>boss you never see.</em></h1>
+    <p class="hero__sub">You already know the CPU, the memory, the storage and the programs. Put them all in a box and press the button&hellip; and nothing works.</p>
+    <p class="hero__sub" style="color:var(--os)">Something is missing. Let's go and find it.</p>
+    <div class="hero__parts" aria-label="Parts you already know, plus one you do not">
+      <span class="tag" style="--c:var(--cpu)">CPU</span>
+      <span class="tag" style="--c:var(--ram)">RAM</span>
+      <span class="tag" style="--c:var(--store)">Storage</span>
+      <span class="tag" style="--c:var(--app)">Programs</span>
+      <span class="tag" style="--c:var(--dev)">Devices</span>
+      <span class="tag tag--os">? ? ?</span>
+    </div>
+    <p class="hero__note">Scroll down. Nothing here is a test — every button is safe to press, and the page remembers how far you got.</p>
+  </div>
+  <div class="thread" aria-hidden="true"></div>
+</header>
+<!-- ══════════════ STOP 1 ══════════════ -->
+<section class="stop wrap" id="s1" aria-labelledby="h1a">
+ <div class="col stop__head rise">
+  <span class="stop__n">Stop 01</span>
+  <h2 id="h1a">Everything you already know, in five colours</h2>
+  <p class="lead">Here is a computer with the lid off. You have met all of these before.</p>
+  <p class="muted">From now on, every single picture on this page uses these exact colours. Once you know them, you can read any diagram here without reading a word.</p>
+ </div>
+
+ <figure class="panel panel--wide rise">
+  <span class="fig-label">Diagram 1 · the machine you already understand</span>
+  <div class="machine">
+   <div class="mrow mrow--3">
+    <div class="part part--cpu">
+     <div class="part__hd"><svg viewBox="0 0 24 24" class="ico"><use href="#i-cpu"/></svg><span class="part__nm">CPU<span>the doer</span></span></div>
+     <p>Impossibly fast. It does one tiny instruction, then the next, then the next — billions of times every second.</p>
+     <div class="subparts">
+      <div class="subpart"><b>Control Unit</b><span>reads the instruction</span></div>
+      <div class="subpart"><b>ALU</b><span>does the maths</span></div>
+      <div class="subpart"><b>Registers</b><span>tiny pockets for right-now numbers</span></div>
+      <div class="subpart"><b>Program Counter</b><span>the finger pointing at what's next</span></div>
+     </div>
+    </div>
+    <div class="part part--ram">
+     <div class="part__hd"><svg viewBox="0 0 24 24" class="ico"><use href="#i-ram"/></svg><span class="part__nm">RAM<span>the workbench</span></span></div>
+     <p>One long row of numbered boxes. Quick to reach, but small — and it goes completely blank the moment the power goes off.</p>
+     <div class="cells" aria-hidden="true">
+      <span class="cell">498</span><span class="cell">499</span><span class="cell">500</span><span class="cell">501</span><span class="cell hide-sm">502</span><span class="cell hide-sm">503</span>
+     </div>
+    </div>
+    <div class="part part--store">
+     <div class="part__hd"><svg viewBox="0 0 24 24" class="ico"><use href="#i-store"/></svg><span class="part__nm">Storage<span>the deep cupboard</span></span></div>
+     <p>Enormous and slow. It remembers everything even when the computer is switched off. But nothing in here can be used until it is carried out to the workbench.</p>
+    </div>
+   </div>
+
+   <div class="flow" role="group" aria-label="How a program travels before it can run">
+    <div class="chip chip--store"><svg viewBox="0 0 24 24" class="ico"><use href="#i-store"/></svg><span>Sleeping in storage<small>a program here does nothing at all</small></span></div>
+    <span class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24" class="ico"><use href="#i-arrow"/></svg></span>
+    <div class="chip chip--ram"><svg viewBox="0 0 24 24" class="ico"><use href="#i-ram"/></svg><span>Copied into RAM<small>now it is close enough to use</small></span></div>
+    <span class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24" class="ico"><use href="#i-arrow"/></svg></span>
+    <div class="chip chip--cpu"><svg viewBox="0 0 24 24" class="ico"><use href="#i-cpu"/></svg><span>Read by the CPU<small>now it is alive and running</small></span></div>
+   </div>
+
+   <div class="mrow" style="margin-top:.7rem">
+    <div class="part part--dev">
+     <div class="part__hd"><svg viewBox="0 0 24 24" class="ico"><use href="#i-dev"/></svg><span class="part__nm">Devices<span>the ways in and out</span></span></div>
+     <p style="margin-bottom:.8rem">Everything that carries something into the computer, or out of it.</p>
+     <div class="flow" style="gap:.4rem">
+      <div class="chip chip--dev" style="font-size:.8rem"><svg viewBox="0 0 24 24" class="ico"><use href="#i-dev"/></svg>Keyboard</div>
+      <div class="chip chip--dev" style="font-size:.8rem"><svg viewBox="0 0 24 24" class="ico"><use href="#i-screen"/></svg>Screen</div>
+      <div class="chip chip--dev" style="font-size:.8rem"><svg viewBox="0 0 24 24" class="ico"><use href="#i-music"/></svg>Speaker</div>
+      <div class="chip chip--dev" style="font-size:.8rem"><svg viewBox="0 0 24 24" class="ico"><use href="#i-file"/></svg>Printer</div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <figcaption>A program is only a list of instructions. Asleep in the cupboard it does nothing. It comes alive when it is copied onto the workbench and the CPU starts reading it.</figcaption>
+ </figure>
+
+ <div class="col rise">
+  <p class="idea">The CPU never asks &ldquo;should I?&rdquo;
+   <span>It cannot tell whose instruction it is reading. It cannot refuse. It cannot notice that something has gone wrong. It just does the next thing on the list — forever. Remember that. It is the reason this whole page exists.</span>
+  </p>
+ </div>
+</section>
+
+<!-- ══════════════ STOP 2 ══════════════ -->
+<section class="stop wrap" id="s2" aria-labelledby="h2a">
+ <div class="col stop__head rise">
+  <span class="stop__n">Stop 02</span>
+  <h2 id="h2a">Now switch it on with nobody in charge</h2>
+  <p class="lead">We load three programs into RAM — a game, a drawing app and a music player — and press go. Nothing else. No helper of any kind.</p>
+ </div>
+
+ <div class="col predict rise" data-predict>
+  <p class="predict__q">Before you scroll: what do you think happens?</p>
+  <div class="predict__opts">
+   <button class="opt" type="button" data-a="a">They take turns politely.</button>
+   <button class="opt" type="button" data-a="b">They crash into each other almost at once.</button>
+   <button class="opt" type="button" data-a="c">Only the first one ever runs.</button>
+  </div>
+  <div class="predict__ans" data-for="a">
+   <p class="verdict">A kind guess — but look closer</p>
+   <p>Nothing in this machine is capable of being polite. A program cannot see the other programs. It cannot even tell that there <em>are</em> other programs. It only knows its own list of instructions, and the CPU does whatever that list says.</p>
+  </div>
+  <div class="predict__ans" data-for="b">
+   <p class="verdict">Exactly right</p>
+   <p>And the four ways it crashes are worth looking at one by one — because each one is a job that somebody is going to have to do.</p>
+  </div>
+  <div class="predict__ans" data-for="c">
+   <p class="verdict">Very close</p>
+   <p>That is disaster number four below, and it really does happen. But three other things go wrong before it even gets that far.</p>
+  </div>
+ </div>
+
+ <figure class="panel panel--wide chaos rise">
+  <span class="fig-label">Diagram 2 · four things that go wrong in the first second</span>
+  <div class="grid g2">
+   <div class="crash">
+    <span class="crash__n">Crash 01 — the overwrite</span>
+    <h4>Two programs, one box</h4>
+    <p>Your game keeps its score in memory box 500. The drawing app has never heard of your game, so it uses box 500 as well. Now the score is a colour and the colour is a score. Both break.</p>
+    <div class="crash__vis">box 500: <b>score 42</b> &rarr; <b>colour #FF00AA</b> &rarr; ???</div>
+   </div>
+   <div class="crash">
+    <span class="crash__n">Crash 02 — the tug of war</span>
+    <h4>Everyone grabs the printer</h4>
+    <p>Two programs send words to the printer in the same instant. The printer cannot tell that they are two different programs. It simply prints whatever arrives.</p>
+    <div class="crash__vis">wanted: <b>DEAR MUM</b> + <b>HELLO</b> &rarr; got: <b>DHEEALRL MOUM</b></div>
+   </div>
+   <div class="crash">
+    <span class="crash__n">Crash 03 — the impossible homework</span>
+    <h4>Every program must know every device</h4>
+    <p>There are thousands of different keyboards, screens and printers in the world, and each one speaks its own strange language. With no helper, every single program would need to know all of them.</p>
+    <div class="crash__vis">drawing app = <b>4 pages</b> of drawing + <b>1,000,000 pages</b> of printer talk</div>
+   </div>
+   <div class="crash">
+    <span class="crash__n">Crash 04 — the one that never stops</span>
+    <h4>Nobody can take a turn back</h4>
+    <p>The game starts counting to a billion. There is nobody to tap it on the shoulder, and the CPU never asks &ldquo;should I?&rdquo;. So it keeps counting. The music stops. The mouse freezes. It does not come back.</p>
+    <div class="crash__vis">cpu: <b>4,001,922,015&hellip;</b> music: silent · mouse: frozen</div>
+   </div>
+  </div>
+  <figcaption>Look at what these four disasters have in common. Not one of them is caused by a broken part. Every part is working perfectly.</figcaption>
+ </figure>
+
+ <div class="col rise">
+  <p class="idea">Nothing here is broken. What is missing is <em>somebody in charge.</em>
+   <span>Fast parts are not enough. Somebody has to hand out the space, hold the queue, speak to the devices, and take the turn back. That somebody is the piece you have not met yet.</span>
+  </p>
+ </div>
+</section>
+
+<!-- ══════════════ STOP 3 ══════════════ -->
+<section class="stop wrap" id="s3" aria-labelledby="h3a">
+ <div class="col stop__head rise">
+  <span class="stop__n">Stop 03</span>
+  <h2 id="h3a">Meet the one in charge</h2>
+  <p class="lead">The missing piece is called the <strong>Operating System</strong>. It is not a new lump of hardware. There is no extra chip. It is a program — but a very unusual one.</p>
+  <p class="muted">It starts before everything else. It never stops running. And it holds the keys to every other part of the machine.</p>
+ </div>
+
+ <figure class="panel panel--wide rise">
+  <span class="fig-label">Diagram 3 · one picture to keep for the whole journey</span>
+  <p class="muted" style="margin-bottom:1.3rem;font-size:.95rem">Picture a huge, roaring kitchen. We will come back to this kitchen at every stop from now on.</p>
+  <div class="grid g2">
+   <div class="part part--cpu"><div class="part__hd"><svg viewBox="0 0 24 24" class="ico"><use href="#i-cpu"/></svg><span class="part__nm">The cooks<span>= the CPU</span></span></div><p>Impossibly fast hands. They follow a recipe card exactly, and never wonder whose card it is.</p></div>
+   <div class="part part--ram"><div class="part__hd"><svg viewBox="0 0 24 24" class="ico"><use href="#i-ram"/></svg><span class="part__nm">The counter<span>= RAM</span></span></div><p>The only place you can actually work. Whatever is being cooked right now must be out on it. It gets wiped every night.</p></div>
+   <div class="part part--store"><div class="part__hd"><svg viewBox="0 0 24 24" class="ico"><use href="#i-store"/></svg><span class="part__nm">The pantry<span>= storage</span></span></div><p>Huge, cold, at the back. It keeps everything for ever, but you cannot cook inside it.</p></div>
+   <div class="part part--app"><div class="part__hd"><svg viewBox="0 0 24 24" class="ico"><use href="#i-app"/></svg><span class="part__nm">The dishes ordered<span>= the programs</span></span></div><p>Twenty people all want something different, all at the same time, and none of them can see each other.</p></div>
+  </div>
+
+  <div class="gate" aria-hidden="true">and standing in the middle of all of it</div>
+
+  <div class="osband">
+   <div class="osband__hd"><svg viewBox="0 0 24 24" class="ico"><use href="#i-key"/></svg>
+    <span class="osband__nm">The Head Chef &nbsp;=&nbsp; the Operating System<span>starts first · never leaves · holds every key</span></span>
+   </div>
+   <div class="osband__jobs">
+    <span class="job">hands out counter space</span><span class="job">decides whose turn</span>
+    <span class="job">keeps the pantry map</span><span class="job">talks to the delivery doors</span>
+    <span class="job">settles every argument</span>
+   </div>
+  </div>
+
+  <figcaption>The Head Chef never cooks a customer's dinner. Take her away and you do not get a slower kitchen — you get a kitchen where nothing arrives at all.</figcaption>
+ </figure>
+
+ <div class="col rise">
+  <p class="idea">An operating system is the program that runs the other programs.
+   <span>It does none of your work. It decides <em>who</em> does work, <em>when</em>, and <em>with what</em>. Every job in the rest of this page is one of those decisions.</span>
+  </p>
+ </div>
+</section>
+
+<!-- ══════════════ STOP 4 ══════════════ -->
+<section class="stop wrap" id="s4" aria-labelledby="h4a">
+ <div class="col stop__head rise">
+  <span class="stop__n">Stop 04</span>
+  <h2 id="h4a">One rule changes everything</h2>
+  <p class="lead">Here is the whole trick, and it is only one sentence long.</p>
+ </div>
+
+ <div class="col rise">
+  <p class="idea">Programs are not allowed to touch the hardware. They have to <em>ask.</em></p>
+ </div>
+
+ <figure class="panel panel--wide rise">
+  <span class="fig-label">Diagram 4 · everything passes through the middle</span>
+  <div class="big">
+   <span class="big__lane">Up here: the programs you use</span>
+   <div class="big__row">
+    <div class="mini mini--app"><svg viewBox="0 0 24 24" class="ico"><use href="#i-app"/></svg><b>Game</b></div>
+    <div class="mini mini--app"><svg viewBox="0 0 24 24" class="ico"><use href="#i-brush"/></svg><b>Drawing</b></div>
+    <div class="mini mini--app"><svg viewBox="0 0 24 24" class="ico"><use href="#i-music"/></svg><b>Music</b></div>
+    <div class="mini mini--app"><svg viewBox="0 0 24 24" class="ico"><use href="#i-file"/></svg><b>Writing</b></div>
+   </div>
+   <div class="big__thru" aria-hidden="true">every request goes down through here</div>
+   <div class="osband">
+    <div class="osband__hd"><svg viewBox="0 0 24 24" class="ico"><use href="#i-key"/></svg><span class="osband__nm">Operating System<span>the only one holding the keys</span></span></div>
+   </div>
+   <div class="big__thru" aria-hidden="true">and only the OS reaches down to here</div>
+   <span class="big__lane">Down here: the actual machine</span>
+   <div class="big__row">
+    <div class="mini mini--cpu"><svg viewBox="0 0 24 24" class="ico"><use href="#i-cpu"/></svg><b>CPU</b></div>
+    <div class="mini mini--ram"><svg viewBox="0 0 24 24" class="ico"><use href="#i-ram"/></svg><b>RAM</b></div>
+    <div class="mini mini--store"><svg viewBox="0 0 24 24" class="ico"><use href="#i-store"/></svg><b>Storage</b></div>
+    <div class="mini mini--dev"><svg viewBox="0 0 24 24" class="ico"><use href="#i-dev"/></svg><b>Devices</b></div>
+   </div>
+  </div>
+  <figcaption>There is no arrow that skips the middle. A program cannot go around the Operating System, because the Operating System is what gives it everything it has.</figcaption>
+ </figure>
+
+ <figure class="panel panel--wide rise">
+  <div class="grid g2">
+   <div>
+    <p class="eyebrow" style="color:var(--warn)">What a program can never say</p>
+    <div class="crash" style="margin-bottom:.6rem"><p><b>&ldquo;I am taking memory boxes 500 to 900.&rdquo;</b></p></div>
+    <div class="crash" style="margin-bottom:.6rem"><p><b>&ldquo;Printer! Print this right now.&rdquo;</b></p></div>
+    <div class="crash"><p><b>&ldquo;I will find that file on the disk myself.&rdquo;</b></p></div>
+   </div>
+   <div>
+    <p class="eyebrow">What it says instead</p>
+    <div class="chip chip--os chip--tall" style="margin-bottom:.6rem"><span>&ldquo;Please may I have some room?&rdquo;<small>OS: boxes 500 to 900 are yours. Nobody else may enter.</small></span></div>
+    <div class="chip chip--os chip--tall" style="margin-bottom:.6rem"><span>&ldquo;Please print this.&rdquo;<small>OS: you are third in the queue. I will tell you when it is done.</small></span></div>
+    <div class="chip chip--os chip--tall"><span>&ldquo;Please open cat.jpg.&rdquo;<small>OS: checking you are allowed &hellip; found it &hellip; here it is on the workbench.</small></span></div>
+   </div>
+  </div>
+  <figcaption>Why does one rule fix so much? Because now there is only one place in the whole machine where two programs can collide — and somebody is standing there.</figcaption>
+ </figure>
+</section>
+<!-- ══════════════ STOP 5 ══════════════ -->
+<section class="stop wrap" id="s5" aria-labelledby="h5a">
+ <div class="col stop__head rise">
+  <span class="stop__n">Stop 05 · job one</span>
+  <h2 id="h5a">Taking turns, faster than you can see</h2>
+  <p class="lead">Your computer looks like it is doing five things at once. It is not. It is doing one thing, then another, then another — swapping so fast that your eyes give up.</p>
+ </div>
+
+ <div class="col predict rise" data-predict>
+  <p class="predict__q">Music, drawing and a clock are all running. Right now, at this exact instant, how many is one CPU working on?</p>
+  <div class="predict__opts">
+   <button class="opt" type="button" data-a="a">All three.</button>
+   <button class="opt" type="button" data-a="b">Exactly one.</button>
+   <button class="opt" type="button" data-a="c">Depends which I clicked last.</button>
+  </div>
+  <div class="predict__ans" data-for="a">
+   <p class="verdict">That is exactly what it looks like</p>
+   <p>And that feeling is the illusion we are about to take apart. One pair of hands can only hold one recipe card. Slow the kitchen right down in the panel below and you will see it.</p>
+  </div>
+  <div class="predict__ans" data-for="b">
+   <p class="verdict">Correct — and it feels impossible</p>
+   <p>Exactly one. Everything else is frozen mid-instruction, waiting, without the faintest idea that it has been stopped. Slow it down below and watch.</p>
+  </div>
+  <div class="predict__ans" data-for="c">
+   <p class="verdict">Half right, in a clever way</p>
+   <p>Clicking a window does change who the Operating System favours — it gets longer turns. But it never changes the count. One CPU, one program, at any single instant.</p>
+  </div>
+ </div>
+
+ <figure class="panel panel--wide rise">
+  <span class="fig-label">Try it · slide the speed until the three become one</span>
+  <div class="sim__stage">
+   <div class="lamps">
+    <div class="lamp lamp--1" data-lamp="0" data-hot="0"><svg viewBox="0 0 24 24" class="ico"><use href="#i-music"/></svg><div><b>Music player</b><small>playing your song</small></div></div>
+    <div class="lamp lamp--2" data-lamp="1" data-hot="0"><svg viewBox="0 0 24 24" class="ico"><use href="#i-brush"/></svg><div><b>Drawing app</b><small>following your finger</small></div></div>
+    <div class="lamp lamp--3" data-lamp="2" data-hot="0"><svg viewBox="0 0 24 24" class="ico"><use href="#i-clock"/></svg><div><b>Clock</b><small>counting seconds</small></div></div>
+   </div>
+   <span class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24" class="ico"><use href="#i-arrow"/></svg></span>
+   <div class="core">
+    <svg viewBox="0 0 24 24" class="ico"><use href="#i-cpu"/></svg>
+    <div class="core__lbl">One CPU</div>
+    <div class="core__now" id="coreNow">waiting</div>
+    <div class="swapnote" id="swapNote">saving registers &amp; program counter&hellip;</div>
+   </div>
+  </div>
+
+  <div class="timeline" id="timeline" aria-hidden="true"></div>
+
+  <div class="slider">
+   <label for="speed">How fast the Operating System swaps</label>
+   <input type="range" id="speed" min="1" max="100" value="6" aria-describedby="speedOut">
+   <div class="scale" aria-hidden="true"><span>slow motion</span><span>real computer speed</span></div>
+  </div>
+
+  <p class="readout" id="speedOut" role="status">
+   <span>swaps every <b id="rMs">900</b> ms</span>
+   <span>that is <b id="rHz">1</b> swaps a second</span>
+   <span>running at once: <b>1</b></span>
+  </p>
+
+  <div class="controls">
+   <button class="btn" type="button" id="simPlay"><svg viewBox="0 0 24 24" class="ico"><use href="#i-power"/></svg><span id="simPlayTxt">Start the kitchen</span></button>
+   <button class="btn btn--ghost" type="button" id="simStep">Take one turn</button>
+  </div>
+
+  <figcaption>Down at the slow end you can see the truth: one at a time, always. Push the slider to the right and the three lamps look like they are all lit together. Nothing changed except the speed — and that is exactly what your computer is doing right now.</figcaption>
+ </figure>
+
+ <div class="col rise">
+  <h3 style="margin-bottom:.9rem">The clever bit: how a program never notices</h3>
+  <p>When the Operating System takes the turn back, it does something careful first. It writes down everything sitting in the CPU's tiny pockets — the <strong>registers</strong> — and exactly where the finger was pointing — the <strong>program counter</strong>. It puts that little note on a shelf.</p>
+  <p>Later, when it is that program's turn again, the OS puts every number back exactly where it was and points the finger at exactly the same instruction. The program carries on mid-sentence. It has no idea it was ever stopped, or that a million other things happened while it was away.</p>
+ </div>
+
+ <div class="col myth rise" style="margin-top:1.6rem">
+  <div class="myth__top"><span class="myth__tag">Lots of people think</span><p>&ldquo;My computer does everything at the same time.&rdquo;</p></div>
+  <div class="myth__bot"><span class="myth__tag">What is really happening</span><p>It takes turns, thousands of times a second, and your eyes cannot keep up. Real CPUs do have a few cooks rather than one, so a handful of things truly do happen together — but your computer is running hundreds of programs with only a few cooks. Turn-taking is still what runs the whole show.</p></div>
+ </div>
+
+ <div class="col connect rise">
+  <h4>Connect it back</h4>
+  <dl>
+   <dt>Where does this happen?</dt><dd>Right between your programs and the CPU. The Operating System is the only thing in the machine that is able to interrupt a running program.</dd>
+   <dt>What does it use?</dt><dd>The CPU, the registers and the program counter — the exact parts you already knew about. Now you know what they are really for.</dd>
+   <dt>What changed?</dt><dd>Crash 04 is gone. No program can freeze your computer for ever, because its turn was never given away. It was only ever lent.</dd>
+  </dl>
+ </div>
+</section>
+
+<!-- ══════════════ STOP 6 ══════════════ -->
+<section class="stop wrap" id="s6" aria-labelledby="h6a">
+ <div class="col stop__head rise">
+  <span class="stop__n">Stop 06 · job two</span>
+  <h2 id="h6a">Fences in the memory</h2>
+  <p class="lead">RAM is one long row of numbered boxes, and every running program needs some of them. Nobody may simply help themselves.</p>
+  <p class="muted">So the Operating System does four things. It hands each program a region of its own. It builds a fence around it. It takes every box back the moment the program closes. And it never tells any program where the others are.</p>
+ </div>
+
+ <div class="col predict rise" data-predict>
+  <p class="predict__q">A program reaches over the fence into another program's boxes. What does the Operating System do?</p>
+  <div class="predict__opts">
+   <button class="opt" type="button" data-a="a">Allows it — it is all one RAM.</button>
+   <button class="opt" type="button" data-a="b">Stops that one program only.</button>
+   <button class="opt" type="button" data-a="c">Shuts the whole computer down.</button>
+  </div>
+  <div class="predict__ans" data-for="a">
+   <p class="verdict">It really is all one RAM &mdash; but no</p>
+   <p>The boxes are all in the same row, that part is true. But the Operating System checks every single reach before it is allowed to happen. Try the buttons below and watch what it does.</p>
+  </div>
+  <div class="predict__ans" data-for="b">
+   <p class="verdict">Yes — and that is a rescue, not a punishment</p>
+   <p>Only the guilty program is stopped. Everything else keeps running as if nothing happened. Press the button below to watch it.</p>
+  </div>
+  <div class="predict__ans" data-for="c">
+   <p class="verdict">That is what would happen without fences</p>
+   <p>Long ago, one bad program really could take the whole machine down with it. The fence is exactly what stopped that. Try the buttons below.</p>
+  </div>
+ </div>
+
+ <figure class="panel panel--wide rise">
+  <span class="fig-label">Try it · you are the misbehaving program</span>
+  <p class="small" style="margin-bottom:.9rem">The whole row of RAM. Gold dashes are the fences the Operating System put up.</p>
+  <div class="memrow" id="memrow">
+   <div class="region region--1" data-r="1" style="flex-grow:4"><b>Game</b><span>500&ndash;899</span></div>
+   <span class="fence" aria-hidden="true"></span>
+   <div class="region region--2" data-r="2" style="flex-grow:5"><b>Drawing</b><span>900&ndash;1399</span></div>
+   <span class="fence" aria-hidden="true"></span>
+   <div class="region region--3" data-r="3" style="flex-grow:3"><b>Music</b><span>1400&ndash;1699</span></div>
+   <span class="fence" aria-hidden="true"></span>
+   <div class="region region--free" data-r="free" style="flex-grow:6"><b>Free</b><span>1700&ndash;2400</span></div>
+  </div>
+
+  <p class="osverdict" id="memSay" role="status">Press a button. The Operating System will answer.</p>
+
+  <div class="controls">
+   <button class="btn" type="button" data-mem="peek">Game peeks over the fence</button>
+   <button class="btn btn--ghost" type="button" data-mem="ask">Music asks for more room</button>
+   <button class="btn btn--ghost" type="button" data-mem="close">Close the Drawing app</button>
+   <button class="btn btn--ghost" type="button" data-mem="reset">Start again</button>
+  </div>
+
+  <figcaption>Each program is given its own private view of the boxes. A program does not know where the other programs are, cannot find out, and cannot reach them even by accident.</figcaption>
+ </figure>
+
+ <div class="col myth rise">
+  <div class="myth__top"><span class="myth__tag">Lots of people think</span><p>&ldquo;When a program crashes, the computer broke.&rdquo;</p></div>
+  <div class="myth__bot"><span class="myth__tag">What is really happening</span><p>A crash is usually the Operating System <em>catching</em> a program doing something it is not allowed to do, and stopping it before it can hurt anything else. The annoying message on your screen is actually the rescue working.</p></div>
+ </div>
+
+ <div class="col connect rise">
+  <h4>Connect it back</h4>
+  <dl>
+   <dt>Where does this happen?</dt><dd>In RAM — that same long row of numbered boxes you already knew about. The Operating System stands guard over which program owns which numbers.</dd>
+   <dt>What does it use?</dt><dd>RAM addresses, and a little help from the CPU, which checks every reach as it happens.</dd>
+   <dt>What changed?</dt><dd>Crash 01 is gone. Two programs can never land in box 500 together, and one broken program can no longer take everything else down with it.</dd>
+  </dl>
+ </div>
+</section>
+<!-- ══════════════ STOP 7 ══════════════ -->
+<section class="stop wrap" id="s7" aria-labelledby="h7a">
+ <div class="col stop__head rise">
+  <span class="stop__n">Stop 07 · job three</span>
+  <h2 id="h7a">The map of the cupboard</h2>
+  <p class="lead">Here is a surprise. Storage does not really contain folders, and it does not keep each file in one neat lump.</p>
+  <p class="muted">It contains an enormous number of tiny numbered places. One photo is very often chopped into pieces and scattered among them, wherever there happened to be room. So who on earth remembers where everything went?</p>
+ </div>
+
+ <figure class="panel panel--wide rise">
+  <span class="fig-label">Diagram 5 · the map, and what it is a map of</span>
+  <div class="grid g2" style="align-items:start">
+   <div class="mapcard">
+    <p class="eyebrow" style="color:var(--os)">The map the OS keeps</p>
+    <div class="maprow"><svg viewBox="0 0 24 24" class="ico" style="color:#FF6FA5;width:1.1em;height:1.1em"><use href="#i-file"/></svg><b>cat.jpg</b><span>4102 · 88431 · 12004</span></div>
+    <div class="maprow"><svg viewBox="0 0 24 24" class="ico" style="color:#7FA9FF;width:1.1em;height:1.1em"><use href="#i-file"/></svg><b>song.mp3</b><span>201 · 9930 · 44120 · 6</span></div>
+    <div class="maprow"><svg viewBox="0 0 24 24" class="ico" style="color:#5BE49B;width:1.1em;height:1.1em"><use href="#i-file"/></svg><b>story.txt</b><span>7715 · 33 · 90210</span></div>
+    <p class="small" style="margin-top:.9rem;margin-bottom:0">A folder is a label on this map. It is not a real box.</p>
+   </div>
+   <div>
+    <p class="eyebrow" style="color:var(--store)">What storage actually looks like</p>
+    <div class="disk" aria-hidden="true">
+     <span class="blk"></span><span class="blk"></span><span class="blk" data-of="song"></span><span class="blk"></span><span class="blk"></span><span class="blk" data-of="cat"></span><span class="blk"></span><span class="blk"></span><span class="blk" data-of="story"></span><span class="blk"></span><span class="blk"></span><span class="blk" data-of="song"></span><span class="blk"></span><span class="blk"></span><span class="blk"></span><span class="blk"></span><span class="blk"></span><span class="blk"></span><span class="blk"></span><span class="blk" data-of="cat"></span><span class="blk"></span><span class="blk"></span><span class="blk" data-of="story"></span><span class="blk"></span><span class="blk"></span><span class="blk"></span><span class="blk"></span><span class="blk" data-of="song"></span><span class="blk"></span><span class="blk"></span><span class="blk"></span><span class="blk"></span><span class="blk"></span><span class="blk" data-of="cat"></span><span class="blk"></span><span class="blk"></span><span class="blk"></span><span class="blk"></span><span class="blk"></span><span class="blk"></span><span class="blk"></span><span class="blk" data-of="song"></span><span class="blk"></span><span class="blk"></span><span class="blk" data-of="story"></span><span class="blk"></span><span class="blk"></span><span class="blk"></span>
+    </div>
+    <p class="small" style="margin-top:.9rem">Three files, scattered. Without the map, none of these pieces mean anything at all.</p>
+   </div>
+  </div>
+
+  <div class="flow" style="margin-top:1.4rem">
+   <div class="chip chip--app"><svg viewBox="0 0 24 24" class="ico"><use href="#i-app"/></svg><span>You open cat.jpg<small>the program only knows the name</small></span></div>
+   <span class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24" class="ico"><use href="#i-arrow"/></svg></span>
+   <div class="chip chip--os"><svg viewBox="0 0 24 24" class="ico"><use href="#i-map"/></svg><span>OS reads the map<small>and checks you are allowed</small></span></div>
+   <span class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24" class="ico"><use href="#i-arrow"/></svg></span>
+   <div class="chip chip--store"><svg viewBox="0 0 24 24" class="ico"><use href="#i-store"/></svg><span>Fetches the pieces<small>and joins them in the right order</small></span></div>
+   <span class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24" class="ico"><use href="#i-arrow"/></svg></span>
+   <div class="chip chip--ram"><svg viewBox="0 0 24 24" class="ico"><use href="#i-ram"/></svg><span>Lays it on the workbench<small>only now can the CPU see it</small></span></div>
+  </div>
+
+  <figcaption>You said six letters and a dot. The Operating System did everything else — and when you delete something, mostly it simply crosses the name off this map and marks those places free to use again.</figcaption>
+ </figure>
+
+ <div class="col connect rise">
+  <h4>Connect it back</h4>
+  <dl>
+   <dt>Where does this happen?</dt><dd>Between storage and RAM — the journey you already knew a program has to make before it can run.</dd>
+   <dt>What does it use?</dt><dd>The cupboard, the workbench, and a map that lives nowhere else but with the Operating System.</dd>
+   <dt>What changed?</dt><dd>Programs stopped needing to know anything about disks. They ask for a name. They get given a thing.</dd>
+  </dl>
+ </div>
+</section>
+
+<!-- ══════════════ STOP 8 ══════════════ -->
+<section class="stop wrap" id="s8" aria-labelledby="h8a">
+ <div class="col stop__head rise">
+  <span class="stop__n">Stop 08 · job four</span>
+  <h2 id="h8a">Speaking every language</h2>
+  <p class="lead">Remember crash 03 — the impossible homework? Every program having to know how to talk to every keyboard, screen and printer ever made?</p>
+  <p class="muted">This is how the Operating System makes that problem vanish. It learns all the languages, so that nobody else has to.</p>
+ </div>
+
+ <figure class="panel panel--wide rise">
+  <span class="fig-label">Diagram 6 · one simple language in, a thousand strange ones out</span>
+  <div class="babel">
+   <div class="part part--app">
+    <div class="part__hd"><svg viewBox="0 0 24 24" class="ico"><use href="#i-app"/></svg><span class="part__nm">Your programs<span>they know one way to ask</span></span></div>
+    <p>A drawing app has no idea what a printer is. It does not want to know.</p>
+    <div class="speech"><b>&ldquo;give me a letter&rdquo;</b><br><b>&ldquo;draw this&rdquo;</b><br><b>&ldquo;print that&rdquo;</b><br><b>&ldquo;play this sound&rdquo;</b></div>
+   </div>
+   <span class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24" class="ico"><use href="#i-arrow"/></svg></span>
+   <div class="osband">
+    <div class="osband__hd"><svg viewBox="0 0 24 24" class="ico"><use href="#i-lang"/></svg><span class="osband__nm">Operating System<span>the translator</span></span></div>
+    <div class="books">
+     <div class="book"><svg viewBox="0 0 24 24" class="ico"><use href="#i-dev"/></svg>phrasebook: this keyboard</div>
+     <div class="book"><svg viewBox="0 0 24 24" class="ico"><use href="#i-screen"/></svg>phrasebook: this screen</div>
+     <div class="book"><svg viewBox="0 0 24 24" class="ico"><use href="#i-file"/></svg>phrasebook: this printer</div>
+     <div class="book"><svg viewBox="0 0 24 24" class="ico"><use href="#i-music"/></svg>phrasebook: this speaker</div>
+    </div>
+   </div>
+   <span class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24" class="ico"><use href="#i-arrow"/></svg></span>
+   <div class="part part--dev">
+    <div class="part__hd"><svg viewBox="0 0 24 24" class="ico"><use href="#i-dev"/></svg><span class="part__nm">The devices<span>each with its own strange language</span></span></div>
+    <p>Every make and model wants to be spoken to differently.</p>
+    <div class="speech">1B 5B 32 4A<br>SET LF 0A CR 0D<br>CHAN 3 &raquo; 44100<br>PIN 7 HIGH 250ms</div>
+   </div>
+  </div>
+  <figcaption>Plug in a printer that was invented last week, and a drawing app written ten years ago can print to it perfectly. The app never learns anything new. The Operating System just gets one more phrasebook.</figcaption>
+ </figure>
+
+ <div class="col connect rise">
+  <h4>Connect it back</h4>
+  <dl>
+   <dt>Where does this happen?</dt><dd>At the edges of the machine — every door in and every door out. Keyboard, mouse, screen, speaker, printer, network.</dd>
+   <dt>What does it use?</dt><dd>Devices, and a small helper the Operating System keeps for each one. You can think of it as a phrasebook for that exact model.</dd>
+   <dt>What changed?</dt><dd>Crash 03 is gone. A program can be tiny again. It says one simple sentence and the Operating System does the translating.</dd>
+  </dl>
+ </div>
+</section>
+
+<!-- ══════════════ STOP 9 ══════════════ -->
+<section class="stop wrap" id="s9" aria-labelledby="h9a">
+ <div class="col stop__head rise">
+  <span class="stop__n">Stop 09 · job five</span>
+  <h2 id="h9a">The referee</h2>
+  <p class="lead">Everything inside a computer runs out. And every program wants all of it, right now.</p>
+ </div>
+
+ <figure class="panel panel--wide rise">
+  <span class="fig-label">Diagram 7 · limited things, unlimited wanting</span>
+  <div class="grid g3">
+   <div class="part" style="--c:var(--warn)">
+    <div class="part__hd"><svg viewBox="0 0 24 24" class="ico"><use href="#i-alert"/></svg><span class="part__nm">Things that run out<span>all of them, always</span></span></div>
+    <p>CPU turns. Memory boxes. Cupboard room. One screen. One speaker. One network cable.</p>
+   </div>
+   <div class="part part--app">
+    <div class="part__hd"><svg viewBox="0 0 24 24" class="ico"><use href="#i-app"/></svg><span class="part__nm">Everyone asking<span>at the same moment</span></span></div>
+    <div class="queue">
+     <span class="qitem qitem--1">music: play sound</span>
+     <span class="qitem qitem--2">game: play sound</span>
+     <span class="qitem qitem--3">drawing: save file</span>
+     <span class="qitem qitem--1">writing: print</span>
+    </div>
+   </div>
+   <div class="part part--os">
+    <div class="part__hd"><svg viewBox="0 0 24 24" class="ico"><use href="#i-scales"/></svg><span class="part__nm">The referee's answer<span>one at a time, in order</span></span></div>
+    <div class="queue">
+     <span class="qitem qitem--4">you first</span><span class="qitem qitem--4">then you</span>
+     <span class="qitem qitem--4">then you</span><span class="qitem qitem--4">you wait</span>
+    </div>
+   </div>
+  </div>
+
+  <div class="grid g4" style="margin-top:1.2rem">
+   <div class="chip chip--os chip--tall"><svg viewBox="0 0 24 24" class="ico"><use href="#i-clock"/></svg><span>Line them up<small>so two sounds never turn into mush</small></span></div>
+   <div class="chip chip--os chip--tall"><svg viewBox="0 0 24 24" class="ico"><use href="#i-scales"/></svg><span>Share it out<small>the window you are looking at gets longer turns</small></span></div>
+   <div class="chip chip--os chip--tall"><svg viewBox="0 0 24 24" class="ico"><use href="#i-shield"/></svg><span>Stop the trouble<small>a program that misbehaves is shut down alone</small></span></div>
+   <div class="chip chip--os chip--tall"><svg viewBox="0 0 24 24" class="ico"><use href="#i-lock"/></svg><span>Lock the doors<small>a program only opens what it is allowed to open</small></span></div>
+  </div>
+
+  <figcaption>Crash 02 is gone. Two programs can no longer grab the printer at once, because neither of them was ever holding it. The Operating System was.</figcaption>
+ </figure>
+
+ <div class="col connect rise">
+  <h4>Connect it back</h4>
+  <dl>
+   <dt>Where does this happen?</dt><dd>Everywhere at once. This is not a separate job so much as the reason all the other four exist.</dd>
+   <dt>What does it use?</dt><dd>Every part of the machine you know, because every part of it is limited and shared.</dd>
+   <dt>What changed?</dt><dd>Programs stopped having to trust each other — which is good, because they cannot even see each other.</dd>
+  </dl>
+ </div>
+</section>
+<!-- ══════════════ STOP 10 ══════════════ -->
+<section class="stop wrap" id="s10" aria-labelledby="h10a">
+ <div class="col stop__head rise">
+  <span class="stop__n">Stop 10 · the reveal</span>
+  <h2 id="h10a">The secret about the one in charge</h2>
+  <p class="lead">You have watched it hand out memory, take turns back, keep maps and speak a hundred languages. It is time to say what it actually is.</p>
+ </div>
+
+ <div class="col predict rise" data-predict>
+  <p class="predict__q">Where is the Operating System while the computer is switched off?</p>
+  <div class="predict__opts">
+   <button class="opt" type="button" data-a="a">In a special chip of its own.</button>
+   <button class="opt" type="button" data-a="b">In storage, like everything else.</button>
+   <button class="opt" type="button" data-a="c">Nowhere. It appears when you press the button.</button>
+  </div>
+  <div class="predict__ans" data-for="a">
+   <p class="verdict">A very sensible guess — but no</p>
+   <p>There is no Operating System chip. Nothing about it is made of different stuff. It is a list of instructions, exactly the same kind of list as your favourite game.</p>
+  </div>
+  <div class="predict__ans" data-for="b">
+   <p class="verdict">Yes. It is a program, like any other</p>
+   <p>It sleeps in the cupboard with everything else. And like everything else, it has to be carried out to the workbench before it can do a single thing.</p>
+  </div>
+  <div class="predict__ans" data-for="c">
+   <p class="verdict">Nothing in a computer appears</p>
+   <p>Every single thing a computer runs has to come from somewhere, be copied to the workbench, and be read by the CPU. The Operating System is no exception at all.</p>
+  </div>
+ </div>
+
+ <figure class="panel panel--wide rise">
+  <span class="fig-label">Diagram 8 · how the one in charge arrives</span>
+  <div class="flow">
+   <div class="chip chip--store chip--tall"><svg viewBox="0 0 24 24" class="ico"><use href="#i-store"/></svg><span>Asleep in storage<small>while the computer is off, it is only a file</small></span></div>
+   <span class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24" class="ico"><use href="#i-arrow"/></svg></span>
+   <div class="chip chip--ram chip--tall"><svg viewBox="0 0 24 24" class="ico"><use href="#i-ram"/></svg><span>Copied into RAM first<small>before any of your programs, when you press power</small></span></div>
+   <span class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24" class="ico"><use href="#i-arrow"/></svg></span>
+   <div class="chip chip--cpu chip--tall"><svg viewBox="0 0 24 24" class="ico"><use href="#i-cpu"/></svg><span>Run by the same CPU<small>the same cook, the same hands, the same speed</small></span></div>
+   <span class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24" class="ico"><use href="#i-arrow"/></svg></span>
+   <div class="chip chip--os chip--tall"><svg viewBox="0 0 24 24" class="ico"><use href="#i-key"/></svg><span>Then it opens the doors<small>and lets everything else in, one at a time</small></span></div>
+  </div>
+  <figcaption>So when the Operating System swaps your programs around, the CPU is running the Head Chef's own instructions for a moment — then it goes straight back to your game.</figcaption>
+ </figure>
+
+ <div class="col myth rise">
+  <div class="myth__top"><span class="myth__tag">Lots of people think</span><p>&ldquo;The Operating System is the desktop, with the wallpaper and the icons.&rdquo;</p></div>
+  <div class="myth__bot"><span class="myth__tag">What is really happening</span><p>That picture is just one program that the Operating System runs, so that you have a way to talk to it. The real thing is invisible. It is working right now, thousands of times a second, while you look at the wallpaper.</p></div>
+ </div>
+
+ <div class="col rise">
+  <p class="idea">It is not made of anything special. It simply went first &mdash; and it kept the keys.
+   <span>That is the whole difference. Not <em>what</em> it is, but <em>when</em> it starts and <em>what it is allowed to do</em>.</span>
+  </p>
+ </div>
+</section>
+
+<!-- ══════════════ STOP 11 ══════════════ -->
+<section class="stop wrap" id="s11" aria-labelledby="h11a">
+ <div class="col stop__head rise">
+  <span class="stop__n">Stop 11 · put it all together</span>
+  <h2 id="h11a">Follow one keypress, all the way</h2>
+  <p class="lead">You are writing a story. You press the letter <strong>A</strong>. Watch every part you have met do its job.</p>
+ </div>
+
+ <figure class="panel panel--wide rise">
+  <span class="fig-label">Try it · step through the journey of one letter</span>
+  <div class="trace__map" id="traceMap" aria-hidden="true">
+   <div class="node node--dev" data-node="dev"><svg viewBox="0 0 24 24" class="ico"><use href="#i-dev"/></svg><b>Keyboard</b></div>
+   <div class="node node--os" data-node="os"><svg viewBox="0 0 24 24" class="ico"><use href="#i-key"/></svg><b>Operating System</b></div>
+   <div class="node node--app" data-node="app"><svg viewBox="0 0 24 24" class="ico"><use href="#i-app"/></svg><b>Writing app</b></div>
+   <div class="node node--cpu" data-node="cpu"><svg viewBox="0 0 24 24" class="ico"><use href="#i-cpu"/></svg><b>CPU &amp; RAM</b></div>
+   <div class="node node--out" data-node="out"><svg viewBox="0 0 24 24" class="ico"><use href="#i-screen"/></svg><b>Screen</b></div>
+  </div>
+
+  <ol class="tracelist" id="traceList">
+   <li data-nodes="dev"><b>You press A.</b><p>The keyboard has no idea what a letter is, and no idea which program you are using. It sends one tiny electrical signal down a wire. That is all it can do.</p></li>
+   <li data-nodes="dev cpu os"><b>The keyboard raises its hand.</b><p>The CPU stops what it was doing, right in the middle of something else. Not because it was asked politely — because it is built to stop when a device calls.</p></li>
+   <li data-nodes="os"><b>The Operating System takes over.</b><p>It always does. And it asks a question that no keyboard and no wire could ever answer on its own: whose key is this?</p></li>
+   <li data-nodes="os app"><b>It knows where you are looking.</b><p>The Operating System is the one keeping track of which window is in front. So it hands the letter to the writing program — and to nobody else. The game never hears about it.</p></li>
+   <li data-nodes="app cpu"><b>The program adds A to your story.</b><p>It gets a turn on the CPU, and it writes into its own fenced-off boxes in RAM. It could not write anywhere else even if it tried.</p></li>
+   <li data-nodes="app os"><b>The program asks for the screen.</b><p>It cannot draw anything itself. It says: please show this. The Operating System lines the request up with everybody else's.</p></li>
+   <li data-nodes="os out"><b>The A appears.</b><p>The Operating System speaks to your exact screen, in your exact screen's own language. Light comes out of the glass. You see the letter.</p></li>
+  </ol>
+
+  <div class="controls" id="traceCtl">
+   <button class="btn btn--ghost" type="button" id="tPrev">Back</button>
+   <button class="btn" type="button" id="tNext">Next step</button>
+   <span class="dots" id="tDots" aria-hidden="true"></span>
+  </div>
+
+  <figcaption>All of that took about two thousandths of a second — and the Operating System has done it for every single letter you have ever typed.</figcaption>
+ </figure>
+</section>
+
+<!-- ══════════════ STOP 12 ══════════════ -->
+<section class="stop wrap" id="s12" aria-labelledby="h12a">
+ <div class="col stop__head rise">
+  <span class="stop__n">Stop 12</span>
+  <h2 id="h12a">The whole picture, in one look</h2>
+  <p class="lead">This is the mental picture to keep. Everything you have met, and every single arrow between them.</p>
+ </div>
+
+ <figure class="panel panel--wide rise">
+  <span class="fig-label">Diagram 9 · the complete machine</span>
+  <div class="big">
+   <span class="big__lane">What you use</span>
+   <div class="big__row">
+    <div class="mini mini--app"><svg viewBox="0 0 24 24" class="ico"><use href="#i-app"/></svg><b>Game</b><small>wants turns and memory</small></div>
+    <div class="mini mini--app"><svg viewBox="0 0 24 24" class="ico"><use href="#i-brush"/></svg><b>Drawing</b><small>wants your finger and the screen</small></div>
+    <div class="mini mini--app"><svg viewBox="0 0 24 24" class="ico"><use href="#i-music"/></svg><b>Music</b><small>wants files and the speaker</small></div>
+    <div class="mini mini--app"><svg viewBox="0 0 24 24" class="ico"><use href="#i-file"/></svg><b>Writing</b><small>wants keys and the printer</small></div>
+   </div>
+
+   <div class="big__thru" aria-hidden="true">everything they want, they must ask for</div>
+
+   <div class="osband">
+    <div class="osband__hd"><svg viewBox="0 0 24 24" class="ico"><use href="#i-key"/></svg>
+     <span class="osband__nm">The Operating System<span>always running · holds every key · does none of your work</span></span>
+    </div>
+    <div class="osband__jobs">
+     <span class="job">gives out turns</span><span class="job">gives out memory</span>
+     <span class="job">keeps the file map</span><span class="job">speaks to devices</span>
+     <span class="job">settles arguments</span>
+    </div>
+   </div>
+
+   <div class="big__thru" aria-hidden="true">and only it is allowed to reach down here</div>
+
+   <span class="big__lane">The machine itself</span>
+   <div class="big__row">
+    <div class="mini mini--cpu"><svg viewBox="0 0 24 24" class="ico"><use href="#i-cpu"/></svg><b>CPU</b><small>does one instruction at a time, blindly</small></div>
+    <div class="mini mini--ram"><svg viewBox="0 0 24 24" class="ico"><use href="#i-ram"/></svg><b>RAM</b><small>numbered boxes, fenced into regions</small></div>
+    <div class="mini mini--store"><svg viewBox="0 0 24 24" class="ico"><use href="#i-store"/></svg><b>Storage</b><small>scattered pieces, found by the map</small></div>
+    <div class="mini mini--dev"><svg viewBox="0 0 24 24" class="ico"><use href="#i-dev"/></svg><b>Ways in</b><small>keyboard, mouse, microphone</small></div>
+    <div class="mini mini--dev"><svg viewBox="0 0 24 24" class="ico"><use href="#i-screen"/></svg><b>Ways out</b><small>screen, speaker, printer</small></div>
+   </div>
+  </div>
+  <figcaption>Look for an arrow that skips the middle. There isn't one. That is the whole idea of an operating system, drawn in one picture.</figcaption>
+ </figure>
+
+ <div class="col rise">
+  <p class="idea">An operating system is the always-running program that stands between every other program and the machine &mdash; and decides who gets what, and when.
+   <span>Close your eyes and put it there: in the middle, gold, awake, holding the keys. Every part above it is asking. Every part below it is waiting to be told.</span>
+  </p>
+ </div>
+</section>
+
+<!-- ══════════════ STOP 13 ══════════════ -->
+<section class="stop wrap" id="s13" aria-labelledby="h13a">
+ <div class="col stop__head rise">
+  <span class="stop__n">Stop 13</span>
+  <h2 id="h13a">Your turn to be the one in charge</h2>
+  <p class="lead">You have watched the Head Chef work. Now make a decision she has to make.</p>
+ </div>
+
+ <div class="col finale rise">
+  <div class="seal locked" id="seal" aria-hidden="true"><svg viewBox="0 0 24 24" class="ico"><use href="#i-key"/></svg></div>
+  <h3 id="sealTitle">Three things to try first</h3>
+  <p class="small" id="sealSub" style="max-width:34ch;margin:.6rem auto 0">Go back and do these three, and the keys are yours.</p>
+
+  <div class="checklist" id="checklist">
+   <div class="check" data-c="sim"><svg viewBox="0 0 24 24" class="ico"><use href="#i-circle"/></svg><span>Slow the kitchen down and watch one CPU take turns &mdash; <a href="#s5">stop 5</a></span></div>
+   <div class="check" data-c="mem"><svg viewBox="0 0 24 24" class="ico"><use href="#i-circle"/></svg><span>Try to climb a fence in the memory &mdash; <a href="#s6">stop 6</a></span></div>
+   <div class="check" data-c="trace"><svg viewBox="0 0 24 24" class="ico"><use href="#i-circle"/></svg><span>Follow one keypress all the way to the screen &mdash; <a href="#s11">stop 11</a></span></div>
+  </div>
+
+  <div class="taskbox">
+   <label for="t1">Make the rule</label>
+   <p class="small">A brand new program starts up and asks for <em>all</em> of the memory. Every last box. You are the Operating System. What is your rule, and why?</p>
+   <textarea id="t1" placeholder="My rule is&hellip;"></textarea>
+  </div>
+
+  <div class="taskbox">
+   <label for="t2">Now explain it to somebody else</label>
+   <p class="small">In one or two sentences, and without using the words &ldquo;computer&rdquo; or &ldquo;system&rdquo;: what is an operating system?</p>
+   <textarea id="t2" placeholder="An operating system is&hellip;"></textarea>
+  </div>
+  <p class="saved" id="savedNote">Saved on this device</p>
+ </div>
+
+ <div class="col rise" style="margin-top:2rem">
+  <h3 style="margin-bottom:.9rem">One last thing to carry with you</h3>
+  <p>The next time a computer does anything at all &mdash; a letter appears, a song starts, a picture opens, a window closes &mdash; you already know who arranged it. Something invisible went first, kept the keys, and said yes.</p>
+ </div>
+</section>
+</main>
+
+<footer class="wrap">
+ <div class="col">
+  <p class="small" style="margin-bottom:.8rem">Every colour on this page: <span class="tag" style="--c:var(--cpu)">CPU</span> <span class="tag" style="--c:var(--ram)">RAM</span> <span class="tag" style="--c:var(--store)">Storage</span> <span class="tag" style="--c:var(--app)">Programs</span> <span class="tag" style="--c:var(--dev)">Devices</span> <span class="tag" style="--c:var(--os)">Operating System</span></p>
+  <button class="reset" type="button" id="resetAll">Clear my progress and start again</button>
+ </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+var reduce = window.matchMedia ? matchMedia("(prefers-reduced-motion: reduce)").matches : false;
+var $  = function(s,r){ return (r||document).querySelector(s); };
+var $$ = function(s,r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); };
+$$("svg.ico").forEach(function(el){ el.setAttribute("aria-hidden","true"); el.setAttribute("focusable","false"); });
+
+/* ---------- progress that survives a refresh, and never breaks if it can't ---------- */
+var fallback = {};
+var KEY = "os-journey-v1";
+function read(){
+  try{ var v = localStorage.getItem(KEY); if(v !== null) return v; }catch(e){}
+  return fallback[KEY] || null;
+}
+function write(v){
+  fallback[KEY] = v;
+  try{ localStorage.setItem(KEY, v); }catch(e){}
+}
+var state = { stops:{}, done:{}, t1:"", t2:"" };
+try{ var raw = read(); if(raw){ var p = JSON.parse(raw); if(p && typeof p === "object"){ for(var k in p){ state[k] = p[k]; } } } }catch(e){}
+function save(){ try{ write(JSON.stringify(state)); }catch(e){} }
+
+/* ---------- reveal on scroll ---------- */
+var rises = $$(".rise");
+if(reduce || !("IntersectionObserver" in window)){
+  rises.forEach(function(el){ el.classList.add("in"); });
+}else{
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); }
+    });
+  }, { rootMargin:"0px 0px -6% 0px", threshold:0.04 });
+  rises.forEach(function(el){ io.observe(el); });
+}
+
+/* ---------- where am I in the journey ---------- */
+var sections = $$("main section.stop");
+var links    = $$("#railList a");
+var railFill = $("#railFill");
+var topFill  = $("#topFill");
+var ticking  = false;
+
+function updateProgress(){
+  ticking = false;
+  var line = window.innerHeight * 0.38, current = -1;
+  for(var i = 0; i < sections.length; i++){
+    if(sections[i].getBoundingClientRect().top <= line) current = i;
+  }
+  links.forEach(function(a, i){
+    a.setAttribute("aria-current", i === current ? "true" : "false");
+    if(i <= current){ a.classList.add("seen"); state.stops["s"+(i+1)] = 1; }
+    else if(state.stops["s"+(i+1)]){ a.classList.add("seen"); }
+  });
+  if(current > -1 && links[current]){
+    var li = links[current].parentNode;
+    railFill.style.height = Math.max(0, li.offsetTop + li.offsetHeight/2 - 6) + "px";
+  }else{
+    railFill.style.height = "0px";
+  }
+  var h = document.documentElement.scrollHeight - window.innerHeight;
+  topFill.style.width = (h > 0 ? Math.min(100, Math.max(0, window.scrollY / h * 100)) : 0) + "%";
+}
+function onScroll(){ if(!ticking){ ticking = true; requestAnimationFrame(updateProgress); } }
+window.addEventListener("scroll", onScroll, { passive:true });
+window.addEventListener("resize", onScroll);
+updateProgress();
+setInterval(save, 4000);
+
+/* ---------- predict, then find out ---------- */
+$$("[data-predict]").forEach(function(box){
+  var opts = $$(".opt", box), answers = $$(".predict__ans", box);
+  opts.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      opts.forEach(function(o){ o.removeAttribute("data-picked"); });
+      btn.setAttribute("data-picked","1");
+      var pick = btn.getAttribute("data-a");
+      answers.forEach(function(a){ a.classList.toggle("show", a.getAttribute("data-for") === pick); });
+    });
+  });
+});
+
+/* ---------- STOP 5 · one CPU, taking turns ---------- */
+(function(){
+  var lamps    = $$(".lamp");
+  if(!lamps.length) return;
+  var coreNow  = $("#coreNow"), swapNote = $("#swapNote"), timeline = $("#timeline");
+  var speed    = $("#speed"), rMs = $("#rMs"), rHz = $("#rHz");
+  var playBtn  = $("#simPlay"), playTxt = $("#simPlayTxt"), stepBtn = $("#simStep");
+  var names    = ["Music player","Drawing app","Clock"];
+  var colours  = ["#FF6FA5","#7FA9FF","#5BE49B"];
+  var HOLD     = 130;            /* how long your eye keeps seeing a light */
+  var TICKS    = 48, ticks = [];
+  for(var i = 0; i < TICKS; i++){
+    var t = document.createElement("span"); t.className = "tick";
+    timeline.appendChild(t); ticks.push(t);
+  }
+  var cur = -1, pos = 0, lastUsed = [0,0,0], swapTimer = null, running = false, noteUntil = 0;
+
+  function ms(){ return Math.round(900 * Math.pow(3/900, (speed.value - 1) / 99)); }
+
+  function turn(){
+    cur = (cur + 1) % 3;
+    lastUsed[cur] = performance.now();
+    noteUntil = performance.now() + 260;
+    if(pos === 0){ ticks.forEach(function(t){ t.style.background = "rgba(255,255,255,.05)"; }); }
+    ticks[pos].style.background = colours[cur];
+    pos = (pos + 1) % TICKS;
+  }
+
+  function paint(){
+    var now = performance.now();
+    lamps.forEach(function(l, i){ l.setAttribute("data-hot", (now - lastUsed[i]) < HOLD ? "1" : "0"); });
+    coreNow.textContent = cur < 0 ? "waiting" : names[cur];
+    swapNote.classList.toggle("on", now < noteUntil);
+  }
+  setInterval(paint, 45);
+
+  function schedule(){
+    clearInterval(swapTimer);
+    if(!running) return;
+    var m = ms(), every = Math.max(m, 10), burst = Math.max(1, Math.round(every / m));
+    swapTimer = setInterval(function(){ for(var i = 0; i < burst; i++) turn(); }, every);
+  }
+  function readout(){
+    var m = ms();
+    rMs.textContent = m;
+    rHz.textContent = Math.round(1000 / m);
+  }
+  speed.addEventListener("input", function(){ readout(); schedule(); });
+
+  playBtn.addEventListener("click", function(){
+    running = !running;
+    playTxt.textContent = running ? "Pause the kitchen" : "Start the kitchen";
+    if(!running){ clearInterval(swapTimer); swapNote.classList.remove("on"); }
+    schedule();
+    markDone("sim");
+  });
+  stepBtn.addEventListener("click", function(){ turn(); paint(); markDone("sim"); });
+  readout();
+})();
+
+/* ---------- STOP 6 · fences in the memory ---------- */
+(function(){
+  var row = $("#memrow"); if(!row) return;
+  var say = $("#memSay");
+  var original = row.innerHTML;
+
+  function region(n){ return row.querySelector('[data-r="'+n+'"]'); }
+  function flash(){
+    $$(".fence", row).forEach(function(f){
+      f.classList.add("flash");
+      setTimeout(function(){ f.classList.remove("flash"); }, 700);
+    });
+  }
+  function freeSpace(){ var f = region("free"); return f ? parseFloat(f.style.flexGrow || 0) : 0; }
+  function toFree(el, label){
+    el.className = "region region--free";
+    el.innerHTML = "<b>Free</b><span>"+label+"</span>";
+  }
+
+  var acts = {
+    peek: function(){
+      var g = region("1"); if(!g) return;
+      if(g.className.indexOf("region--free") > -1){
+        say.innerHTML = "The Game is already shut down &mdash; its boxes went back to the free pile. Press <b>Start again</b> to put it back.";
+        return;
+      }
+      g.classList.add("blocked"); flash();
+      say.innerHTML = "<b>Refused, and stopped.</b> The Game reached into boxes 900&ndash;1399, which belong to the Drawing app. The Operating System caught it before the reach happened and shut the Game down &mdash; on its own. Look along the row: the Drawing app and the Music player did not even notice. Its boxes have already gone back into the free pile.";
+      setTimeout(function(){ if(g.parentNode) toFree(g, "500&ndash;899"); }, 1400);
+      markDone("mem");
+    },
+    ask: function(){
+      var f = region("free"), m = region("3");
+      if(!f || !m){ say.innerHTML = "<b>Refused.</b> There are no spare boxes left at all."; return; }
+      if(freeSpace() <= 2){
+        say.innerHTML = "<b>Refused.</b> There are no spare boxes left. The Operating System will not take boxes away from a program that is still using them, so the Music player has to manage with what it has.";
+        return;
+      }
+      f.style.flexGrow = freeSpace() - 3;
+      m.style.flexGrow = parseFloat(m.style.flexGrow || 0) + 3;
+      m.querySelector("span").innerHTML = "1400&ndash;1999";
+      flash();
+      say.innerHTML = "<b>Granted.</b> There were spare boxes, so the Operating System handed 300 of them to the Music player and moved its fence along. Nobody else's boxes moved by a millimetre.";
+    },
+    close: function(){
+      var d = region("2");
+      if(!d || d.className.indexOf("region--free") > -1){ say.innerHTML = "The Drawing app is already closed."; return; }
+      toFree(d, "900&ndash;1399"); flash();
+      say.innerHTML = "<b>Cleared.</b> The Drawing app closed, and the Operating System took back every single one of its boxes at once. Nothing is left behind. This is why your computer does not slowly fill up with the memory of programs you shut hours ago.";
+    },
+    reset: function(){
+      row.innerHTML = original;
+      say.innerHTML = "Back to the start. Press a button. The Operating System will answer.";
+    }
+  };
+  $$("[data-mem]").forEach(function(b){
+    b.addEventListener("click", function(){ acts[b.getAttribute("data-mem")](); });
+  });
+})();
+
+/* ---------- STOP 11 · follow one keypress ---------- */
+(function(){
+  var list = $("#traceList"); if(!list) return;
+  var items = $$("li", list), nodes = $$("#traceMap .node");
+  var prev = $("#tPrev"), next = $("#tNext"), dots = $("#tDots");
+  var idx = 0;
+  list.setAttribute("aria-live","polite");
+  items.forEach(function(){ var d = document.createElement("span"); d.className = "dot"; dots.appendChild(d); });
+  var dotEls = $$(".dot", dots);
+
+  function show(i){
+    idx = Math.max(0, Math.min(items.length - 1, i));
+    items.forEach(function(li, n){ li.classList.toggle("on", n === idx); });
+    var lit = (items[idx].getAttribute("data-nodes") || "").split(" ");
+    nodes.forEach(function(nd){ nd.classList.toggle("on", lit.indexOf(nd.getAttribute("data-node")) > -1); });
+    dotEls.forEach(function(d, n){ d.classList.toggle("on", n === idx); d.classList.toggle("done", n < idx); });
+    prev.disabled = idx === 0;
+    next.textContent = idx === items.length - 1 ? "Start again" : "Next step";
+    if(idx === items.length - 1) markDone("trace");
+  }
+  next.addEventListener("click", function(){ show(idx === items.length - 1 ? 0 : idx + 1); });
+  prev.addEventListener("click", function(){ show(idx - 1); });
+  list.parentNode.addEventListener("keydown", function(e){
+    if(e.key === "ArrowRight"){ show(idx + 1); }
+    else if(e.key === "ArrowLeft"){ show(idx - 1); }
+  });
+  show(0);
+})();
+
+/* ---------- the completion moment ---------- */
+function markDone(key){
+  if(state.done[key]) return;
+  state.done[key] = true; save(); refreshChecks();
+}
+function refreshChecks(){
+  var all = true;
+  $$(".check").forEach(function(c){
+    var done = !!state.done[c.getAttribute("data-c")];
+    c.classList.toggle("done", done);
+    var u = c.querySelector("use");
+    if(u) u.setAttribute("href", done ? "#i-check" : "#i-circle");
+    if(!done) all = false;
+  });
+  if(all) unlock();
+}
+function unlock(){
+  var seal = $("#seal");
+  if(!seal || !seal.classList.contains("locked")) return;
+  seal.classList.remove("locked");
+  $("#sealTitle").textContent = "The keys are yours";
+  $("#sealSub").textContent = "You have seen the turns, the fences, and the whole journey of a single letter. Two things left, and they are the good ones.";
+  if(reduce) return;
+  seal.classList.add("pop");
+  for(var i = 0; i < 16; i++){
+    (function(n){
+      var s = document.createElement("span");
+      s.className = "spark";
+      var a = (Math.PI * 2 * n) / 16, d = 60 + Math.random() * 70;
+      s.style.setProperty("--dx", Math.cos(a) * d + "px");
+      s.style.setProperty("--dy", Math.sin(a) * d + "px");
+      seal.appendChild(s);
+      setTimeout(function(){ s.classList.add("go"); }, 120 + n * 22);
+      setTimeout(function(){ if(s.parentNode) s.parentNode.removeChild(s); }, 1600);
+    })(i);
+  }
+}
+
+/* ---------- the two writing tasks ---------- */
+(function(){
+  var note = $("#savedNote"), timer = null;
+  [["t1","t1"],["t2","t2"]].forEach(function(pair){
+    var el = $("#" + pair[0]); if(!el) return;
+    el.value = state[pair[1]] || "";
+    el.addEventListener("input", function(){
+      state[pair[1]] = el.value; save();
+      note.classList.add("on");
+      clearTimeout(timer);
+      timer = setTimeout(function(){ note.classList.remove("on"); }, 1600);
+    });
+  });
+})();
+
+/* ---------- start again ---------- */
+var resetBtn = $("#resetAll");
+if(resetBtn) resetBtn.addEventListener("click", function(){
+  state = { stops:{}, done:{}, t1:"", t2:"" };
+  try{ localStorage.removeItem(KEY); }catch(e){}
+  fallback[KEY] = null;
+  location.reload();
+});
+
+refreshChecks();
+window.addEventListener("beforeunload", save);
+})();
+</script>
+</body>
+</html>

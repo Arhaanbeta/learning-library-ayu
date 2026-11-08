@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How a Transistor Works</title>
+    <style>
+        :root {
+            --bg-color: #0b0d17;
+            --panel-bg: #151822;
+            --text-main: #ffffff;
+            --text-muted: #a0a5b5;
+            --accent-blue: #00e5ff;
+            --accent-pink: #ff2a6d;
+            --accent-green: #00ff88;
+            --accent-yellow: #ffc107;
+            --ui-bg: rgba(21, 24, 34, 0.85);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #canvas-container {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* UI Overlays */
+        #top-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 30px;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            color: var(--text-main);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            transition: opacity 0.5s;
+        }
+
+        p#subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 800px;
+            line-height: 1.5;
+            transition: opacity 0.5s;
+        }
+
+        /* Controls */
+        #controls-layer {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 20;
+            background: var(--ui-bg);
+            padding: 15px 30px;
+            border-radius: 100px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        button {
+            background: var(--panel-bg);
+            color: var(--text-main);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        button:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--text-main);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.primary {
+            background: var(--accent-pink);
+            border-color: var(--accent-pink);
+            color: #fff;
+        }
+
+        button.primary:hover {
+            background: #ff4d85;
+            box-shadow: 0 0 15px rgba(255, 42, 109, 0.4);
+        }
+
+        /* Navigation */
+        #nav-panel {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to top, rgba(11, 13, 23, 1), rgba(11, 13, 23, 0));
+            z-index: 30;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-btn:hover {
+            color: var(--text-main);
+            transform: none;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        #scene-indicator {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #333;
+            transition: 0.3s;
+        }
+
+        .dot.active {
+            background: var(--accent-blue);
+            box-shadow: 0 0 10px var(--accent-blue);
+        }
+
+        /* Sliders */
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            min-width: 150px;
+        }
+        
+        .slider-container label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 0 10px var(--accent-blue);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+        }
+
+        /* Floating labels */
+        .floating-label {
+            position: absolute;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            pointer-events: none;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            opacity: 0;
+            transition: opacity 0.3s;
+            transform: translate(-50%, -50%);
+        }
+
+        .hide {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container">
+        <canvas id="sim"></canvas>
+        
+        <div id="top-panel">
+            <h1 id="title">Scene Title</h1>
+            <p id="subtitle">Scene Description</p>
+        </div>
+
+        <div id="controls-layer">
+            <!-- Dynamically populated based on scene -->
+        </div>
+
+        <div id="nav-panel">
+            <button class="nav-btn" id="prev-btn">◄ Previous</button>
+            <div id="scene-indicator"></div>
+            <button class="nav-btn" id="next-btn">Next ►</button>
+        </div>
+    </div>
+
+    <script>
+        // System / Canvas Setup
+        const canvas = document.getElementById('sim');
+        const ctx = canvas.getContext('2d', { alpha: false });
+        let W, H;
+        
+        // UI Elements
+        const titleEl = document.getElementById('title');
+        const subtitleEl = document.getElementById('subtitle');
+        const controlsLayer = document.getElementById('controls-layer');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const sceneIndicator = document.getElementById('scene-indicator');
+
+        // State
+        let currentSceneIndex = 0;
+        let time = 0;
+        let particles = [];
+        
+        // Shared interactive state
+        const state = {
+            gateA: false,
+            gateB: false,
+            gateA_Progress: 0,
+            gateB_Progress: 0,
+            signalProgress: 0,
+            gateVoltage: 0,
+            targetGateVoltage: 0,
+            electronSpeed: 2,
+            emissionRate: 0.5,
+            ledGlow: 0
+        };
+
+        // Resize handler
+        function resize() {
+            W = window.innerWidth;
+            H = window.innerHeight;
+            canvas.width = W;
+            canvas.height = H;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Particle System
+        class Particle {
+            constructor(x, y, pathFunc) {
+                this.x = x;
+                this.y = y;
+                this.pathFunc = pathFunc; // Function that returns desired dx, dy
+                this.progress = 0;
+                this.active = true;
+                this.color = '#00e5ff';
+            }
+            update(speed) {
+                const vector = this.pathFunc(this.x, this.y, this.progress);
+                if (!vector || !vector.move) {
+                    // Blocked or finished
+                    if (vector && vector.fade) this.active = false;
+                    return;
+                }
+                this.x += vector.dx * speed;
+                this.y += vector.dy * speed;
+                this.progress += speed;
+            }
+            draw(ctx) {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                ctx.fillStyle = '#fff';
+                ctx.fill();
+                
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        // Draw Utilities
+        function drawRoundedRect(ctx, x, y, w, h, r, color, glow = 0) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+            if (glow > 0) {
+                ctx.shadowBlur = glow;
+                ctx.shadowColor = color;
+            }
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+
+        function drawGlowingLine(ctx, x1, y1, x2, y2, color, width, glow) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            if (glow > 0) {
+                ctx.shadowBlur = glow;
+                ctx.shadowColor = color;
+            }
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
+        function drawCity(ctx, x, y, label, isLeft) {
+            drawRoundedRect(ctx, x - 60, y - 60, 120, 120, 20, '#151822');
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x - 60, y - 60, 120, 120);
+            
+            ctx.fillStyle = '#fff';
+            ctx.font = '14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, x, y + 80);
+        }
+
+        function drawTransistor(ctx, x, y, scale, gateVolt, labelMode = 0) {
+            const w = 300 * scale;
+            const h = 150 * scale;
+            
+            // Substrate (Base)
+            drawRoundedRect(ctx, x - w/2, y - h/2, w, h, 10 * scale, '#222');
+            
+            // Source & Drain
+            drawRoundedRect(ctx, x - w/2 + 20*scale, y - h/2 + 20*scale, 60*scale, h - 40*scale, 5*scale, '#1b5e20');
+            drawRoundedRect(ctx, x + w/2 - 80*scale, y - h/2 + 20*scale, 60*scale, h - 40*scale, 5*scale, '#1b5e20');
+            
+            // Oxide
+            drawRoundedRect(ctx, x - w/2 + 85*scale, y - h/2 + 10*scale, w - 170*scale, 15*scale, 2*scale, '#555');
+            
+            // Gate Terminal
+            drawRoundedRect(ctx, x - w/2 + 85*scale, y - h/2 - 10*scale, w - 170*scale, 20*scale, 3*scale, '#ffc107');
+            
+            // Channel Glow based on gateVolt
+            if (gateVolt > 0) {
+                ctx.save();
+                ctx.globalAlpha = gateVolt;
+                drawRoundedRect(ctx, x - w/2 + 85*scale, y - h/2 + 25*scale, w - 170*scale, h - 60*scale, 0, '#00e5ff', 20*scale);
+                ctx.restore();
+            }
+
+            // Labels
+            if (labelMode === 1) {
+                ctx.fillStyle = '#fff';
+                ctx.font = `${14*scale}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.fillText('Source', x - w/2 + 50*scale, y + h/2 - 10*scale);
+                ctx.fillText('Drain', x + w/2 - 50*scale, y + h/2 - 10*scale);
+                ctx.fillText('Gate', x, y - h/2 - 15*scale);
+                if (gateVolt > 0.5) {
+                    ctx.fillStyle = '#00e5ff';
+                    ctx.fillText('Channel', x, y + 10*scale);
+                }
+            }
+        }
+
+        // Logic Symbol Drawings
+        function drawCircuitSymbol(ctx, x, y, scale, stateA, stateB) {
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2 * scale;
+            
+            // Wire top
+            drawGlowingLine(ctx, x, y - 60*scale, x, y - 40*scale, '#fff', 2*scale, 0);
+            
+            // Switch A
+            drawGlowingLine(ctx, x, y - 40*scale, x - 10*scale, y - 40*scale, '#fff', 2*scale, 0);
+            if (stateA) {
+                drawGlowingLine(ctx, x - 10*scale, y - 40*scale, x - 10*scale, y - 10*scale, '#00e5ff', 3*scale, 10);
+            } else {
+                drawGlowingLine(ctx, x - 10*scale, y - 40*scale, x - 25*scale, y - 10*scale, '#fff', 2*scale, 0);
+            }
+            drawGlowingLine(ctx, x - 10*scale, y - 10*scale, x, y - 10*scale, '#fff', 2*scale, 0);
+            ctx.fillText("Switch A", x - 40*scale, y - 25*scale);
+
+            // Wire middle
+            drawGlowingLine(ctx, x, y - 10*scale, x, y + 10*scale, '#fff', 2*scale, 0);
+
+            // Switch B
+            drawGlowingLine(ctx, x, y + 10*scale, x - 10*scale, y + 10*scale, '#fff', 2*scale, 0);
+            if (stateB) {
+                drawGlowingLine(ctx, x - 10*scale, y + 10*scale, x - 10*scale, y + 40*scale, '#00e5ff', 3*scale, 10);
+            } else {
+                drawGlowingLine(ctx, x - 10*scale, y + 10*scale, x - 25*scale, y + 40*scale, '#fff', 2*scale, 0);
+            }
+            drawGlowingLine(ctx, x - 10*scale, y + 40*scale, x, y + 40*scale, '#fff', 2*scale, 0);
+            ctx.fillText("Switch B", x - 40*scale, y + 25*scale);
+
+            // Wire bottom
+            drawGlowingLine(ctx, x, y + 40*scale, x, y + 60*scale, '#fff', 2*scale, 0);
+        }
+
+        function drawANDSymbol(ctx, x, y, scale, stateA, stateB) {
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2 * scale;
+            
+            // Input wires
+            drawGlowingLine(ctx, x - 60*scale, y - 15*scale, x - 30*scale, y - 15*scale, stateA ? '#00e5ff' : '#fff', 2*scale, stateA ? 10 : 0);
+            drawGlowingLine(ctx, x - 60*scale, y + 15*scale, x - 30*scale, y + 15*scale, stateB ? '#00e5ff' : '#fff', 2*scale, stateB ? 10 : 0);
+            
+            // D shape
+            ctx.beginPath();
+            ctx.moveTo(x - 30*scale, y - 30*scale);
+            ctx.lineTo(x - 10*scale, y - 30*scale);
+            ctx.arc(x - 10*scale, y, 30*scale, -Math.PI/2, Math.PI/2);
+            ctx.lineTo(x - 30*scale, y + 30*scale);
+            ctx.closePath();
+            ctx.stroke();
+            if (stateA && stateB) {
+                ctx.fillStyle = 'rgba(0, 229, 255, 0.2)';
+                ctx.fill();
+            }
+
+            // Output wire
+            drawGlowingLine(ctx, x + 20*scale, y, x + 50*scale, y, (stateA && stateB) ? '#00e5ff' : '#fff', 2*scale, (stateA && stateB) ? 10 : 0);
+
+            ctx.fillStyle = '#fff';
+            ctx.font = `${14*scale}px sans-serif`;
+            ctx.textAlign = 'right';
+            ctx.fillText("A", x - 65*scale, y - 10*scale);
+            ctx.fillText("B", x - 65*scale, y + 20*scale);
+            ctx.textAlign = 'left';
+            ctx.fillText("Out", x + 55*scale, y + 5*scale);
+        }
+
+        function drawLED(ctx, x, y, glow) {
+            // Legs
+            ctx.strokeStyle = '#aaa';
+            ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.moveTo(x - 10, y + 20); ctx.lineTo(x - 10, y + 50); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(x + 10, y + 20); ctx.lineTo(x + 10, y + 50); ctx.stroke();
+
+            // Bulb
+            ctx.beginPath();
+            ctx.arc(x, y, 20, Math.PI, 0);
+            ctx.lineTo(x + 20, y + 20);
+            ctx.lineTo(x - 20, y + 20);
+            ctx.closePath();
+            
+            if (glow > 0) {
+                ctx.shadowBlur = 30 * glow;
+                ctx.shadowColor = '#00e5ff';
+                ctx.fillStyle = `rgba(0, 229, 255, ${0.2 + 0.8*glow})`;
+            } else {
+                ctx.fillStyle = 'rgba(255,255,255,0.1)';
+            }
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
+
+        // SCENES DEFINITION
+        const scenes = [
+            {
+                title: "A Road",
+                subtitle: "Imagine two cities connected by a road. Glowing travellers (electrons) naturally want to travel across. But there is a physical gate on the road. Closed path = No movement. Open path = Movement.",
+                init: () => {
+                    controlsLayer.innerHTML = `<button id="btn-gate" class="primary">Open Gate</button>`;
+                    document.getElementById('btn-gate').onclick = () => state.gateA = !state.gateA;
+                    state.gateA = false;
+                    particles = [];
+                },
+                update: () => {
+                    state.gateA_Progress += (state.gateA ? 0.05 : -0.05);
+                    state.gateA_Progress = Math.max(0, Math.min(1, state.gateA_Progress));
+                    
+                    document.getElementById('btn-gate').innerText = state.gateA ? "Close Gate" : "Open Gate";
+
+                    if (Math.random() < 0.4) {
+                        particles.push(new Particle(W/2 - 300 + (Math.random()*40-20), H/2 + (Math.random()*40-20), (px, py) => {
+                            if (px > W/2 - 10 && px < W/2 + 10 && state.gateA_Progress < 0.8) return {move: false}; // Blocked at gate
+                            if (px > W/2 + 300) return {move: false, fade: true}; // Reached destination
+                            return {dx: 1, dy: 0, move: true};
+                        }));
+                    }
+                },
+                draw: (ctx) => {
+                    drawGlowingLine(ctx, W/2 - 300, H/2, W/2 + 300, H/2, '#333', 40, 0); // Road
+                    
+                    // Gate
+                    const gateY = H/2 - 60 - (state.gateA_Progress * 40);
+                    drawRoundedRect(ctx, W/2 - 5, gateY, 10, 80, 5, '#ff2a6d', 10);
+                    
+                    drawCity(ctx, W/2 - 300, H/2, "City A", true);
+                    drawCity(ctx, W/2 + 300, H/2, "City B", false);
+                }
+            },
+            {
+                title: "Someone Controls the Gate",
+                subtitle: "Instead of lifting the gate directly, you press a tiny control button. A tiny control decides whether a massive flow can happen.",
+                init: () => {
+                    controlsLayer.innerHTML = `<button id="btn-gate" class="primary">Press Button</button>`;
+                    document.getElementById('btn-gate').onmousedown = () => state.gateA = true;
+                    document.getElementById('btn-gate').onmouseup = () => state.gateA = false;
+                    document.getElementById('btn-gate').ontouchstart = () => state.gateA = true;
+                    document.getElementById('btn-gate').ontouchend = () => state.gateA = false;
+                    state.gateA = false;
+                    particles = [];
+                },
+                update: () => {
+                    state.gateA_Progress += (state.gateA ? 0.1 : -0.1);
+                    state.gateA_Progress = Math.max(0, Math.min(1, state.gateA_Progress));
+
+                    if (Math.random() < 0.4) {
+                        particles.push(new Particle(W/2 - 300 + (Math.random()*40-20), H/2 + (Math.random()*40-20), (px, py) => {
+                            if (px > W/2 - 10 && px < W/2 + 10 && state.gateA_Progress < 0.8) return {move: false};
+                            if (px > W/2 + 300) return {move: false, fade: true};
+                            return {dx: 1, dy: 0, move: true};
+                        }));
+                    }
+                },
+                draw: (ctx) => {
+                    drawGlowingLine(ctx, W/2 - 300, H/2, W/2 + 300, H/2, '#333', 40, 0);
+                    const gateY = H/2 - 60 - (state.gateA_Progress * 40);
+                    drawRoundedRect(ctx, W/2 - 5, gateY, 10, 80, 5, '#ff2a6d', 10);
+                    
+                    drawCity(ctx, W/2 - 300, H/2, "City A", true);
+                    drawCity(ctx, W/2 + 300, H/2, "City B", false);
+
+                    // Control connection
+                    drawGlowingLine(ctx, W/2, H/2 + 100, W/2, H/2 + 40, '#555', 4, 0);
+                    drawRoundedRect(ctx, W/2 - 40, H/2 + 100, 80, 40, 10, '#222');
+                    ctx.fillStyle = '#ff2a6d';
+                    ctx.textAlign = 'center';
+                    ctx.fillText("Control", W/2, H/2 + 125);
+                }
+            },
+            {
+                title: "Electricity Controls Electricity",
+                subtitle: "Let's replace the mechanical button with an electrical signal. When a tiny pulse of electricity arrives at the gate, it opens. Electricity is controlling electricity.",
+                init: () => {
+                    controlsLayer.innerHTML = `<button id="btn-gate" class="primary">Send Tiny Pulse</button>`;
+                    document.getElementById('btn-gate').onclick = () => {
+                        if(state.signalProgress === 0) state.signalProgress = 0.01;
+                    };
+                    state.gateA = false;
+                    state.signalProgress = 0;
+                    particles = [];
+                },
+                update: () => {
+                    if (state.signalProgress > 0) {
+                        state.signalProgress += 0.02;
+                        if (state.signalProgress >= 1) {
+                            state.gateA = true;
+                        }
+                        if (state.signalProgress > 2) { // Reset after a while
+                            state.gateA = false;
+                            state.signalProgress = 0;
+                        }
+                    }
+
+                    state.gateA_Progress += (state.gateA ? 0.1 : -0.1);
+                    state.gateA_Progress = Math.max(0, Math.min(1, state.gateA_Progress));
+
+                    if (Math.random() < 0.4) {
+                        particles.push(new Particle(W/2 - 300 + (Math.random()*40-20), H/2 + (Math.random()*40-20), (px, py) => {
+                            if (px > W/2 - 10 && px < W/2 + 10 && state.gateA_Progress < 0.8) return {move: false};
+                            if (px > W/2 + 300) return {move: false, fade: true};
+                            return {dx: 1, dy: 0, move: true};
+                        }));
+                    }
+                },
+                draw: (ctx) => {
+                    drawGlowingLine(ctx, W/2 - 300, H/2, W/2 + 300, H/2, '#333', 40, 0);
+                    const gateY = H/2 - 60 - (state.gateA_Progress * 40);
+                    drawRoundedRect(ctx, W/2 - 5, gateY, 10, 80, 5, '#ff2a6d', 10);
+                    
+                    drawCity(ctx, W/2 - 300, H/2, "City A", true);
+                    drawCity(ctx, W/2 + 300, H/2, "City B", false);
+
+                    // Wire
+                    drawGlowingLine(ctx, W/2, H/2 + 150, W/2, H/2 + 40, '#555', 4, 0);
+                    
+                    // Signal Pulse
+                    if (state.signalProgress > 0 && state.signalProgress <= 1) {
+                        const pulseY = H/2 + 150 - (state.signalProgress * 110);
+                        ctx.beginPath();
+                        ctx.arc(W/2, pulseY, 6, 0, Math.PI*2);
+                        ctx.fillStyle = '#fff';
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = '#ff2a6d';
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                    }
+                }
+            },
+            {
+                title: "Reality Mapping",
+                subtitle: "Now look at the actual parts of a Transistor. Every part of our analogy maps directly to physical reality. Press the signal to see.",
+                init: () => {
+                    controlsLayer.innerHTML = `<button id="btn-gate" class="primary">Send Signal</button>`;
+                    document.getElementById('btn-gate').onclick = () => {
+                        state.gateA = !state.gateA;
+                    };
+                    state.gateA = false;
+                    particles = [];
+                },
+                update: () => {
+                    state.gateA_Progress += (state.gateA ? 0.05 : -0.05);
+                    state.gateA_Progress = Math.max(0, Math.min(1, state.gateA_Progress));
+
+                    if (Math.random() < 0.6) {
+                        // Analogy Particles (Left)
+                        particles.push(new Particle(W/4 - 150 + (Math.random()*20-10), H/2 + 50 + (Math.random()*20-10), (px, py) => {
+                            if (px > W/4 - 10 && px < W/4 + 10 && state.gateA_Progress < 0.8) return {move: false};
+                            if (px > W/4 + 150) return {move: false, fade: true};
+                            return {dx: 1, dy: 0, move: true};
+                        }));
+                        
+                        // Transistor Particles (Right)
+                        particles.push(new Particle(3*W/4 - 100 + (Math.random()*20-10), H/2 + 50 + (Math.random()*20-10), (px, py) => {
+                            if (state.gateA_Progress < 0.8) return {move: false}; // No channel
+                            if (px > 3*W/4 + 100) return {move: false, fade: true};
+                            return {dx: 1, dy: 0, move: true};
+                        }));
+                    }
+                },
+                draw: (ctx) => {
+                    // LEFT: Analogy
+                    ctx.save();
+                    drawGlowingLine(ctx, W/4 - 150, H/2 + 50, W/4 + 150, H/2 + 50, '#333', 30, 0);
+                    const gateY = H/2 + 20 - (state.gateA_Progress * 30);
+                    drawRoundedRect(ctx, W/4 - 5, gateY, 10, 40, 5, '#ff2a6d', 10);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '16px sans-serif'; ctx.textAlign = 'center';
+                    ctx.fillText("City A (Source)", W/4 - 150, H/2 + 100);
+                    ctx.fillText("City B (Drain)", W/4 + 150, H/2 + 100);
+                    ctx.fillText("Road (Channel)", W/4, H/2 + 100);
+                    ctx.fillStyle = '#ff2a6d'; ctx.fillText("Gate", W/4, H/2 - 20);
+                    ctx.restore();
+
+                    // RIGHT: Transistor
+                    drawTransistor(ctx, 3*W/4, H/2 + 50, 0.8, state.gateA_Progress, 1);
+                    
+                    // Connection Lines Mapping
+                    ctx.setLineDash([5, 5]);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+                    ctx.beginPath();
+                    ctx.moveTo(W/4, H/2 - 20); ctx.lineTo(3*W/4, H/2 - 10); // Gate
+                    ctx.moveTo(W/4 - 150, H/2 + 100); ctx.lineTo(3*W/4 - 60, H/2 + 100); // Source
+                    ctx.moveTo(W/4 + 150, H/2 + 100); ctx.lineTo(3*W/4 + 60, H/2 + 100); // Drain
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    
+                    // Divider
+                    drawGlowingLine(ctx, W/2, H/4, W/2, 3*H/4, 'rgba(255,255,255,0.1)', 2, 0);
+                }
+            },
+            {
+                title: "Inside the Transistor",
+                subtitle: "The gate doesn't physically lift. It changes the material below it. Increase the gate voltage to slowly create a conductive path (the channel) so electrons can cross.",
+                init: () => {
+                    controlsLayer.innerHTML = `
+                        <div class="slider-container">
+                            <label>Gate Voltage</label>
+                            <input type="range" id="gate-volt" min="0" max="100" value="0">
+                        </div>`;
+                    
+                    state.targetGateVoltage = 0;
+                    state.gateVoltage = 0;
+                    particles = [];
+                    
+                    document.getElementById('gate-volt').addEventListener('input', (e) => {
+                        state.targetGateVoltage = e.target.value / 100;
+                    });
+                },
+                update: () => {
+                    state.gateVoltage += (state.targetGateVoltage - state.gateVoltage) * 0.1;
+
+                    if (Math.random() < 0.8) {
+                        particles.push(new Particle(W/2 - 120 + (Math.random()*20-10), H/2 + 25 + (Math.random()*20-10), (px, py) => {
+                            if (px > W/2 - 60 && px < W/2 + 60 && state.gateVoltage < 0.6) return {move: false}; 
+                            if (px > W/2 + 120) return {move: false, fade: true};
+                            return {dx: state.electronSpeed, dy: 0, move: true};
+                        }));
+                    }
+                },
+                draw: (ctx) => {
+                    drawTransistor(ctx, W/2, H/2, 1.5, state.gateVoltage, 1);
+                    
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '16px sans-serif';
+                    ctx.textAlign = 'center';
+                    if (state.gateVoltage < 0.6) {
+                        ctx.fillText("No channel. Electrons cannot cross.", W/2, H/2 + 130);
+                    } else {
+                        ctx.fillStyle = '#00e5ff';
+                        ctx.fillText("Channel formed! Electricity flows.", W/2, H/2 + 130);
+                    }
+                }
+            },
+            {
+                title: "Interactive Control",
+                subtitle: "Play with the physics. Notice how gate voltage controls the channel strength, and how that enables current to flow from Source to Drain.",
+                init: () => {
+                    controlsLayer.innerHTML = `
+                        <div class="slider-container">
+                            <label>Gate Voltage</label>
+                            <input type="range" id="gate-volt" min="0" max="100" value="${state.targetGateVoltage*100}">
+                        </div>
+                        <div class="slider-container">
+                            <label>Electron Speed</label>
+                            <input type="range" id="speed" min="1" max="10" value="${state.electronSpeed}">
+                        </div>`;
+                    
+                    document.getElementById('gate-volt').addEventListener('input', (e) => {
+                        state.targetGateVoltage = e.target.value / 100;
+                    });
+                    document.getElementById('speed').addEventListener('input', (e) => {
+                        state.electronSpeed = e.target.value;
+                    });
+                },
+                update: () => {
+                    state.gateVoltage += (state.targetGateVoltage - state.gateVoltage) * 0.1;
+
+                    const emissionChance = 0.2 + (state.gateVoltage * 0.6); // more electrons if voltage higher
+                    if (Math.random() < emissionChance) {
+                        particles.push(new Particle(W/2 - 120 + (Math.random()*20-10), H/2 + 25 + (Math.random()*20-10), (px, py) => {
+                            if (px > W/2 - 60 && px < W/2 + 60 && state.gateVoltage < 0.5) return {move: false}; 
+                            if (px > W/2 + 120) return {move: false, fade: true};
+                            return {dx: state.electronSpeed * 0.5, dy: 0, move: true};
+                        }));
+                    }
+                },
+                draw: (ctx) => {
+                    drawTransistor(ctx, W/2, H/2, 1.5, state.gateVoltage, 1);
+                }
+            },
+            {
+                title: "Turn a Light On",
+                subtitle: "We can use this tiny gate control to act like a massive switch. If current flows, the LED turns on. Slide the gate voltage to test the switch.",
+                init: () => {
+                    controlsLayer.innerHTML = `
+                        <div class="slider-container">
+                            <label>Gate Voltage</label>
+                            <input type="range" id="gate-volt" min="0" max="100" value="${state.targetGateVoltage*100}">
+                        </div>`;
+                    
+                    document.getElementById('gate-volt').addEventListener('input', (e) => {
+                        state.targetGateVoltage = e.target.value / 100;
+                    });
+                },
+                update: () => {
+                    state.gateVoltage += (state.targetGateVoltage - state.gateVoltage) * 0.1;
+
+                    let flowing = state.gateVoltage > 0.5;
+                    state.ledGlow += (flowing ? 0.05 : -0.05);
+                    state.ledGlow = Math.max(0, Math.min(1, state.ledGlow));
+
+                    if (Math.random() < 0.8) {
+                        particles.push(new Particle(W/2 - 250 + (Math.random()*10-5), H/2 + 25 + (Math.random()*10-5), (px, py) => {
+                            if (px > W/2 - 190 && px < W/2 - 70 && state.gateVoltage < 0.5) return {move: false}; 
+                            if (px > W/2 - 70 && px < W/2 + 100) return {dx: 2, dy: 0, move: true}; // Wire
+                            if (px >= W/2 + 100 && py > H/2 - 100) return {dx: 0, dy: -2, move: true}; // Up to LED
+                            if (py <= H/2 - 100) return {move: false, fade: true}; // Disappear in LED
+                            return {dx: 2, dy: 0, move: true};
+                        }));
+                    }
+                },
+                draw: (ctx) => {
+                    drawTransistor(ctx, W/2 - 130, H/2, 1, state.gateVoltage, 0);
+                    
+                    // Wire from Transistor to LED
+                    drawGlowingLine(ctx, W/2 - 30, H/2 + 25, W/2 + 100, H/2 + 25, '#444', 6, 0);
+                    drawGlowingLine(ctx, W/2 + 100, H/2 + 25, W/2 + 100, H/2 - 80, '#444', 6, 0);
+                    
+                    // Wire from LED to Ground
+                    drawGlowingLine(ctx, W/2 + 100, H/2 - 120, W/2 + 100, H/2 - 200, '#444', 6, 0);
+
+                    // Ground symbol
+                    ctx.strokeStyle = '#fff';
+                    ctx.beginPath(); ctx.moveTo(W/2 + 80, H/2 - 200); ctx.lineTo(W/2 + 120, H/2 - 200); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(W/2 + 90, H/2 - 210); ctx.lineTo(W/2 + 110, H/2 - 210); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(W/2 + 95, H/2 - 220); ctx.lineTo(W/2 + 105, H/2 - 220); ctx.stroke();
+                    
+                    // Source wire
+                    drawGlowingLine(ctx, W/2 - 230, H/2 + 25, W/2 - 300, H/2 + 25, '#444', 6, 0);
+
+                    drawLED(ctx, W/2 + 100, H/2 - 100, state.ledGlow);
+                }
+            },
+            {
+                title: "Two Transistors",
+                subtitle: "What if we place TWO transistors in a row? Now, current reaches the LED ONLY if Gate A AND Gate B are both open. Try it.",
+                init: () => {
+                    controlsLayer.innerHTML = `
+                        <button id="btn-a">Toggle Gate A</button>
+                        <button id="btn-b">Toggle Gate B</button>
+                    `;
+                    state.gateA = false;
+                    state.gateB = false;
+                    
+                    document.getElementById('btn-a').onclick = (e) => {
+                        state.gateA = !state.gateA;
+                        e.target.className = state.gateA ? 'primary' : '';
+                    };
+                    document.getElementById('btn-b').onclick = (e) => {
+                        state.gateB = !state.gateB;
+                        e.target.className = state.gateB ? 'primary' : '';
+                    };
+                    particles = [];
+                },
+                update: () => {
+                    state.gateA_Progress += (state.gateA ? 0.1 : -0.1);
+                    state.gateA_Progress = Math.max(0, Math.min(1, state.gateA_Progress));
+                    
+                    state.gateB_Progress += (state.gateB ? 0.1 : -0.1);
+                    state.gateB_Progress = Math.max(0, Math.min(1, state.gateB_Progress));
+
+                    let flowing = state.gateA && state.gateB;
+                    state.ledGlow += (flowing ? 0.05 : -0.05);
+                    state.ledGlow = Math.max(0, Math.min(1, state.ledGlow));
+
+                    if (Math.random() < 0.8) {
+                        particles.push(new Particle(W/2 - 300 + (Math.random()*10-5), H/2 + 25 + (Math.random()*10-5), (px, py) => {
+                            if (px > W/2 - 250 && px < W/2 - 150 && state.gateA_Progress < 0.5) return {move: false}; // Block T1
+                            if (px > W/2 - 50 && px < W/2 + 50 && state.gateB_Progress < 0.5) return {move: false};   // Block T2
+                            if (px > W/2 + 100 && py > H/2 - 100) {
+                                // Reached LED curve, go up
+                                return {dx: 0, dy: -3, move: true};
+                            }
+                            if (py <= H/2 - 100) return {move: false, fade: true}; // Hit LED
+                            return {dx: 3, dy: 0, move: true}; // Go right
+                        }));
+                    }
+                },
+                draw: (ctx) => {
+                    // T1
+                    drawTransistor(ctx, W/2 - 200, H/2, 0.8, state.gateA_Progress, 0);
+                    ctx.fillStyle = '#fff'; ctx.fillText("Gate A", W/2 - 200, H/2 - 70);
+                    // T2
+                    drawTransistor(ctx, W/2, H/2, 0.8, state.gateB_Progress, 0);
+                    ctx.fillStyle = '#fff'; ctx.fillText("Gate B", W/2, H/2 - 70);
+
+                    // Wires
+                    drawGlowingLine(ctx, W/2 - 300, H/2 + 20, W/2 - 280, H/2 + 20, '#444', 6, 0);
+                    drawGlowingLine(ctx, W/2 - 120, H/2 + 20, W/2 - 80, H/2 + 20, '#444', 6, 0);
+                    drawGlowingLine(ctx, W/2 + 80, H/2 + 20, W/2 + 150, H/2 + 20, '#444', 6, 0);
+                    drawGlowingLine(ctx, W/2 + 150, H/2 + 20, W/2 + 150, H/2 - 80, '#444', 6, 0);
+
+                    drawLED(ctx, W/2 + 150, H/2 - 100, state.ledGlow);
+                    
+                    // Overlay Status
+                    ctx.fillStyle = '#fff'; ctx.font = '16px sans-serif'; ctx.textAlign = 'center';
+                    if (!state.gateA) ctx.fillText("Flow blocked at Gate A", W/2 - 200, H/2 + 100);
+                    else if (!state.gateB) ctx.fillText("Flow passed A, blocked at Gate B", W/2, H/2 + 100);
+                    else {
+                        ctx.fillStyle = '#00e5ff';
+                        ctx.fillText("Circuit complete! LED is ON.", W/2, H/2 + 100);
+                    }
+                }
+            },
+            {
+                title: "Build an AND Gate",
+                subtitle: "This combination of two transistors is called an AND Gate. The output is ON only if input A AND input B are ON. Select combinations below.",
+                init: () => {
+                    controlsLayer.innerHTML = `
+                        <button id="btn-00">OFF OFF</button>
+                        <button id="btn-10">ON OFF</button>
+                        <button id="btn-01">OFF ON</button>
+                        <button id="btn-11">ON ON</button>
+                    `;
+                    state.gateA = false; state.gateB = false;
+                    
+                    const updateBtns = () => {
+                        ['00','10','01','11'].forEach(id => document.getElementById(`btn-${id}`).className = '');
+                        if(!state.gateA && !state.gateB) document.getElementById('btn-00').className = 'primary';
+                        if(state.gateA && !state.gateB) document.getElementById('btn-10').className = 'primary';
+                        if(!state.gateA && state.gateB) document.getElementById('btn-01').className = 'primary';
+                        if(state.gateA && state.gateB) document.getElementById('btn-11').className = 'primary';
+                    };
+
+                    document.getElementById('btn-00').onclick = () => { state.gateA = false; state.gateB = false; updateBtns(); };
+                    document.getElementById('btn-10').onclick = () => { state.gateA = true; state.gateB = false; updateBtns(); };
+                    document.getElementById('btn-01').onclick = () => { state.gateA = false; state.gateB = true; updateBtns(); };
+                    document.getElementById('btn-11').onclick = () => { state.gateA = true; state.gateB = true; updateBtns(); };
+                    
+                    updateBtns();
+                    particles = [];
+                },
+                update: () => {
+                    scenes[7].update(); // Reuse physics from previous scene
+                },
+                draw: (ctx) => {
+                    scenes[7].draw(ctx); // Reuse draw from previous scene
+                    
+                    // Add Logic Table highlight
+                    const tw = 200, th = 120;
+                    const tx = W - tw - 50, ty = H/2 - th/2;
+                    
+                    drawRoundedRect(ctx, tx, ty, tw, th, 10, '#151822');
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'left';
+                    ctx.fillText("A", tx + 30, ty + 25);
+                    ctx.fillText("B", tx + 80, ty + 25);
+                    ctx.fillText("OUT", tx + 130, ty + 25);
+                    
+                    ctx.font = '16px monospace';
+                    const rows = [[0,0,0],[1,0,0],[0,1,0],[1,1,1]];
+                    rows.forEach((row, i) => {
+                        const active = (state.gateA == row[0] && state.gateB == row[1]);
+                        ctx.fillStyle = active ? '#00e5ff' : '#666';
+                        if (active) {
+                            ctx.fillRect(tx + 10, ty + 35 + i*20, tw - 20, 20);
+                            ctx.fillStyle = '#000';
+                        }
+                        ctx.fillText(row[0], tx + 30, ty + 50 + i*20);
+                        ctx.fillText(row[1], tx + 80, ty + 50 + i*20);
+                        ctx.fillText(row[2], tx + 140, ty + 50 + i*20);
+                    });
+                }
+            },
+            {
+                title: "Reveal the Logic Symbol",
+                subtitle: "Engineers don't draw billions of transistors. They use symbols. Notice how the road, the transistors, the circuit schematic, and the AND symbol all describe exactly the same physical process.",
+                init: () => {
+                    controlsLayer.innerHTML = `
+                        <button id="btn-a">Toggle Input A</button>
+                        <button id="btn-b">Toggle Input B</button>
+                    `;
+                    state.gateA = false;
+                    state.gateB = false;
+                    
+                    document.getElementById('btn-a').onclick = (e) => {
+                        state.gateA = !state.gateA;
+                        e.target.className = state.gateA ? 'primary' : '';
+                    };
+                    document.getElementById('btn-b').onclick = (e) => {
+                        state.gateB = !state.gateB;
+                        e.target.className = state.gateB ? 'primary' : '';
+                    };
+                    particles = [];
+                },
+                update: () => {
+                    state.gateA_Progress += (state.gateA ? 0.1 : -0.1);
+                    state.gateA_Progress = Math.max(0, Math.min(1, state.gateA_Progress));
+                    
+                    state.gateB_Progress += (state.gateB ? 0.1 : -0.1);
+                    state.gateB_Progress = Math.max(0, Math.min(1, state.gateB_Progress));
+                },
+                draw: (ctx) => {
+                    const cx = W/2, cy = H/2 + 20;
+
+                    // Grid lines
+                    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(cx, 150); ctx.lineTo(cx, H-150); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(100, cy); ctx.lineTo(W-100, cy); ctx.stroke();
+
+                    // Q1: Road Analogy (Top Left)
+                    ctx.save();
+                    ctx.translate(cx/2, cy/2 + 50);
+                    drawGlowingLine(ctx, -150, 0, 150, 0, '#333', 20, 0);
+                    drawRoundedRect(ctx, -50 - 5, -30 - (state.gateA_Progress*20), 10, 40, 3, '#ff2a6d', 5);
+                    drawRoundedRect(ctx, 50 - 5, -30 - (state.gateB_Progress*20), 10, 40, 3, '#ff2a6d', 5);
+                    ctx.fillStyle = '#fff'; ctx.font = '14px sans-serif'; ctx.textAlign='center';
+                    ctx.fillText("Road Analogy", 0, -80);
+                    ctx.restore();
+
+                    // Q2: Transistors (Top Right)
+                    ctx.save();
+                    ctx.translate(cx + cx/2, cy/2 + 50);
+                    drawTransistor(ctx, -60, 0, 0.4, state.gateA_Progress, 0);
+                    drawTransistor(ctx, 60, 0, 0.4, state.gateB_Progress, 0);
+                    ctx.fillStyle = '#fff'; ctx.font = '14px sans-serif'; ctx.textAlign='center';
+                    ctx.fillText("Physical Transistors", 0, -80);
+                    ctx.restore();
+
+                    // Q3: Circuit Schematic (Bottom Left)
+                    ctx.save();
+                    ctx.translate(cx/2, cy + cy/2 - 50);
+                    drawCircuitSymbol(ctx, 0, 0, 1, state.gateA, state.gateB);
+                    ctx.fillStyle = '#fff'; ctx.font = '14px sans-serif'; ctx.textAlign='center';
+                    ctx.fillText("Circuit Schematic", 0, -100);
+                    ctx.restore();
+
+                    // Q4: AND Symbol (Bottom Right)
+                    ctx.save();
+                    ctx.translate(cx + cx/2, cy + cy/2 - 50);
+                    drawANDSymbol(ctx, 0, 0, 1.5, state.gateA, state.gateB);
+                    ctx.fillStyle = '#fff'; ctx.font = '14px sans-serif'; ctx.textAlign='center';
+                    ctx.fillText("Logic Symbol (AND Gate)", 0, -100);
+                    ctx.restore();
+                }
+            }
+        ];
+
+        // Engine Core
+        function initScene(index) {
+            currentSceneIndex = index;
+            const scene = scenes[index];
+            
+            // Update UI
+            titleEl.style.opacity = 0;
+            subtitleEl.style.opacity = 0;
+            
+            setTimeout(() => {
+                titleEl.innerText = scene.title;
+                subtitleEl.innerText = scene.subtitle;
+                titleEl.style.opacity = 1;
+                subtitleEl.style.opacity = 1;
+            }, 300);
+
+            // Update Nav
+            prevBtn.disabled = index === 0;
+            nextBtn.disabled = index === scenes.length - 1;
+            
+            sceneIndicator.innerHTML = '';
+            for(let i=0; i<scenes.length; i++){
+                const dot = document.createElement('div');
+                dot.className = `dot ${i === index ? 'active' : ''}`;
+                sceneIndicator.appendChild(dot);
+            }
+
+            // Init scene logic
+            particles = []; // Clear global particles
+            if (scene.init) scene.init();
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentSceneIndex > 0) initScene(currentSceneIndex - 1);
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentSceneIndex < scenes.length - 1) initScene(currentSceneIndex + 1);
+        });
+
+        // Main Loop
+        function loop() {
+            // Dark background with slight motion blur effect
+            ctx.fillStyle = 'rgba(11, 13, 23, 0.4)';
+            ctx.fillRect(0, 0, W, H);
+            
+            const scene = scenes[currentSceneIndex];
+            
+            // Physics / Logic Update
+            if (scene.update) scene.update();
+
+            // Particles update & draw
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.update(state.electronSpeed || 2);
+                if (p.active) {
+                    p.draw(ctx);
+                } else {
+                    particles.splice(i, 1);
+                }
+            }
+
+            // Static/Dynamic Drawings
+            if (scene.draw) scene.draw(ctx);
+
+            requestAnimationFrame(loop);
+        }
+
+        // Start
+        initScene(0);
+        loop();
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,2862 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Number Line Lab</title>
+<style>
+:root {
+  --bg: #FBFBFD; --surface: #FFFFFF; --text: #1D1D1F; --quiet: #6E6E73; --hair: #D2D2D7;
+  --pos: #0072B2; --neg: #B34D00; --act: #9C3D73;
+  --act-tint: rgba(156, 61, 115, 0.10); --seg-bg: rgba(118, 118, 128, 0.12); --hover: rgba(118, 118, 128, 0.10);
+  --raised: #FFFFFF; --shadow: 0 1px 2px rgba(0,0,0,.06), 0 10px 30px rgba(0,0,0,.08);
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --math: "STIX Two Math", "STIX Two Text", "Cambria Math", "Latin Modern Math", Cambria, Georgia, "Times New Roman", serif;
+  --top-h: 64px; --strip-h: 100px; --play-h: 56px;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg: #121214; --surface: #1C1C1F; --text: #F5F5F7; --quiet: #A1A1A6; --hair: #3A3A3F;
+  --pos: #56B4E9; --neg: #FF8A4C; --act: #E48FC1;
+  --act-tint: rgba(228, 143, 193, 0.16); --seg-bg: rgba(118, 118, 128, 0.24); --hover: rgba(118, 118, 128, 0.22);
+  --raised: #2C2C30; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 32px rgba(0,0,0,.45);
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121214; --surface: #1C1C1F; --text: #F5F5F7; --quiet: #A1A1A6; --hair: #3A3A3F;
+    --pos: #56B4E9; --neg: #FF8A4C; --act: #E48FC1;
+    --act-tint: rgba(228, 143, 193, 0.16); --seg-bg: rgba(118, 118, 128, 0.24); --hover: rgba(118, 118, 128, 0.22);
+    --raised: #2C2C30; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 32px rgba(0,0,0,.45);
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--text); font-family: var(--font); -webkit-font-smoothing: antialiased; overflow: hidden; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--act); outline-offset: 2px; }
+[hidden] { display: none !important; }
+
+.app { height: 100vh; height: 100dvh; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) var(--strip-h) var(--play-h); }
+
+/* ---------- header ---------- */
+.top { display: flex; align-items: center; gap: 14px; min-height: var(--top-h); padding: 0 16px; background: var(--surface); border-bottom: 1px solid var(--hair); position: relative; z-index: 30; }
+.brand { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: var(--quiet); white-space: nowrap; }
+.brand-mark { fill: var(--pos); stroke: var(--text); stroke-width: 1.5; stroke-linejoin: round; }
+.editor { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 14px; position: relative; }
+.expr { display: inline-flex; align-items: center; gap: 10px; font-family: var(--math); font-size: clamp(25px, 2.5vw, 36px); line-height: 1; white-space: nowrap; }
+.start { display: inline-flex; align-items: center; gap: 6px; }
+.start-label { font-size: 12.5px; color: var(--quiet); }
+.operand { display: inline-flex; align-items: baseline; font-family: var(--math); font-variant-numeric: lining-nums tabular-nums; }
+.operand.sm { font-size: 18px; }
+.operand .paren { opacity: 0; width: 0; overflow: hidden; display: inline-block; transition: opacity .15s; }
+.operand.is-neg .paren { opacity: 1; width: auto; }
+.operand.is-pos { color: var(--pos); }
+.operand.is-neg { color: var(--neg); }
+.operand.is-zero { color: var(--text); }
+.sign { border: 0; background: none; padding: 0 1px; margin: 0; border-radius: 6px; line-height: 1; font-family: var(--math); min-width: .55em; }
+.sign:hover { background: var(--hover); }
+.operand.is-pos .sign { opacity: .26; font-size: .5em; align-self: center; margin-right: 2px; }
+.operand.is-pos .sign:hover, .operand.is-pos .sign:focus-visible { opacity: .9; }
+.operand.is-zero .sign { display: none; }
+.size { width: 2ch; border: 0; border-bottom: 2px solid transparent; background: transparent; text-align: center; padding: 0 1px 2px; font-family: var(--math); font-variant-numeric: lining-nums tabular-nums; border-radius: 0; }
+.size:hover { border-bottom-color: var(--hair); }
+.size:focus { outline: none; border-bottom-color: var(--act); }
+.size[aria-invalid="true"] { border-bottom-color: var(--neg); border-bottom-style: dashed; }
+.ops { display: inline-flex; gap: 2px; padding: 3px; border-radius: 11px; background: var(--seg-bg); }
+.ops button { border: 0; background: transparent; width: 1.35em; height: 1.35em; border-radius: 8px; font-family: var(--math); font-size: .72em; color: var(--quiet); display: grid; place-items: center; }
+.ops button:hover { color: var(--text); }
+.ops button[aria-checked="true"] { background: var(--raised); color: var(--act); box-shadow: 0 1px 2px rgba(0,0,0,.14); font-weight: 600; }
+.result { color: var(--quiet); min-width: 3ch; font-family: var(--math); }
+.result.known { color: var(--text); }
+.edit-msg { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); z-index: 50; background: var(--surface); color: var(--text); border: 1px solid var(--neg); border-radius: 12px; padding: 10px 14px; font-size: 14px; line-height: 1.4; box-shadow: var(--shadow); width: max-content; max-width: min(560px, 92vw); display: flex; gap: 12px; align-items: center; }
+.edit-msg button { flex: none; border: 1px solid var(--hair); background: transparent; border-radius: 999px; padding: 5px 12px; font-weight: 600; font-size: 13px; }
+
+.controls { display: flex; align-items: center; gap: 8px; flex: none; }
+.seg { display: inline-flex; padding: 2px; border-radius: 9px; background: var(--seg-bg); }
+.seg button { border: 0; background: transparent; padding: 6px 11px; border-radius: 7px; font-size: 13px; font-weight: 500; white-space: nowrap; }
+.seg button[aria-checked="true"] { background: var(--raised); box-shadow: 0 1px 2px rgba(0,0,0,.14), 0 0 0 .5px rgba(0,0,0,.05); font-weight: 600; }
+.seg button[disabled] { opacity: .45; cursor: default; }
+.seg-sm button { padding: 4px 9px; font-size: 12px; }
+.ladder-pick button { font-family: var(--math); font-size: 16px; }
+.toggle { border: 1px solid var(--hair); background: transparent; border-radius: 8px; padding: 6px 11px; font-size: 13px; font-weight: 500; white-space: nowrap; }
+.toggle:hover { background: var(--hover); }
+.toggle[aria-pressed="true"] { background: var(--act-tint); border-color: var(--act); color: var(--act); font-weight: 600; }
+.icon { width: 34px; height: 34px; border-radius: 8px; border: 0; background: transparent; display: grid; place-items: center; color: var(--text); flex: none; }
+.icon:hover { background: var(--hover); }
+.icon[aria-expanded="true"] { background: var(--act-tint); color: var(--act); }
+
+/* ---------- stage ---------- */
+.stage { position: relative; overflow: hidden; background: var(--bg); }
+#line { position: absolute; inset: 0; width: 100%; height: 100%; display: block; font-family: var(--font); user-select: none; -webkit-user-select: none; }
+.ladder { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); width: min(94%, 980px); text-align: center; pointer-events: none; font-family: var(--math); }
+.lad-line { font-size: 19px; line-height: 1.4; color: var(--quiet); opacity: .62; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lad-line.cur { font-size: 25px; color: var(--text); opacity: 1; }
+.ladder.short { top: 6px; }
+.ladder.short .lad-line.cur { font-size: 16px; }
+.cmp-label { position: absolute; left: 14px; font-family: var(--math); font-size: 22px; padding: 4px 12px; border-radius: 10px; border: 1px solid transparent; background: transparent; color: var(--text); display: inline-flex; align-items: baseline; gap: 10px; }
+.cmp-label:hover { background: var(--hover); }
+.cmp-label.sel { border-color: var(--hair); background: var(--surface); }
+.cmp-label .tag { font-family: var(--font); font-size: 12px; color: var(--quiet); }
+.cmp-label .chg { text-decoration: underline; text-decoration-color: var(--act); text-decoration-thickness: 2px; text-underline-offset: 6px; }
+.cmp-label .chg-note { font-family: var(--font); font-size: 12px; font-weight: 600; color: var(--act); }
+.cmp-label .val { color: var(--quiet); }
+.cmp-presets { position: absolute; right: 14px; top: 10px; display: flex; gap: 8px; align-items: center; font-size: 12.5px; color: var(--quiet); }
+.cmp-presets select { font-family: var(--math); font-size: 15px; padding: 5px 8px; border-radius: 8px; border: 1px solid var(--hair); background: var(--surface); }
+.diag { position: absolute; right: 16px; top: 14px; width: min(370px, 46%); background: var(--surface); border: 1px solid var(--hair); border-radius: 14px; box-shadow: var(--shadow); padding: 12px 14px 14px; font-size: 14.5px; line-height: 1.45; z-index: 10; }
+.diag-head { display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; color: var(--quiet); }
+.diag-head .icon { width: 28px; height: 28px; }
+.diag-vs { display: flex; gap: 18px; align-items: center; font-family: var(--math); font-size: 21px; margin: 4px 0 6px; }
+.diag-vs span { display: inline-flex; gap: 7px; align-items: center; }
+.ring { width: 13px; height: 13px; border-radius: 50%; display: inline-block; }
+.ring.hollow { border: 2px solid var(--text); background: transparent; }
+.ring.filled { background: var(--text); }
+.diag p { margin: 0 0 8px; }
+.diag .cat { font-size: 12px; font-weight: 600; color: var(--act); }
+.link-btn { border: 0; background: none; color: var(--act); font-weight: 600; padding: 2px 0; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
+.banner { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--neg); border-radius: 10px; padding: 8px 14px; font-size: 13px; box-shadow: var(--shadow); z-index: 20; max-width: 90%; }
+
+/* SVG */
+.region-neg { fill: var(--neg); opacity: .045; }
+.region-pos { fill: var(--pos); opacity: .035; }
+.hatch-line { stroke: var(--neg); stroke-width: 1.1; }
+.region-hatch { opacity: .07; }
+.zero-guide { stroke: var(--text); stroke-width: 1.5; opacity: .13; }
+.axis { stroke: var(--text); stroke-width: 2; }
+.axis-head { fill: var(--text); }
+.ticks { stroke: var(--quiet); stroke-width: 1.5; fill: none; }
+.tick-lbl { fill: var(--quiet); font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.tick-zero { fill: var(--text); font-size: 16px; font-weight: 700; }
+.psmall { font-size: 11.5px; }
+.side-lbl { font-size: 12px; font-weight: 600; }
+.side-neg, .side-neg-t { fill: var(--neg); }
+.side-pos, .side-pos-t { fill: var(--pos); }
+.trip { fill: none; stroke-width: 3; stroke-linecap: round; }
+.trip.thin { stroke-width: 2; }
+.trip.pos, .tail.pos { stroke: var(--pos); }
+.trip.neg, .tail.neg { stroke: var(--neg); }
+.tail { stroke-width: 2; }
+.head.pos, .hop-dot.pos { fill: var(--pos); }
+.head.neg, .hop-dot.neg { fill: var(--neg); }
+.drop { stroke: var(--quiet); stroke-width: 1; stroke-dasharray: 2 4; opacity: .55; }
+.ghost { fill: none; stroke-width: 2; stroke-dasharray: 6 5; stroke-linecap: round; }
+.ghost.pos, .ghost-tail.pos { stroke: var(--pos); }
+.ghost.neg, .ghost-tail.neg { stroke: var(--neg); }
+.ghost-tail { stroke-width: 1.5; }
+.ghead.pos { fill: var(--pos); }
+.ghead.neg { fill: var(--neg); }
+.gdot { fill: var(--bg); stroke: var(--quiet); stroke-width: 1.6; }
+.swing { fill: none; stroke: var(--act); stroke-width: 1.5; stroke-dasharray: 2 4; }
+.lbl { font-size: 13px; font-weight: 600; }
+.lbl-sm { font-size: 12px; }
+.lbl-sub { font-size: 12px; font-weight: 500; fill: var(--quiet); font-style: italic; }
+.lbl-pos { fill: var(--pos); }
+.lbl-neg { fill: var(--neg); }
+.lbl-quiet { fill: var(--quiet); }
+.lbl-ghost { fill: var(--quiet); font-style: italic; }
+.lbl-act { fill: var(--act); font-weight: 600; }
+.lbl-answer { fill: var(--text); font-size: 15px; font-weight: 700; }
+.lbl-pred { fill: var(--text); font-weight: 600; }
+.lbl-badge { fill: var(--quiet); font-style: italic; }
+.token-body { stroke: var(--text); stroke-width: 1.5; stroke-linejoin: round; }
+.tk-pos { fill: var(--pos); }
+.tk-neg { fill: var(--neg); }
+.token-eye { fill: var(--bg); }
+.token-shadow { fill: var(--text); opacity: .13; }
+.flip-arc { fill: none; stroke: var(--act); stroke-width: 2.6; stroke-linecap: round; }
+.flip-arc-head { fill: var(--act); }
+.pulse { fill: none; stroke: var(--quiet); stroke-width: 2; }
+.card-bg { fill: var(--surface); stroke: var(--hair); }
+.card-head { font-size: 12.5px; font-weight: 600; fill: var(--text); }
+.chip { fill: var(--act-tint); }
+.chip-live { stroke: var(--act); stroke-width: 1.5; }
+.chip-t { font-size: 11.5px; font-weight: 600; fill: var(--act); }
+.card-count { font-size: 11.5px; fill: var(--quiet); font-variant-numeric: tabular-nums; }
+.answer { stroke: var(--text); stroke-width: 4; stroke-linecap: round; }
+.answer-tail { stroke: var(--text); stroke-width: 2; }
+.answer-head { fill: var(--text); }
+.answer-ring { fill: none; stroke: var(--text); stroke-width: 2.5; }
+.land-pill { fill: var(--text); }
+.land-t { fill: var(--bg); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.noland { fill: none; stroke: var(--act); stroke-width: 2; }
+.pred-ring { fill: none; stroke: var(--text); stroke-width: 2; stroke-dasharray: 4 3; }
+.scale-note { fill: var(--quiet); font-size: 12px; font-weight: 500; }
+.divider { stroke: var(--hair); stroke-width: 1; }
+.prow-expr { font-family: var(--math); font-size: 19px; fill: var(--text); }
+.prow-hidden { fill: var(--quiet); }
+.paxis { stroke: var(--quiet); stroke-width: 1.5; }
+.prow-active .paxis { stroke: var(--text); }
+.pdot { fill: var(--text); }
+.pdot.moving { fill: var(--act); }
+.pdot-t { font-size: 12px; fill: var(--quiet); font-weight: 600; }
+.ptarget { fill: transparent; cursor: crosshair; }
+.ptarget:hover { fill: var(--act-tint); }
+.guide { fill: none; stroke: var(--act); stroke-width: 2; stroke-dasharray: 7 5; }
+
+/* ---------- narration strip ---------- */
+.strip { display: flex; flex-direction: column; min-height: 0; background: var(--surface); border-top: 1px solid var(--hair); }
+.lesson-row { display: none; align-items: center; gap: 6px; padding: 7px 14px 0; font-size: 12.5px; min-width: 0; overflow: hidden; }
+.strip.lesson-on .lesson-row { display: flex; }
+.nav-btn { width: 26px; height: 26px; border-radius: 7px; border: 0; background: transparent; display: grid; place-items: center; color: var(--text); flex: none; }
+.nav-btn:hover { background: var(--hover); }
+.nav-btn[disabled] { opacity: .3; cursor: default; }
+.stage-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 290px; }
+.parts { display: flex; gap: 2px; margin-left: 12px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
+.parts button { border: 0; background: transparent; padding: 3px 8px; border-radius: 6px; font-size: 12px; color: var(--quiet); white-space: nowrap; }
+.parts button:hover { background: var(--hover); color: var(--text); }
+.parts button[aria-selected="true"] { color: var(--act); background: var(--act-tint); font-weight: 600; }
+.next-part { border: 1px solid var(--hair); background: transparent; border-radius: 999px; padding: 3px 12px; font-size: 12px; font-weight: 600; flex: none; }
+.strip-body { flex: 1; min-height: 0; display: flex; gap: 16px; align-items: flex-start; padding: 10px 20px 10px; }
+.strip-main { flex: 1; min-width: 0; max-height: 100%; overflow-y: auto; border-radius: 8px; scrollbar-width: thin; }
+.step-meta { display: flex; gap: 8px; align-items: center; font-size: 12.5px; color: var(--quiet); }
+.phase { font-size: 11.5px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: var(--seg-bg); color: var(--text); }
+.phase.p-flip { background: var(--act-tint); color: var(--act); }
+.narr { margin: 3px 0 0; font-size: 19px; line-height: 1.38; max-width: 82ch; }
+.narr.two { font-size: 16px; margin-top: 2px; }
+.narr .who { font-size: 12px; font-weight: 600; color: var(--quiet); margin-right: 8px; }
+.why-text { margin: 3px 0 0; font-size: 16px; line-height: 1.5; max-width: 86ch; }
+.part-text { margin: 2px 0 0; font-size: 18px; line-height: 1.45; max-width: 84ch; }
+.part-text.math { font-family: var(--math); font-size: 21px; }
+.part-text.big { font-size: 20px; font-weight: 600; }
+.says { margin: 2px 0 0; font-size: 14px; color: var(--quiet); }
+.says b { color: var(--text); font-weight: 600; }
+.pulse-in { animation: narrPulse .32s ease-out; }
+@keyframes narrPulse { from { background: var(--act-tint); } to { background: transparent; } }
+.why-btn { flex: none; margin-top: 2px; border: 1px solid var(--hair); background: transparent; border-radius: 999px; padding: 7px 15px; font-size: 13px; font-weight: 600; }
+.why-btn:hover { background: var(--hover); }
+.why-btn[aria-expanded="true"] { background: var(--act-tint); border-color: var(--act); color: var(--act); }
+.inline-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; align-items: center; }
+.primary { border: 0; background: var(--text); color: var(--bg); border-radius: 999px; padding: 7px 16px; font-size: 14px; font-weight: 600; }
+.primary[disabled] { opacity: .35; cursor: default; }
+.secondary { border: 1px solid var(--hair); background: transparent; border-radius: 999px; padding: 6px 14px; font-size: 14px; font-weight: 500; }
+.secondary:hover { background: var(--hover); }
+.chip-btn { border: 1px solid var(--hair); background: transparent; border-radius: 999px; padding: 4px 11px; font-family: var(--math); font-size: 16px; }
+.chip-btn:hover { border-color: var(--act); color: var(--act); }
+.hold { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
+.hold-q { font-size: 18px; font-weight: 600; margin-right: 4px; }
+.dirpick button { display: inline-flex; gap: 6px; align-items: center; }
+.pred-size { width: 4.2ch; font-size: 18px; font-family: var(--math); text-align: center; border: 1px solid var(--hair); border-radius: 8px; padding: 4px 6px; background: var(--bg); }
+.pred-size:focus { outline: none; border-color: var(--act); }
+.muted { color: var(--quiet); font-size: 14px; }
+.err-text { color: var(--text); font-size: 16px; margin: 3px 0 0; }
+
+/* ---------- playback ---------- */
+.play { display: flex; align-items: center; gap: 18px; padding: 0 16px; background: var(--surface); border-top: 1px solid var(--hair); min-width: 0; }
+.pb-group { display: flex; align-items: center; gap: 4px; flex: none; }
+.pb { width: 38px; height: 38px; border-radius: 10px; border: 0; background: transparent; display: grid; place-items: center; color: var(--text); }
+.pb:hover { background: var(--hover); }
+.pb[disabled] { opacity: .3; cursor: default; }
+.pb.main { width: 44px; height: 44px; border-radius: 50%; background: var(--text); color: var(--bg); margin: 0 4px; }
+.pb.main:hover { opacity: .88; background: var(--text); }
+.pb.main .i-pause { display: none; }
+.pb.main.playing .i-pause { display: block; }
+.pb.main.playing .i-play { display: none; }
+.pb.text { width: auto; padding: 0 12px; font-size: 13px; font-weight: 600; margin-left: 4px; border: 1px solid var(--hair); height: 32px; border-radius: 999px; }
+.scrub { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.sdot { border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 3px; min-width: 0; flex: 0 1 64px; border-radius: 8px; }
+.sdot:hover { background: var(--hover); }
+.sdot i { width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--quiet); display: block; transition: transform .15s; }
+.sdot.done i { background: var(--quiet); }
+.sdot.cur i { background: var(--act); border-color: var(--act); transform: scale(1.3); }
+.sdot.held i { border-style: dashed; }
+.sdot span { font-size: 10.5px; color: var(--quiet); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.sdot.cur span { color: var(--act); font-weight: 600; }
+.sline { flex: 0 1 18px; height: 2px; background: var(--hair); margin-bottom: 14px; min-width: 4px; }
+.speed { display: flex; align-items: center; gap: 8px; flex: none; font-size: 12.5px; color: var(--quiet); }
+.speed label { font-weight: 600; color: var(--text); }
+.speed input { width: 130px; accent-color: var(--act); }
+.speed output { min-width: 86px; font-variant-numeric: tabular-nums; color: var(--text); }
+
+/* ---------- drawer & dialog ---------- */
+.drawer { position: fixed; top: var(--top-h); right: 0; bottom: 0; width: min(420px, 94vw); background: var(--surface); border-left: 1px solid var(--hair); box-shadow: -12px 0 32px rgba(0,0,0,.10); transform: translateX(104%); visibility: hidden; transition: transform .26s ease, visibility 0s linear .26s; z-index: 40; overflow-y: auto; padding: 16px 20px 28px; }
+.drawer.open { transform: none; visibility: visible; transition: transform .26s ease; }
+.drawer-head { display: flex; justify-content: space-between; align-items: center; }
+.drawer h2, .keys h2 { font-size: 17px; margin: 0; }
+.drawer-lead { color: var(--quiet); font-size: 14px; line-height: 1.45; margin: 6px 0 10px; }
+.drawer details { border-top: 1px solid var(--hair); }
+.drawer summary { list-style: none; cursor: pointer; padding: 13px 2px; font-size: 15px; font-weight: 600; display: flex; justify-content: space-between; gap: 12px; align-items: center; border-radius: 6px; }
+.drawer summary::-webkit-details-marker { display: none; }
+.drawer summary::after { content: ""; width: 9px; height: 9px; border-right: 2px solid var(--quiet); border-bottom: 2px solid var(--quiet); transform: rotate(45deg) translateY(-3px); transition: transform .18s; flex: none; }
+.drawer details[open] summary::after { transform: rotate(-135deg) translateY(-2px); }
+.drawer details p { margin: 0 0 12px; font-size: 15px; line-height: 1.55; }
+.drawer .think { border-left: 3px solid var(--act); padding: 2px 0 2px 12px; color: var(--text); font-style: italic; }
+.keys { position: fixed; inset: 0; background: rgba(0,0,0,.28); display: grid; place-items: center; z-index: 60; }
+.keys-card { background: var(--surface); border-radius: 16px; padding: 16px 22px 18px; width: min(380px, 92vw); box-shadow: var(--shadow); }
+.keys dl { display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; margin: 14px 0 0; font-size: 14px; }
+.keys dt { text-align: right; }
+.keys dd { margin: 0; color: var(--text); }
+kbd { font-family: var(--font); font-size: 12px; border: 1px solid var(--hair); border-bottom-width: 2px; border-radius: 6px; padding: 1px 6px; background: var(--bg); }
+
+/* ---------- responsive ---------- */
+@media (max-width: 1280px) { .brand span { display: none; } }
+@media (max-width: 1140px) {
+  .brand { display: none; }
+  .controls .seg button { padding: 6px 8px; }
+  .toggle { padding: 6px 8px; }
+  .speed .sp-end { display: none; }
+}
+@media (max-width: 1000px) {
+  .top { flex-wrap: wrap; row-gap: 0; padding: 4px 12px 6px; }
+  .editor { order: 1; flex-basis: 100%; height: 54px; }
+  .controls { order: 2; flex-basis: 100%; justify-content: center; height: 42px; }
+  .sdot span { display: none; }
+  .sdot { flex-basis: 26px; }
+  .speed input { width: 104px; }
+}
+@media (max-width: 760px) {
+  :root { --strip-h: 124px; --play-h: 104px; }
+  .play { flex-wrap: wrap; justify-content: center; row-gap: 4px; padding: 6px 10px; }
+  .scrub { order: 3; flex-basis: 100%; }
+  .speed output { min-width: 0; }
+}
+@media (max-height: 640px) {
+  :root { --strip-h: 76px; }
+  .narr { font-size: 17px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+.reduced .pulse-in { animation: none; box-shadow: inset 3px 0 0 var(--act); }
+
+.strip-actions { flex: none; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; margin-top: 2px; }
+.app.lesson { --strip-h: 108px; }
+.app.lesson .strip-body { padding: 6px 20px 8px; }
+.app.lesson .narr { font-size: 17px; }
+.app.lesson .part-text { font-size: 17px; }
+.app.lesson .part-text.big { font-size: 18px; }
+.says-card { position: absolute; left: 16px; top: 14px; width: min(340px, 40%); background: var(--surface); border: 1px solid var(--hair); border-left: 3px solid var(--act); border-radius: 12px; padding: 10px 14px 12px; box-shadow: var(--shadow); z-index: 9; }
+.says-card p { margin: 4px 0 6px; font-size: 15px; line-height: 1.45; font-weight: 600; }
+.says-who { font-size: 12px; color: var(--quiet); }
+
+@media (max-width: 1000px) {
+  .stage-title { max-width: 190px; }
+  .parts { margin-left: 4px; }
+  .app.lesson { --strip-h: 116px; }
+}
+@media (max-width: 760px) { .app.lesson { --strip-h: 136px; } .next-part { display: none; } }
+
+@media (max-width: 600px) {
+  .top { padding: 4px 8px 6px; }
+  .editor { gap: 8px; height: 50px; }
+  .expr { font-size: clamp(19px, 5.6vw, 25px); gap: 6px; }
+  .operand.sm { font-size: 16px; }
+  .controls { flex-wrap: wrap; row-gap: 6px; height: auto; min-height: 42px; gap: 6px; }
+  .controls .seg button { padding: 5px 8px; font-size: 12.5px; }
+  .toggle { padding: 5px 9px; font-size: 12.5px; }
+  .icon { width: 32px; height: 32px; }
+  .diag { left: 10px; right: 10px; width: auto; top: auto; bottom: 10px; }
+  .says-card { left: 10px; right: 10px; width: auto; }
+  .strip-body { padding: 8px 12px; gap: 10px; }
+  .narr { font-size: 16px; }
+  .narr.two { font-size: 14px; }
+  .why-btn { padding: 6px 11px; }
+  .speed label { display: none; }
+  .lad-line { font-size: 15px; }
+  .lad-line.cur { font-size: 19px; }
+  .prow-expr { font-size: 15px; }
+  .cmp-label { font-size: 17px; padding: 3px 8px; }
+  .cmp-presets span { display: none; }
+  .cmp-presets select { max-width: 52vw; font-size: 13px; }
+  .hold-q { font-size: 16px; }
+  .part-text { font-size: 16px; }
+  .edit-msg { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 600px) {
+  #keysBtn { display: none; }
+  .controls { gap: 4px; }
+  .controls .seg button { padding: 5px 6px; font-size: 12px; }
+  .toggle { padding: 5px 7px; font-size: 12px; }
+  .icon { width: 30px; height: 30px; }
+  .start { display: none; }
+  .editor.start-set .start { display: inline-flex; }
+  .strip-body { flex-wrap: wrap; align-content: flex-start; row-gap: 6px; overflow-y: auto; }
+  .strip-main { flex: 1 1 100%; max-height: none; overflow: visible; }
+  .strip-actions { flex-direction: row; align-items: center; }
+  .why-btn { margin-top: 0; }
+  .app.has-form { --strip-h: 200px; }
+  .diag { top: 8px; bottom: auto; left: 8px; right: 8px; width: auto; padding: 8px 12px 10px; font-size: 13.5px; }
+  .diag-vs { font-size: 17px; margin: 0 0 2px; }
+}
+@media (max-height: 500px) and (min-width: 640px) {
+  .top { flex-wrap: nowrap; padding: 4px 10px; }
+  .editor { order: 0; flex: 1 1 auto; flex-basis: auto; height: 48px; }
+  .controls { order: 0; flex-basis: auto; height: auto; }
+  .expr { font-size: 20px; gap: 6px; }
+  .controls .seg button { padding: 4px 6px; font-size: 12px; }
+  .toggle { padding: 4px 7px; font-size: 12px; }
+  #keysBtn, .start-label { display: none; }
+  .start { display: none; }
+  .editor.start-set .start { display: inline-flex; }
+  :root { --play-h: 50px; }
+  .pb { width: 34px; height: 34px; }
+  .pb.main { width: 38px; height: 38px; }
+  .diag { top: 6px; right: 6px; width: min(340px, 50%); padding: 8px 12px; font-size: 13px; }
+}
+
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="top" id="top">
+    <div class="brand" aria-hidden="true">
+      <svg viewBox="0 0 32 24" width="26" height="20"><path d="M3,4 L19,4 L29,12 L19,20 L3,20 L8,12 Z" class="brand-mark"/></svg>
+      <span>Number Line Lab</span>
+    </div>
+
+    <div class="editor" id="editor" role="group" aria-label="Expression">
+      <div class="seg seg-sm cmp-pick" id="cmpPick" role="radiogroup" aria-label="Line to edit" hidden>
+        <button type="button" role="radio" data-side="0" aria-checked="true">Top</button>
+        <button type="button" role="radio" data-side="1" aria-checked="false">Bottom</button>
+      </div>
+      <div class="start" id="startGroup">
+        <span class="start-label">start at</span>
+        <span class="operand sm" id="opS"><span class="paren">(</span><button type="button" class="sign" id="signS" data-k="s"></button><input class="size" id="sizeS" data-k="s" inputmode="numeric" autocomplete="off" spellcheck="false" aria-label="Start position, size"><span class="paren">)</span></span>
+      </div>
+      <div class="expr" id="exprGroup">
+        <span class="operand" id="opA"><span class="paren">(</span><button type="button" class="sign" id="signA" data-k="a"></button><input class="size" id="sizeA" data-k="a" inputmode="numeric" autocomplete="off" spellcheck="false" aria-label="First number, size"><span class="paren">)</span></span>
+        <div class="ops" id="ops" role="radiogroup" aria-label="Operation">
+          <button type="button" role="radio" data-op="+" aria-label="add">+</button>
+          <button type="button" role="radio" data-op="-" aria-label="subtract">&minus;</button>
+          <button type="button" role="radio" data-op="*" aria-label="multiply">&times;</button>
+          <button type="button" role="radio" data-op="/" aria-label="divide">&divide;</button>
+        </div>
+        <span class="operand" id="opB"><span class="paren">(</span><button type="button" class="sign" id="signB" data-k="b"></button><input class="size" id="sizeB" data-k="b" inputmode="numeric" autocomplete="off" spellcheck="false" aria-label="Second number, size"><span class="paren">)</span></span>
+        <output class="result" id="result" aria-live="polite">= ?</output>
+      </div>
+      <div class="seg ladder-pick" id="ladderPick" role="radiogroup" aria-label="Pattern ladder" hidden></div>
+      <div class="edit-msg" id="editMsg" role="alert" hidden></div>
+    </div>
+
+    <div class="controls">
+      <div class="seg" id="viewSeg" role="radiogroup" aria-label="View">
+        <button type="button" role="radio" data-view="explore" aria-checked="true">Explore</button>
+        <button type="button" role="radio" data-view="compare" aria-checked="false">Compare</button>
+        <button type="button" role="radio" data-view="pattern" aria-checked="false">Pattern</button>
+      </div>
+      <button type="button" class="toggle" id="lessonBtn" aria-pressed="false" title="Teacher-led lesson: eight stages, answers hidden until revealed">Lesson</button>
+      <button type="button" class="toggle" id="predictBtn" aria-pressed="false" title="Predict the answer before the line shows it">Predict</button>
+      <button type="button" class="icon" id="themeBtn" aria-label="Switch to dark theme" title="Theme">
+        <svg viewBox="0 0 24 24" width="19" height="19"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>
+      </button>
+      <button type="button" class="icon" id="keysBtn" aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)">
+        <svg viewBox="0 0 24 24" width="19" height="19"><rect x="3" y="6.5" width="18" height="11" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M7 10h1.5M11 10h2M15.5 10H17M8 14h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      </button>
+      <button type="button" class="icon" id="bitesBtn" aria-label="Knowledge bites" aria-expanded="false" aria-controls="drawer" title="Knowledge bites">
+        <svg viewBox="0 0 24 24" width="19" height="19"><path d="M4.5 5h5.5a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H4.5zM19.5 5H14a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h5.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="stage" id="stage">
+    <svg id="line" role="img" aria-label="Number line" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="ladder" id="ladder" aria-hidden="true"></div>
+    <button type="button" class="cmp-label" id="cmpLabel0" hidden></button>
+    <button type="button" class="cmp-label" id="cmpLabel1" hidden></button>
+    <label class="cmp-presets" id="cmpPresetsWrap" hidden><span>Pair</span><select id="cmpPresets"></select></label>
+    <section class="diag" id="diag" hidden aria-live="polite"></section>
+    <aside class="says-card" id="saysCard" hidden></aside>
+    <div class="banner" id="banner" role="status" hidden></div>
+  </main>
+
+  <section class="strip" id="strip" aria-label="Narration">
+    <div class="lesson-row" id="lessonRow">
+      <button type="button" class="nav-btn" id="stagePrev" aria-label="Previous stage"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M14.5 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <span class="stage-title" id="stageTitle"></span>
+      <button type="button" class="nav-btn" id="stageNext" aria-label="Next stage"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M9.5 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="parts" id="parts" role="tablist" aria-label="Parts of this stage"></div>
+      <button type="button" class="next-part" id="partNext">Next part</button>
+    </div>
+    <div class="strip-body">
+      <div class="strip-main" id="stripMain" aria-live="polite"></div>
+      <div class="strip-actions" id="stripActions" hidden></div>
+      <button type="button" class="why-btn" id="whyBtn" aria-expanded="false" aria-controls="stripMain">Why?</button>
+    </div>
+  </section>
+
+  <footer class="play" id="play">
+    <div class="pb-group">
+      <button type="button" class="pb" id="restartBtn" aria-label="Restart and play" title="Restart">
+        <svg viewBox="0 0 24 24" width="19" height="19"><path d="M5.6 14.5A7 7 0 1 0 6.4 7.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M5 4v4.5h4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button type="button" class="pb" id="backBtn" aria-label="Step back" title="Step back (left arrow)">
+        <svg viewBox="0 0 24 24" width="19" height="19"><path d="M17.5 6v12L9 12z" fill="currentColor"/><rect x="5.5" y="6" width="2.4" height="12" rx="1" fill="currentColor"/></svg>
+      </button>
+      <button type="button" class="pb main" id="playBtn" aria-label="Play" title="Play or pause (space)">
+        <svg class="i-play" viewBox="0 0 24 24" width="20" height="20"><path d="M8.5 5.8v12.4L18.5 12z" fill="currentColor"/></svg>
+        <svg class="i-pause" viewBox="0 0 24 24" width="20" height="20"><rect x="7" y="6" width="3.6" height="12" rx="1.2" fill="currentColor"/><rect x="13.4" y="6" width="3.6" height="12" rx="1.2" fill="currentColor"/></svg>
+      </button>
+      <button type="button" class="pb" id="fwdBtn" aria-label="Step forward" title="Step forward (right arrow)">
+        <svg viewBox="0 0 24 24" width="19" height="19"><path d="M6.5 6v12L15 12z" fill="currentColor"/><rect x="16.1" y="6" width="2.4" height="12" rx="1" fill="currentColor"/></svg>
+      </button>
+      <button type="button" class="pb text" id="resetBtn" title="Back to the first step, prediction cleared">Reset</button>
+    </div>
+    <div class="scrub" id="scrub" role="group" aria-label="Steps"></div>
+    <div class="speed">
+      <label for="speed">Speed</label>
+      <span class="sp-end" aria-hidden="true">slow</span>
+      <input type="range" id="speed" min="0" max="1000" step="1" aria-describedby="speedOut">
+      <span class="sp-end" aria-hidden="true">fast</span>
+      <output id="speedOut" for="speed">2.5 s per step</output>
+    </div>
+  </footer>
+</div>
+
+<aside class="drawer" id="drawer" aria-label="Knowledge bites">
+  <div class="drawer-head">
+    <h2>Knowledge bites</h2>
+    <button type="button" class="icon" id="drawerClose" aria-label="Close knowledge bites"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <p class="drawer-lead">Short explanations to open when a question comes up. Each ends with something to think about.</p>
+  <div id="bites"></div>
+</aside>
+
+<div class="keys" id="keys" role="dialog" aria-modal="true" aria-labelledby="keysTitle" hidden>
+  <div class="keys-card">
+    <div class="drawer-head"><h2 id="keysTitle">Keyboard</h2><button type="button" class="icon" id="keysClose" aria-label="Close"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+    <dl>
+      <dt><kbd>Space</kbd></dt><dd>Play or pause</dd>
+      <dt><kbd>&larr;</kbd> <kbd>&rarr;</kbd></dt><dd>Step back or forward</dd>
+      <dt><kbd>Home</kbd> <kbd>End</kbd></dt><dd>First or last step</dd>
+      <dt><kbd>Enter</kbd></dt><dd>Apply a number you typed</dd>
+      <dt><kbd>Esc</kbd></dt><dd>Close a panel</dd>
+      <dt><kbd>?</kbd></dt><dd>Show this list</dd>
+    </dl>
+  </div>
+</div>
+
+<script>
+/* ===================================================================
+   CORE: formatting, validation, math engine, step generator,
+   invariants, diagnosis, alignment, content data.
+   Pure functions only: no DOM, no timing.
+   =================================================================== */
+'use strict';
+
+const MINUS = '−';
+const TIMES = '×';
+const DIVIDE = '÷';
+const MAX_SIZE = 999;
+
+const Fmt = {
+  num(n) {
+    if (n === 0 || Object.is(n, -0)) return '0';
+    const s = Math.abs(n).toLocaleString('en-US');
+    return (n < 0 ? MINUS : '') + s;
+  },
+  op(n) { return n < 0 ? '(' + Fmt.num(n) + ')' : Fmt.num(n); },
+  signed(n) { return n > 0 ? '+' + Fmt.num(n) : Fmt.num(n); },
+  steps(n) { n = Math.abs(n); return n === 1 ? '1 step' : Fmt.num(n) + ' steps'; },
+  dir(n) { return n > 0 ? 'right' : 'left'; },
+  sym: { '+': '+', '-': MINUS, '*': TIMES, '/': DIVIDE },
+  expr(e) { return Fmt.op(e.a) + ' ' + Fmt.sym[e.op] + ' ' + Fmt.op(e.b); },
+  copies(n) { n = Math.abs(n); return n === 1 ? '1 copy' : Fmt.num(n) + ' copies'; },
+  list(arr) { return arr.map(Fmt.num).join(', '); },
+};
+const N = Fmt.num, O = Fmt.op, SG = Fmt.signed;
+const sgn = (x) => (x > 0 ? 1 : x < 0 ? -1 : 0);
+const abs = Math.abs;
+const z = (v) => (v === 0 ? 0 : v); // normalise -0
+
+/* ---------------- a. Parser and validator ---------------- */
+function parseSize(raw) {
+  const t = String(raw == null ? '' : raw).trim();
+  if (t === '') return { err: 'empty', msg: 'Type a number of steps.' };
+  if (/[.,]/.test(t)) return { err: 'decimal', msg: 'Whole numbers only in this version.' };
+  if (!/^\d+$/.test(t)) return { err: 'nan', msg: 'Digits only. Use the sign button for the direction.' };
+  const n = parseInt(t, 10);
+  if (n > MAX_SIZE) return { err: 'big', msg: 'Sizes go up to 999 in this version.' };
+  return { n };
+}
+function gcd(a, b) { a = abs(a); b = abs(b); while (b) { [a, b] = [b, a % b]; } return a || 1; }
+
+function validate(inp) {
+  const errors = [];
+  const v = {};
+  for (const k of ['a', 'b', 's']) {
+    const r = parseSize(inp[k].size);
+    if (r.err) errors.push({ field: k, code: r.err, msg: r.msg });
+    else v[k] = r.n === 0 ? 0 : (inp[k].sign < 0 ? -r.n : r.n);
+  }
+  if (errors.length) return { ok: false, errors };
+  const expr = { a: v.a, op: inp.op, b: v.b, s: v.s };
+  if (expr.op === '/' && expr.b !== 0 && expr.a % expr.b !== 0) {
+    const g = gcd(expr.a, expr.b);
+    let num = expr.a / g, den = expr.b / g;
+    if (den < 0) { num = -num; den = -den; }
+    const q = expr.a / expr.b;
+    let k = Math.trunc(q) + (q > 0 ? 1 : -1);
+    let a2 = k * expr.b;
+    if (abs(a2) > MAX_SIZE) a2 = Math.trunc(q) * expr.b || expr.b;
+    const sug = Fmt.op(a2) + ' ' + DIVIDE + ' ' + Fmt.op(expr.b);
+    errors.push({
+      field: 'b', code: 'fraction',
+      msg: Fmt.expr(expr) + ' = ' + N(num) + '/' + N(den) + '. This version animates whole-number answers; the sign logic is the same. Try ' + sug + '.',
+      suggestion: { a: a2, b: expr.b },
+    });
+    return { ok: false, errors, expr };
+  }
+  return { ok: true, expr };
+}
+
+/* ---------------- b. Math engine ---------------- */
+function evaluate(e) {
+  switch (e.op) {
+    case '+': return { kind: 'value', value: z(e.a + e.b) };
+    case '-': return { kind: 'value', value: z(e.a - e.b) };
+    case '*': return { kind: 'value', value: z(e.a * e.b) };
+    case '/':
+      if (e.b === 0) return { kind: 'undefined', reason: e.a === 0 ? 'every-number' : 'no-answer' };
+      if (e.a % e.b !== 0) return { kind: 'fraction' };
+      return { kind: 'value', value: z(e.a / e.b) };
+  }
+  throw new Error('Unknown operator');
+}
+
+/* ---------------- c. Reasoning generator ---------------- */
+const CAUSE_TEXT = {
+  sign: 'its minus sign',
+  subtract: 'subtracting',
+  factor: 'negative count',
+  undo: 'must undo',
+};
+
+class Builder {
+  constructor(e) {
+    this.e = e; this.steps = []; this.pos = e.s; this.face = 'R';
+    this.trip = null; this.pendingNew = false; this.gid = 0;
+  }
+  ghost(from, to, opts) { return Object.assign({ id: ++this.gid, from, to, hops: 1, label: '' }, opts || {}); }
+  startTrip(on, size, label, keepFace) {
+    this.trip = { on, size, label: label || Fmt.steps(size), flips: [] };
+    if (!keepFace) {
+      if (this.face !== 'R') this.pendingNew = true;
+      this.face = 'R';
+    }
+  }
+  endTrip() { this.trip = null; }
+  _push(o) {
+    const st = Object.assign({
+      phase: 'derive', from: this.pos, to: this.pos, flip: false, narration: '', why: '',
+      face: this.face, cause: null, on: null, hops: 1, walk: null, ghosts: [], eq: null,
+      newTrip: false, trip: null, reveals: false, zeroTrip: false,
+    }, o);
+    st.face = this.face;
+    if (this.pendingNew) { st.newTrip = true; this.pendingNew = false; }
+    let endFace = this.face;
+    if (st.flip) {
+      endFace = this.face === 'R' ? 'L' : 'R';
+      if (this.trip && st.cause) this.trip.flips.push(st.cause);
+    }
+    if (this.trip && (st.flip || st.walk || st.zeroTrip)) {
+      st.trip = { on: this.trip.on, size: this.trip.size, label: this.trip.label, flips: this.trip.flips.slice() };
+    }
+    st.endFace = endFace;
+    this.face = endFace;
+    this.pos = st.to;
+    this.steps.push(st);
+    return st;
+  }
+  still(o) { return this._push(Object.assign({}, o, { from: this.pos, to: this.pos, flip: false })); }
+  flipStep(o) { return this._push(Object.assign({ phase: 'flip' }, o, { from: this.pos, to: this.pos, flip: true })); }
+  walk(o) {
+    // o.dist signed; o.flipFirst: cause (flip before moving); o.hops
+    const from = this.pos, to = z(this.pos + o.dist);
+    const st = Object.assign({}, o, { from, to, flip: !!o.flipFirst, cause: o.flipFirst || o.cause || null });
+    delete st.dist; delete st.flipFirst;
+    if (o.dist === 0) { st.zeroTrip = true; st.walk = null; }
+    else st.walk = Object.assign({ label: SG(o.dist) }, o.walkInfo || {});
+    delete st.walkInfo;
+    return this._push(st);
+  }
+}
+
+function crossing(from, to) {
+  if (from > 0 && to < 0) return ', passing 0 into the negative side';
+  if (from < 0 && to > 0) return ', passing 0 into the positive side';
+  return '';
+}
+
+/* Trip A for + and − : sign flip (if negative) and the walk */
+function tripA(B, e) {
+  const a = e.a;
+  if (a === 0) {
+    B.walk({ phase: 'op1', on: 'A', dist: 0,
+      narration: 'The first trip is 0: no steps at all. We stay at ' + N(B.pos) + '.',
+      why: '0 is the trip of no steps. It has no direction, so nothing turns and nothing moves.' });
+    return;
+  }
+  B.startTrip('A', abs(a));
+  if (a < 0) {
+    B.flipStep({ cause: 'sign', on: 'A',
+      narration: 'First trip: ' + N(a) + '. Its minus sign belongs to the ' + N(abs(a)) + ' and flips it, so it points left.',
+      why: 'A negative number is the opposite of a positive one: same size, other way. Turning around is the picture of "opposite". Nothing is being subtracted here.' });
+  }
+  const p0 = B.pos, p1 = p0 + a;
+  B.walk({ phase: 'op1', on: 'A', dist: a,
+    narration: a > 0
+      ? 'The trip ' + N(a) + ' is ' + Fmt.steps(a) + ' to the right. Walk it.'
+      : 'Walk the flipped trip: ' + Fmt.steps(a) + ' to the left' + crossing(p0, p1) + '.',
+    why: a > 0
+      ? 'A positive number points right, and its size, ' + N(a) + ', says how far. We now stand at the place ' + N(p1) + ': a number can name a trip or a place.'
+      : 'The size, ' + N(abs(a)) + ', says how far; the flip says which way. We now stand at the place ' + N(p1) + '.',
+    walkInfo: a < 0 ? { sub: 'flipped by its sign' } : {} });
+  B.endTrip();
+}
+
+function genAdd(e) {
+  const B = new Builder(e), a = e.a, b = e.b, s = e.s, v = z(a + b), land = s + v;
+  B.still({ phase: 'intro', eq: Fmt.expr(e) + ' = ?',
+    narration: 'We start at ' + N(s) + ', facing the positive way. Two trips are coming: first ' + N(a) + ', then ' + N(b) + '.',
+    why: s === 0
+      ? '0 is the point everything is measured from. Both numbers here are trips; because we start at 0, the place we stop is also the answer.'
+      : 'Both numbers are trips. The answer is the total trip; because we start at ' + N(s) + ', we will land at ' + N(s) + ' plus the answer.' });
+  tripA(B, e);
+  if (b === 0) {
+    B.walk({ phase: 'op2', on: 'B', dist: 0, reveals: true,
+      narration: 'The next trip is 0: no steps. Adding nothing changes nothing.',
+      why: 'The trip 0 has no size and no direction, so we stay exactly where we are.' });
+  } else {
+    B.startTrip('B', abs(b));
+    if (b < 0) {
+      B.flipStep({ cause: 'sign', on: 'B',
+        narration: 'Next trip: ' + N(b) + '. Its minus sign belongs to the ' + N(abs(b)) + ' and flips it, so it points left.',
+        why: 'Nothing is being subtracted here: the minus sign is part of the number ' + N(b) + '. It says which way its trip points.' });
+    }
+    const p0 = B.pos;
+    B.walk({ phase: 'op2', on: 'B', dist: b, reveals: true,
+      narration: 'Adding means walking the next trip exactly as it is: ' + Fmt.steps(b) + ' ' + Fmt.dir(b) + ', from ' + N(p0) + ' to ' + N(p0 + b) + crossing(p0, p0 + b) + '.',
+      why: 'Addition joins trips end to end and never changes them. The plus sign flips nothing.',
+      walkInfo: b < 0 ? { sub: 'flipped by its sign' } : {} });
+    B.endTrip();
+  }
+  let rn, rw;
+  if (a !== 0 && a === -b) {
+    rn = 'We are back at ' + N(s) + ': the two trips cancel exactly.';
+    rw = N(a) + ' and ' + N(b) + ' are opposites: same size, other way. A trip followed by its opposite always brings you home. That is what "opposite" means.';
+  } else if (a !== 0 && b !== 0 && sgn(a) !== sgn(b)) {
+    const small = Math.min(abs(a), abs(b)), big = Math.max(abs(a), abs(b));
+    rn = 'We stop at ' + N(land) + '. Together the two trips moved us ' + Fmt.steps(v) + ' ' + Fmt.dir(v) + ' of the start.';
+    rw = 'The trips point opposite ways, so the second walks back over the first. ' + N(small) + ' of the ' + N(big) + ' steps cancel and ' + N(abs(v)) + ' are left over, in the direction of the longer trip. That is why the sizes subtract: it is read off the arrows, not memorised.';
+  } else if (a !== 0 && b !== 0) {
+    rn = 'We stop at ' + N(land) + '. Both trips went ' + Fmt.dir(a) + ', so they stacked.';
+    rw = 'Two trips the same way make one longer trip: ' + N(abs(a)) + ' + ' + N(abs(b)) + ' = ' + N(abs(v)) + ' steps ' + Fmt.dir(a) + '. Two minus signs here belong to two different trips, so nothing cancels.';
+  } else {
+    rn = 'We stop at ' + N(land) + '.';
+    rw = 'A trip of 0 adds nothing, so the answer is just the other trip.';
+  }
+  if (s !== 0) rn += ' The answer is the trip ' + SG(v) + '; from ' + N(s) + ' it lands on ' + N(land) + '.';
+  B.still({ phase: 'result', eq: Fmt.expr(e) + ' = ' + N(v), narration: rn, why: rw });
+  B.still({ phase: 'check', eq: O(b) + ' + ' + O(a) + ' = ' + N(v) + ' ✓',
+    ghosts: [B.ghost(s, s + b, { label: SG(b) + ' first', transient: true }), B.ghost(s + b, land, { label: 'then ' + SG(a), transient: true })],
+    narration: 'Check: walk the same trips in the other order, ' + N(b) + ' first, then ' + N(a) + '. Same place.',
+    why: 'Trips can be walked in either order and end at the same place: a + b = b + a. Reaching the same point by a different route confirms the answer without any rule.' });
+  return B.steps;
+}
+
+function genSub(e) {
+  const B = new Builder(e), a = e.a, b = e.b, s = e.s, v = z(a - b), land = s + v;
+  let iw;
+  if (b < 0) iw = 'There are two different minus signs here. The one in brackets belongs to the ' + N(abs(b)) + ' and says which way its trip points. The one in the middle is an operation: subtract. Watch each do its own job.';
+  else if (a < 0) iw = 'Two minus signs, two different jobs: the one on ' + N(a) + ' is part of that number; the one in the middle means subtract.';
+  else iw = 'Subtraction is going to undo a trip. Watch what that does to its direction.';
+  B.still({ phase: 'intro', eq: Fmt.expr(e) + ' = ?',
+    narration: 'Start at ' + N(s) + ', facing right. First the trip ' + N(a) + ', then we subtract the trip ' + N(b) + '.', why: iw });
+  tripA(B, e);
+  B.startTrip('B', abs(b), b === 0 ? 'no steps' : null);
+  if (b < 0) {
+    B.flipStep({ cause: 'sign', on: 'B',
+      narration: 'Next trip: ' + N(b) + '. Its own minus sign flips it to point left.',
+      why: 'This flip comes from the number itself: ' + N(b) + ' is ' + N(abs(b)) + ', flipped.' });
+  }
+  let fn, fw;
+  if (b > 0) {
+    fn = 'The trip ' + N(b) + ' points right, but subtracting means undoing it, and you undo a trip by walking it backwards. Flip it.';
+  } else if (b < 0) {
+    fn = 'Subtracting means undoing that trip, and you undo a trip by walking it backwards, so flip it again.';
+  } else {
+    fn = 'Subtracting 0 means undoing a trip of no steps. Flip it: there is nothing to turn around.';
+  }
+  if (b !== 0) fw = 'a ' + MINUS + ' b is the number that b, added to it, brings back to a. Adding ' + N(b) + ' would walk ' + Fmt.steps(b) + ' ' + Fmt.dir(b) + '; undoing that walks ' + Fmt.steps(b) + ' ' + Fmt.dir(-b) + '. So subtracting ' + N(b) + ' is the same as adding ' + N(-b) + '.';
+  else fw = 'Flipping no trip leaves no trip. That is why ' + MINUS + '0 = 0.';
+  B.flipStep({ cause: 'subtract', on: 'B', eq: Fmt.expr(e) + ' = ' + O(a) + ' + ' + O(z(-b)), narration: fn, why: fw });
+  const p0 = B.pos, p1 = p0 - b;
+  let wn, ww;
+  if (b < 0) { wn = 'Now walk the twice-flipped trip: ' + Fmt.steps(b) + ' right, from ' + N(p0) + ' to ' + N(p1) + crossing(p0, p1) + '.'; ww = 'The trip’s size never changed, only its direction, twice. Two flips on the same trip point it the way it started.'; }
+  else if (b > 0) { wn = 'Walk the flipped trip: ' + Fmt.steps(b) + ' left, from ' + N(p0) + ' to ' + N(p1) + crossing(p0, p1) + '.'; ww = 'One flip, from subtracting. The size, ' + N(b) + ', never changed.'; }
+  else { wn = 'A trip of no steps: we stay at ' + N(p0) + '.'; ww = 'Undoing nothing does nothing.'; }
+  B.walk({ phase: 'op2', on: 'B', dist: -b, reveals: true, narration: wn, why: ww,
+    walkInfo: { sub: b < 0 ? 'the ' + N(b) + ', flipped twice' : b > 0 ? 'the ' + N(b) + ', flipped once' : '' } });
+  B.endTrip();
+  let rn, rw;
+  if (a === b && b !== 0) {
+    rn = 'We are back at ' + N(s) + ': subtracting a trip undoes it exactly.';
+    rw = 'Subtraction is the undo of addition. Walking ' + N(a) + ' and then undoing ' + N(b) + ' (the same trip) returns you to the start.';
+  } else if (b < 0) {
+    rn = 'We stop at ' + N(land) + '. Subtracting a negative trip moved us right.';
+    rw = 'Not because two minuses make a plus, but because both flips acted on the same trip, the ' + N(abs(b)) + '. In ' + MINUS + '8 ' + MINUS + ' 7 the two minus signs flip different trips, and nothing cancels.';
+  } else if (b > 0) {
+    rn = 'We stop at ' + N(land) + '. Subtracting a positive trip moved us left.';
+    rw = a < 0
+      ? 'Each minus sign flipped a different trip: the ' + N(abs(a)) + ' by its own sign, the ' + N(b) + ' by subtracting. Both trips point left, so the sizes add and nothing cancels.'
+      : 'Subtracting a positive trip always moves left. Whether you pass 0 depends only on how far from 0 you started.';
+  } else {
+    rn = 'We stop at ' + N(land) + '. Subtracting 0 changed nothing.';
+    rw = 'A flipped trip of no steps is still no steps.';
+  }
+  if (s !== 0) rn += ' The answer is the trip ' + SG(v) + '; from ' + N(s) + ' it lands on ' + N(land) + '.';
+  B.still({ phase: 'result', eq: Fmt.expr(e) + ' = ' + N(v), narration: rn, why: rw });
+  B.still({ phase: 'check', eq: N(v) + ' + ' + O(b) + ' = ' + N(a) + ' ✓',
+    ghosts: [B.ghost(land, land + b, { label: 'add ' + SG(b) + ' back', transient: true })],
+    narration: 'Check by undoing: from ' + N(land) + ', add the trip ' + N(b) + '. You are back at ' + N(s + a) + ', so ' + N(v) + ' is right.',
+    why: 'a ' + MINUS + ' b = c means exactly c + b = a. The check uses only addition, which we already trust.' });
+  if (s === 0 && v !== 0) {
+    B.still({ phase: 'check', eq: 'from ' + N(b) + ' to ' + N(a) + ' is ' + Fmt.steps(v) + ' ' + Fmt.dir(v) + ' ✓',
+      ghosts: [B.ghost(b, a, { label: 'from ' + N(b) + ' to ' + N(a), transient: true })],
+      narration: 'Another view: ' + Fmt.expr(e) + ' asks how far, and which way, it is from ' + N(b) + ' to ' + N(a) + '. Count: ' + Fmt.steps(v) + ' ' + Fmt.dir(v) + '.',
+      why: 'a ' + MINUS + ' b is the trip from b to a, because b + (a ' + MINUS + ' b) = a. This view uses no flips at all, and it agrees.' });
+  }
+  return B.steps;
+}
+
+function hopList(start, hop, n) {
+  if (n > 5 || n < 2) return '';
+  const pts = [];
+  for (let i = 1; i <= n; i++) pts.push(N(start + hop * i));
+  return ' (' + pts.join(', ') + ')';
+}
+
+function genMul(e) {
+  const a = e.a, b = e.b, s = e.s, v = z(a * b), land = s + v;
+  if (a >= 0) return genMulPos(e, a, b, s, v, land);
+  if (b >= 0) return genMulNegCount(e, a, b, s, v, land);
+  return genMulNegNeg(e, a, b, s, v, land);
+}
+
+function genMulPos(e, a, b, s, v, land) {
+  const B = new Builder(e);
+  B.still({ phase: 'intro', eq: Fmt.expr(e) + ' = ?',
+    narration: a === 0 ? '0 ' + TIMES + ' ' + O(b) + ' means zero copies of the trip ' + N(b) + '.'
+      : N(a) + ' ' + TIMES + ' ' + O(b) + ' means ' + Fmt.copies(a) + ' of the trip ' + N(b) + ', laid end to end.',
+    why: 'Multiplying by a whole number counts copies of a trip. Copies point the way the trip points.' + (b < 0 && a > 0 ? ' Here the trip itself points left, so no new idea is needed.' : '') });
+  if (b !== 0 && a !== 0) B.startTrip('product', abs(b), Fmt.steps(b) + ' per copy');
+  if (b < 0 && a !== 0) {
+    B.flipStep({ cause: 'sign', on: 'B',
+      narration: 'The trip ' + N(b) + ' is ' + N(abs(b)) + ' flipped by its sign: it points left.',
+      why: 'The minus sign belongs to the ' + N(abs(b)) + '. Every copy of this trip will point left too.' });
+  }
+  let wn, ww;
+  if (a === 0) { wn = 'Zero copies: there is nothing to walk. We stay at ' + N(s) + '.'; ww = 'Zero copies of any trip is no movement at all.'; }
+  else if (b === 0) { wn = N(a) + ' ' + (a === 1 ? 'copy' : 'copies') + ' of a trip of no steps: each copy goes nowhere.'; ww = 'However many times you repeat "no steps", you stay put.'; }
+  else if (a > 24) { wn = 'Walk ' + Fmt.copies(a) + ' of ' + N(b) + ', ' + Fmt.dir(b) + ', landing on ' + N(land) + '. Too many hops to draw one by one, so they are counted.'; ww = N(a) + ' ' + TIMES + ' ' + O(b) + ' adds ' + N(b) + ' to itself ' + N(a) + ' times. Copies of a ' + (b > 0 ? 'right' : 'left') + '-pointing trip point ' + Fmt.dir(b) + '.'; }
+  else { wn = 'Walk ' + Fmt.copies(a) + ' of ' + N(b) + ': ' + (a === 1 ? 'one hop' : N(a) + ' hops') + ' ' + Fmt.dir(b) + hopList(s, b, a) + '.'; ww = N(a) + ' ' + TIMES + ' ' + O(b) + ' = ' + Array(Math.min(a, 4)).fill(O(b)).join(' + ') + (a > 4 ? ' + …' : '') + '. Copies of a ' + (b > 0 ? 'right' : 'left') + '-pointing trip point ' + Fmt.dir(b) + '.'; }
+  B.walk({ phase: 'op2', on: 'product', dist: v, hops: a > 0 && b !== 0 ? a : 1, reveals: true, narration: wn, why: ww,
+    walkInfo: { label: N(a) + ' ' + TIMES + ' ' + O(b) + ' = ' + SG(v) } });
+  B.endTrip();
+  let rn, rw;
+  if (v === 0) { rn = Fmt.expr(e) + ' = 0. No copies, or copies of nothing, go nowhere.'; rw = 'Zero copies of anything, or any number of copies of no trip, is no movement.'; }
+  else if (b < 0) { rn = Fmt.expr(e) + ' = ' + N(v) + '. Copies of a left trip go left.'; rw = 'Exactly one thing flipped this trip: its own sign. The count, ' + N(a) + ', is positive and flips nothing.'; }
+  else { rn = Fmt.expr(e) + ' = ' + N(v) + '. No flips anywhere.'; rw = N(a) + ' copies of a right-pointing trip. Nothing was negative, so nothing turned around.'; }
+  if (s !== 0) rn += ' From ' + N(s) + ' it lands on ' + N(land) + '.';
+  B.still({ phase: 'result', eq: Fmt.expr(e) + ' = ' + N(v), narration: rn, why: rw });
+  if (a > 0 && b > 0) {
+    B.still({ phase: 'check', eq: N(b) + ' ' + TIMES + ' ' + N(a) + ' = ' + N(v) + ' ✓',
+      ghosts: [B.ghost(s, land, { hops: b, label: N(b) + ' copies of ' + N(a), transient: true })],
+      narration: 'Check: ' + Fmt.copies(b) + ' of ' + N(a) + ' land on the same place.',
+      why: 'Order does not matter in multiplication: an array of ' + N(a) + ' rows and ' + N(b) + ' columns can be counted either way.' });
+  } else if (a > 0 && b < 0) {
+    B.still({ phase: 'check', eq: N(a) + ' ' + TIMES + ' ' + O(b) + ' + ' + N(a) + ' ' + TIMES + ' ' + N(-b) + ' = ' + N(a) + ' ' + TIMES + ' 0 = 0 ✓',
+      ghosts: [B.ghost(land, s, { hops: a, label: N(a) + ' ' + TIMES + ' ' + N(-b) + ' brings you home', transient: true })],
+      narration: 'Check: add ' + N(a) + ' ' + TIMES + ' ' + N(-b) + ' and you are back at the start. The two products cancel.',
+      why: 'a ' + TIMES + ' (b + c) = a ' + TIMES + ' b + a ' + TIMES + ' c, and ' + N(b) + ' + ' + N(-b) + ' = 0. So ' + N(a) + ' ' + TIMES + ' ' + O(b) + ' must exactly cancel ' + N(a) + ' ' + TIMES + ' ' + N(-b) + '.' });
+  } else if (a === 0) {
+    B.still({ phase: 'check', eq: O(b) + ' ' + TIMES + ' 0 = 0 ✓',
+      ghosts: [B.ghost(s, s, { dot: true, label: O(b) + ' ' + TIMES + ' 0 = 0', transient: true })],
+      narration: 'Check the other way: ' + O(b) + ' ' + TIMES + ' 0 is copies of no trip, also 0.',
+      why: 'Whatever the count, copies of a trip of no steps go nowhere.' });
+  } else {
+    B.still({ phase: 'check', eq: '0 ' + TIMES + ' ' + N(a) + ' = 0 ✓',
+      ghosts: [B.ghost(s, s, { dot: true, label: '0 ' + TIMES + ' ' + N(a) + ' = 0', transient: true })],
+      narration: 'Check the other way: zero copies of ' + N(a) + ' is also 0.',
+      why: 'Zero copies of anything is no movement.' });
+  }
+  return B.steps;
+}
+
+function genMulNegCount(e, a, b, s, v, land) {
+  const B = new Builder(e), A = abs(a), P = A * b;
+  B.still({ phase: 'intro', eq: Fmt.expr(e) + ' = ?',
+    narration: 'We know ' + N(A) + ' ' + TIMES + ' ' + N(b) + ': ' + Fmt.copies(A) + ' of the trip ' + N(b) + '. But what could "negative ' + N(A) + ' copies" mean?',
+    why: 'A count of copies cannot be negative, so nobody has told us what this means. We will work it out from laws we already trust and refuse to break.' });
+  const g1 = B.ghost(s, s + P, { hops: b === 0 ? 1 : A, label: N(A) + ' ' + TIMES + ' ' + N(b) + ', not walked', dot: P === 0 });
+  B.still({ phase: 'derive', eq: N(A) + ' ' + TIMES + ' ' + N(b) + ' = ' + N(P), ghosts: [g1],
+    narration: b > 0 ? 'First the part we know: ' + Fmt.copies(A) + ' of ' + N(b) + ' make a trip of ' + N(P) + ' to the right. Dashed means we only look.'
+      : 'First the part we know: ' + Fmt.copies(A) + ' of a trip of no steps make no trip at all.',
+    why: b > 0 ? N(A) + ' ' + TIMES + ' ' + N(b) + ' is ' + N(b) + ' added ' + N(A) + ' times. Copies of a right-pointing trip point right.' : 'Copies of nothing are nothing.' });
+  B.still({ phase: 'derive', eq: O(a) + ' ' + TIMES + ' ' + N(b) + ' + ' + N(A) + ' ' + TIMES + ' ' + N(b) + ' = (' + N(a) + ' + ' + N(A) + ') ' + TIMES + ' ' + N(b) + ' = 0 ' + TIMES + ' ' + N(b) + ' = 0',
+    narration: 'The key: ' + N(a) + ' and ' + N(A) + ' cancel, so ' + O(a) + ' ' + TIMES + ' ' + N(b) + ' and ' + N(A) + ' ' + TIMES + ' ' + N(b) + ' together make 0 ' + TIMES + ' ' + N(b) + ', which is no trip at all.',
+    why: 'This is the distributive law, (a + b) ' + TIMES + ' c = a ' + TIMES + ' c + b ' + TIMES + ' c, true for all ordinary numbers. If negative numbers broke it, algebra would stop working, so we keep it. Zero copies of anything is no movement.' });
+  B.startTrip('product', abs(P), P === 0 ? 'no steps' : Fmt.steps(P));
+  const g2 = B.ghost(s, s - P, { hops: b === 0 ? 1 : A, replaces: g1.id, rotateFrom: s + P, label: 'flipped: ' + O(a) + ' ' + TIMES + ' ' + N(b), dot: P === 0 });
+  B.flipStep({ cause: 'factor', on: 'product', reveals: true, ghosts: [g2],
+    eq: O(a) + ' ' + TIMES + ' ' + N(b) + ' = ' + MINUS + '(' + N(A) + ' ' + TIMES + ' ' + N(b) + ')',
+    narration: b > 0 ? 'So ' + O(a) + ' ' + TIMES + ' ' + N(b) + ' must exactly cancel the trip of ' + N(P) + ', which means it is that trip, flipped.'
+      : 'So ' + O(a) + ' ' + TIMES + ' 0 is a trip of no steps, flipped: still no trip.',
+    why: b > 0 ? 'Two trips that add up to no trip are opposites: same size, other way. The only trip that cancels "' + N(P) + ' right" is "' + N(P) + ' left". That is why a negative count flips a product.'
+      : 'Flipping no trip leaves no trip, so ' + O(a) + ' ' + TIMES + ' 0 = 0.' });
+  B.walk({ phase: 'op2', on: 'product', dist: v, hops: b === 0 ? 1 : A,
+    narration: b > 0 ? 'Walk the flipped trip: ' + (A === 1 ? 'one hop' : N(A) + ' hops') + ' of ' + N(b) + ' to the left' + hopList(s, -b, A) + '.' : 'Nothing to walk: we stay at ' + N(s) + '.',
+    why: b > 0 ? 'Each copy of ' + N(b) + ', flipped, is a copy of ' + N(-b) + '.' : 'A trip of no steps, however it faces, goes nowhere.',
+    walkInfo: { label: O(a) + ' ' + TIMES + ' ' + N(b) + ' = ' + SG(v), sub: 'flipped by the negative count' } });
+  B.endTrip();
+  B.still({ phase: 'result', eq: Fmt.expr(e) + ' = ' + N(v),
+    narration: b > 0 ? Fmt.expr(e) + ' = ' + N(v) + '. One flip, so the answer points left.' + (s !== 0 ? ' From ' + N(s) + ' it lands on ' + N(land) + '.' : '')
+      : Fmt.expr(e) + ' = 0. Flipping no trip changes nothing.',
+    why: b > 0 ? 'Exactly one thing flipped this trip: the negative count. The ' + N(b) + ' pointed right on its own.' : 'A negative count flips the product, but there is nothing to flip.' });
+  if (b > 0) {
+    B.still({ phase: 'check', eq: N(b) + ' ' + TIMES + ' ' + O(a) + ' = ' + N(v) + ' ✓',
+      ghosts: [B.ghost(s, land, { hops: b, label: N(b) + ' copies of ' + N(a), transient: true })],
+      narration: 'Check another way: ' + Fmt.copies(b) + ' of the trip ' + N(a) + ' also land on ' + N(land) + '.',
+      why: N(b) + ' ' + TIMES + ' ' + O(a) + ' is plain repeated addition. It agrees, as it must if order does not matter in multiplication.' });
+  } else {
+    B.still({ phase: 'check', eq: '0 ' + TIMES + ' ' + O(a) + ' = 0 ✓',
+      ghosts: [B.ghost(s, s, { dot: true, label: '0 ' + TIMES + ' ' + O(a) + ' = 0', transient: true })],
+      narration: 'Check the other way: zero copies of ' + N(a) + ' is also 0.', why: 'Zero copies of anything is no movement.' });
+  }
+  return B.steps;
+}
+
+function genMulNegNeg(e, a, b, s, v, land) {
+  const B = new Builder(e), A = abs(a), Bm = abs(b), P = A * Bm;
+  const ab4 = O(a) + ' ' + TIMES + ' ' + N(Bm);
+  B.still({ phase: 'intro', eq: Fmt.expr(e) + ' = ?',
+    narration: 'Two negatives. We will not guess and we will not quote a rule: we will make the answer prove itself.',
+    why: 'Repeated addition cannot do negative copies. What we can use: a trip and its opposite cancel; anything times 0 is 0; the distributive law; and ' + ab4 + ' = ' + N(-P) + ', because a negative count flips a product.' });
+  B.still({ phase: 'derive', eq: N(Bm) + ' + ' + O(b) + ' = 0',
+    ghosts: [B.ghost(s, s + Bm, { label: '+' + N(Bm) }), B.ghost(s + Bm, s, { label: N(b) })],
+    narration: 'Start with something you can see: ' + Fmt.steps(Bm) + ' right, then ' + Fmt.steps(Bm) + ' left, and you are home.',
+    why: N(b) + ' is the trip that undoes ' + N(Bm) + '. Together they make no trip.' });
+  B.still({ phase: 'derive', eq: O(a) + ' ' + TIMES + ' [' + N(Bm) + ' + ' + O(b) + '] = ' + O(a) + ' ' + TIMES + ' 0 = 0',
+    narration: 'So ' + N(a) + ' times that bundle is ' + N(a) + ' times 0, which is 0.',
+    why: O(a) + ' ' + TIMES + ' 0 is ' + N(A) + ' ' + TIMES + ' 0 flipped. ' + N(A) + ' ' + TIMES + ' 0 is no trip, and flipping no trip leaves no trip.' });
+  B.still({ phase: 'derive', eq: ab4 + ' + ' + O(a) + ' ' + TIMES + ' ' + O(b) + ' = 0',
+    narration: 'Share the ' + N(a) + ' with each part of the bundle: that is the distributive law. Now two trips together go nowhere.',
+    why: 'a ' + TIMES + ' (b + c) = a ' + TIMES + ' b + a ' + TIMES + ' c. We keep it for negative numbers because it is how multiplying and adding fit together; break it, and no algebra could be trusted.' });
+  B.startTrip('product', P);
+  B.walk({ phase: 'op1', on: 'product', dist: -P, flipFirst: 'factor', hops: 1,
+    eq: N(-P) + ' + ' + O(a) + ' ' + TIMES + ' ' + O(b) + ' = 0',
+    narration: 'The first trip we already know: ' + ab4 + ' = ' + N(-P) + '. Flip and walk ' + Fmt.steps(P) + ' left.',
+    why: 'A negative count flips the product: ' + ab4 + ' is ' + N(A) + ' ' + TIMES + ' ' + N(Bm) + ' = ' + N(P) + ', flipped.',
+    walkInfo: { label: ab4 + ' = ' + N(-P), sub: 'known trip' } });
+  B.startTrip('unknown', P, 'the unknown trip', true);
+  B.walk({ phase: 'derive', on: 'unknown', dist: P, flipFirst: 'undo', reveals: true,
+    eq: O(a) + ' ' + TIMES + ' ' + O(b) + ' = ' + N(P),
+    narration: 'The second trip, ' + Fmt.expr(e) + ', must bring us from ' + N(s - P) + ' back to ' + N(s) + ', because together they make 0. That is ' + Fmt.steps(P) + ' right.',
+    why: 'If ' + N(-P) + ' + x = 0, then x undoes ' + N(-P) + ', and only one trip does that: ' + N(P) + ' to the right. No other number is possible, which is what makes this a proof and not a rule.',
+    walkInfo: { label: Fmt.expr(e) + ' = ' + SG(P), sub: 'forced: it must undo ' + N(-P) } });
+  B.startTrip('product', P, Fmt.steps(P));
+  B.walk({ phase: 'result', on: 'product', dist: P,
+    eq: Fmt.expr(e) + ' = ' + N(v),
+    narration: 'So ' + Fmt.expr(e) + ' = ' + N(v) + '. Walk that trip from ' + N(s) + ' and you land on ' + N(land) + '.',
+    why: 'A trip is the same trip wherever it starts. Nowhere did we say "two minuses make a plus": the distributive law left exactly one possible answer.',
+    walkInfo: { label: 'the answer, ' + SG(v) } });
+  B.endTrip();
+  const g1 = B.ghost(s, s + P, { hops: A, rotateFrom: s - P, label: N(A) + ' ' + TIMES + ' ' + O(b) + ' = ' + N(-P) + ', then flipped', transient: true });
+  B.still({ phase: 'check', eq: MINUS + '(' + N(A) + ' ' + TIMES + ' ' + O(b) + ') = ' + MINUS + '(' + N(-P) + ') = ' + N(v) + ' ✓',
+    ghosts: [g1],
+    narration: 'Check with flips: ' + N(A) + ' ' + TIMES + ' ' + O(b) + ' is ' + (A === 1 ? 'one hop' : N(A) + ' hops') + ' left, ' + N(-P) + '. The negative count flips that: ' + N(P) + '.',
+    why: N(b) + ' is ' + N(Bm) + ' flipped once by its own sign; the negative count flips the product again. Two flips on one trip point right. That is the true, limited meaning of "two negatives make a positive".' });
+  return B.steps;
+}
+
+function genDiv(e) {
+  const a = e.a, b = e.b, s = e.s;
+  if (b === 0) return genDivZero(e);
+  const c = z(a / b), land = s + c, Bm = abs(b);
+  const B = new Builder(e);
+  B.still({ phase: 'intro', eq: Fmt.expr(e) + ' = ?',
+    narration: 'Division asks a multiplication question: ' + O(b) + ' ' + TIMES + ' ? = ' + N(a) + '. Which trip, taken ' + N(b) + ' times, makes ' + N(a) + '?',
+    why: 'a ' + DIVIDE + ' b means the number c with b ' + TIMES + ' c = a. Division undoes multiplication, as subtraction undoes addition, so the multiplication facts we proved decide the answer. We never "divide the signs".' });
+  B.startTrip('target', abs(a), a === 0 ? 'no steps' : Fmt.steps(a));
+  const gT = B.ghost(s, s + a, { label: 'target ' + N(a), dot: a === 0 });
+  const tn = a > 0 ? 'Here is the target: the trip ' + N(a) + ', pointing right.'
+    : a < 0 ? 'The target is ' + N(a) + ': ' + Fmt.steps(a) + ', flipped by its own sign to point left.'
+      : 'The target is 0: no trip at all.';
+  const tw = 'The number being divided is the trip the copies must build exactly.' + (a < 0 ? ' Its minus sign belongs to the ' + N(abs(a)) + '.' : '');
+  const tgt = { phase: 'op1', on: 'target', ghosts: [gT], eq: O(b) + ' ' + TIMES + ' ? = ' + N(a), narration: tn, why: tw };
+  if (a < 0) B.flipStep(Object.assign(tgt, { cause: 'sign', phase: 'op1' })); else B.still(tgt);
+  let T = a;
+  if (b < 0) {
+    T = z(-a);
+    const gT2 = B.ghost(s, s + T, { replaces: gT.id, rotateFrom: s + a, label: 'target, flipped: ' + N(T), dot: a === 0 });
+    B.flipStep({ cause: 'factor', on: 'target', ghosts: [gT2], eq: N(Bm) + ' ' + TIMES + ' ? = ' + N(T),
+      narration: a === 0 ? 'Taking a trip ' + N(b) + ' times means ' + Fmt.copies(Bm) + ', flipped. Flipping no trip leaves no trip.'
+        : 'Taking a trip ' + N(b) + ' times means ' + Fmt.copies(Bm) + ', flipped. So before that flip, ' + Fmt.copies(Bm) + ' must make the target flipped: ' + N(T) + '.',
+      why: O(b) + ' ' + TIMES + ' c is (' + N(Bm) + ' ' + TIMES + ' c) flipped. If flipping ' + N(Bm) + ' ' + TIMES + ' c gives ' + N(a) + ', then ' + N(Bm) + ' ' + TIMES + ' c is ' + N(T) + '.' });
+  } else {
+    B.still({ phase: 'derive', eq: N(b) + ' ' + TIMES + ' ? = ' + N(a),
+      narration: 'The count is ' + N(b) + ', a positive number, so nothing else flips.',
+      why: 'Only a negative count flips a product. With ' + Fmt.copies(b) + ', the copies point where the target points.' });
+  }
+  B.startTrip('unknown', abs(c), c === 0 ? 'no steps' : 'one share', true);
+  let wn;
+  if (c === 0) wn = 'Which trip, copied ' + N(Bm) + ' times, makes no trip? Only the trip of no steps: 0.';
+  else if (Bm === 1) wn = 'One copy must be the whole target: ' + Fmt.steps(c) + ' ' + Fmt.dir(c) + '. Walk it.';
+  else wn = 'Which trip, copied ' + N(Bm) + ' times, makes ' + N(T) + '? Split it into ' + N(Bm) + ' equal trips: each is ' + Fmt.steps(c) + ' ' + Fmt.dir(c) + '. Walk one.';
+  B.walk({ phase: 'op2', on: 'unknown', dist: c, reveals: true,
+    ghosts: c === 0 ? [] : [B.ghost(s, s + T, { hops: Bm, label: N(Bm) + ' equal trips', split: true })],
+    eq: N(Bm) + ' ' + TIMES + ' ' + O(c) + ' = ' + N(T),
+    narration: wn,
+    why: c === 0 ? 'Any trip with steps, copied, goes somewhere. Only 0 stays at 0.'
+      : N(Bm) + ' equal trips making ' + N(T) + ' must each be ' + N(c) + '. A longer trip overshoots, a shorter one falls short, and one pointing the other way goes the wrong way.',
+    walkInfo: { label: 'one share: ' + SG(c) } });
+  B.endTrip();
+  const flips = (a < 0 ? 1 : 0) + (b < 0 ? 1 : 0);
+  let rn = 'The trip is ' + N(c) + ', so ' + Fmt.expr(e) + ' = ' + N(c) + '.';
+  if (c !== 0) rn += flips === 0 ? ' No flips: it points right.' : flips === 1 ? ' One flip, so it points left.' : ' Two flips on the target, so it points right.';
+  if (s !== 0) rn += ' From ' + N(s) + ' it lands on ' + N(land) + '.';
+  const srcs = [];
+  if (a < 0) srcs.push('the dividend’s own sign');
+  if (b < 0) srcs.push('the negative count');
+  B.still({ phase: 'result', eq: Fmt.expr(e) + ' = ' + N(c), narration: rn,
+    why: c === 0 ? 'Zero shared into any number of equal trips is zero.'
+      : (srcs.length ? 'The sign came from ' + srcs.join(' and ') + (srcs.length === 2 ? ', two flips on the same trip that cancel' : '') + '. ' : 'Nothing was negative, so nothing flipped. ')
+        + 'The size came from splitting ' + N(abs(a)) + ' into ' + N(Bm) + '. No sign rule was used.' });
+  if (c !== 0) {
+    const g = b < 0
+      ? B.ghost(s, s + a, { hops: Bm, rotateFrom: s + T, label: N(Bm) + ' copies of ' + N(c) + ', flipped', transient: true })
+      : B.ghost(s, s + a, { hops: Bm, label: N(Bm) + ' copies of ' + N(c), transient: true });
+    B.still({ phase: 'check', eq: O(b) + ' ' + TIMES + ' ' + O(c) + ' = ' + N(a) + ' ✓', ghosts: [g],
+      narration: b < 0 ? 'Check by multiplying back: ' + Fmt.copies(Bm) + ' of ' + N(c) + ' make ' + N(T) + '; flipped, ' + N(a) + '.'
+        : 'Check by multiplying back: ' + Fmt.copies(Bm) + ' of ' + N(c) + ' land on ' + N(s + a) + '.',
+      why: 'A division answer is right exactly when multiplying back gives the number that was divided.' });
+  } else {
+    B.still({ phase: 'check', eq: O(b) + ' ' + TIMES + ' 0 = 0 ✓',
+      ghosts: [B.ghost(s, s, { dot: true, label: O(b) + ' ' + TIMES + ' 0 = 0', transient: true })],
+      narration: 'Check by multiplying back: ' + O(b) + ' ' + TIMES + ' 0 = 0. Dividing zero is fine; dividing by zero is not.',
+      why: 'A division answer is right exactly when multiplying back gives the number that was divided.' });
+  }
+  return B.steps;
+}
+
+function genDivZero(e) {
+  const a = e.a, s = e.s, B = new Builder(e);
+  if (a !== 0) {
+    B.still({ phase: 'intro', eq: Fmt.expr(e) + ' = ?',
+      narration: 'This asks 0 ' + TIMES + ' ? = ' + N(a) + '. Which trip, taken 0 times, makes ' + N(a) + '?',
+      why: 'Same meaning as always: a ' + DIVIDE + ' b is the number c with b ' + TIMES + ' c = a. If no such number exists, the division has no answer.' });
+    B.startTrip('target', abs(a));
+    const gT = B.ghost(s, s + a, { label: 'target ' + N(a) });
+    const tgt = { phase: 'op1', on: 'target', ghosts: [gT], eq: '0 ' + TIMES + ' ? = ' + N(a),
+      narration: a > 0 ? 'The target: ' + N(a) + ', pointing right.' : 'The target: ' + N(a) + ', flipped by its sign to point left.',
+      why: 'The copies, however many, would have to build exactly this trip.' };
+    if (a < 0) B.flipStep(Object.assign(tgt, { cause: 'sign' })); else B.still(tgt);
+    B.endTrip();
+    const cands = [5, -4, a === 5 || a === -4 ? 12 : a];
+    B.still({ phase: 'derive', eq: cands.map(c => '0 ' + TIMES + ' ' + O(c) + ' = 0').join(';   '),
+      ghosts: cands.map(c => B.ghost(s, s, { dot: true, label: '0 ' + TIMES + ' ' + O(c) + ' = 0' })),
+      narration: 'Try any trip: 5, ' + N(-4) + ', even ' + N(cands[2]) + '. Taken 0 times, each one goes nowhere.',
+      why: 'Zero copies of a trip is no trip, whatever the trip is. So 0 ' + TIMES + ' c = 0 for every number c.' });
+    B.still({ phase: 'derive', eq: '0 ' + TIMES + ' ? is always 0, never ' + N(a),
+      narration: 'So 0 ' + TIMES + ' ? always lands on 0, and 0 is not ' + N(a) + '. No trip can work.',
+      why: 'We have not failed to find the answer; we have shown there is none to find. That is a proof of impossibility, a kind of argument mathematicians use all the time.' });
+    B.still({ phase: 'result', reveals: true, undef: 'no-answer', eq: Fmt.expr(e) + ' is undefined',
+      narration: 'So ' + Fmt.expr(e) + ' has no answer. We call it undefined: not 0, not ' + N(a) + ', not "infinity".',
+      why: 'Any number written after the = sign would be false, because multiplying it by 0 never gives ' + N(a) + '. "Undefined" is the honest answer.' });
+    B.still({ phase: 'check', eq: O(a) + ' ' + TIMES + ' 0 = 0, so 0 ' + DIVIDE + ' ' + O(a) + ' = 0 ✓',
+      narration: 'Compare: 0 ' + DIVIDE + ' ' + O(a) + ' is fine, because ' + O(a) + ' ' + TIMES + ' 0 = 0. Dividing zero is allowed; dividing by zero is not.',
+      why: 'And 0 ' + DIVIDE + ' 0? Then 0 ' + TIMES + ' ? = 0 holds for every number, so there is no single answer: undefined for the opposite reason, too many answers instead of none.' });
+  } else {
+    B.still({ phase: 'intro', eq: '0 ' + DIVIDE + ' 0 = ?',
+      narration: 'This asks 0 ' + TIMES + ' ? = 0. Which trip, taken 0 times, makes no trip?',
+      why: 'a ' + DIVIDE + ' b is the number c with b ' + TIMES + ' c = a. A division must name exactly one number.' });
+    const cands = [5, -4, 12];
+    B.still({ phase: 'derive', eq: cands.map(c => '0 ' + TIMES + ' ' + O(c) + ' = 0 ✓').join(';   '),
+      ghosts: cands.map(c => B.ghost(s, s, { dot: true, label: '0 ' + TIMES + ' ' + O(c) + ' = 0, works' })),
+      narration: 'Try 5, ' + N(-4) + ', 12. Taken 0 times, every one lands on the target.',
+      why: '0 ' + TIMES + ' c = 0 for every number c, so every c passes the test b ' + TIMES + ' c = a.' });
+    B.still({ phase: 'result', reveals: true, undef: 'every-number', eq: '0 ' + DIVIDE + ' 0 is undefined',
+      narration: 'Every number works, so there is no single answer. 0 ' + DIVIDE + ' 0 is undefined, for the opposite reason to 5 ' + DIVIDE + ' 0.',
+      why: 'A division must name one number. Here the question has infinitely many answers, so choosing any one of them would be arbitrary.' });
+    B.still({ phase: 'check', eq: '5 ' + DIVIDE + ' 0: no answer;   0 ' + DIVIDE + ' 0: every answer',
+      narration: 'Compare: 5 ' + DIVIDE + ' 0 has no answer at all; 0 ' + DIVIDE + ' 0 has too many. Both are undefined.',
+      why: 'Both fail the same test, b ' + TIMES + ' c = a with exactly one c, from opposite sides.' });
+  }
+  return B.steps;
+}
+
+function finalize(steps) {
+  const counts = {};
+  let checkN = 0;
+  steps.forEach((st, i) => {
+    st.index = i;
+    let key = st.phase === 'check' ? 'check' + (checkN++) : st.phase + '|' + (st.cause || '') + '|' + (st.on || '');
+    counts[key] = (counts[key] || 0) + 1;
+    st.beat = counts[key] > 1 ? key + '#' + counts[key] : key;
+  });
+  return steps;
+}
+
+function build(e) {
+  let steps;
+  switch (e.op) {
+    case '+': steps = genAdd(e); break;
+    case '-': steps = genSub(e); break;
+    case '*': steps = genMul(e); break;
+    case '/': steps = genDiv(e); break;
+  }
+  return finalize(steps);
+}
+
+/* Invariants (§6.1). Returns a list of violation strings. */
+function checkSteps(steps, e, res) {
+  const out = [];
+  let prevTo = e.s, prevFace = 'R';
+  steps.forEach((st, i) => {
+    const tag = Fmt.expr(e) + ' @' + e.s + ' step ' + (i + 1) + ': ';
+    if (st.from !== prevTo) out.push(tag + 'continuity');
+    if (st.phase === 'flip' && !(st.flip && st.from === st.to)) out.push(tag + 'flip step moves');
+    if (st.face !== prevFace && !st.newTrip) out.push(tag + 'facing jump without new trip');
+    const endFace = st.flip ? (st.face === 'R' ? 'L' : 'R') : st.face;
+    if (endFace !== st.endFace) out.push(tag + 'end face');
+    if (st.to !== st.from) {
+      const d = st.to > st.from ? 'R' : 'L';
+      if (d !== endFace) out.push(tag + 'walks ' + d + ' facing ' + endFace);
+    }
+    if (st.flip && !st.cause) out.push(tag + 'flip without cause');
+    if (!st.narration || !st.why) out.push(tag + 'missing text');
+    prevTo = st.to; prevFace = endFace;
+  });
+  const want = res.kind === 'value' ? e.s + res.value : e.s;
+  if (prevTo !== want) out.push(Fmt.expr(e) + ' ends at ' + prevTo + ' not ' + want);
+  const r = steps.find(s => s.phase === 'result');
+  if (!r) out.push(Fmt.expr(e) + ' has no result step');
+  else if (res.kind === 'value' && r.eq.indexOf(N(res.value)) < 0) out.push(Fmt.expr(e) + ' result eq lacks value');
+  else if (res.kind === 'undefined' && r.eq.indexOf('undefined') < 0) out.push(Fmt.expr(e) + ' result eq lacks undefined');
+  if (!steps.some(s => s.reveals)) out.push(Fmt.expr(e) + ' has no reveal step');
+  return out;
+}
+
+function selfCheck() {
+  const failures = [];
+  let count = 0;
+  const ops = ['+', '-', '*', '/'];
+  for (let a = -12; a <= 12; a++) for (let b = -12; b <= 12; b++) for (const op of ops) for (const s of [0, 5]) {
+    const inp = { a: { sign: a < 0 ? -1 : 1, size: String(abs(a)) }, op, b: { sign: b < 0 ? -1 : 1, size: String(abs(b)) }, s: { sign: 1, size: String(s) } };
+    const v = validate(inp);
+    count++;
+    if (!v.ok) {
+      if (!(op === '/' && b !== 0 && a % b !== 0)) failures.push('rejected ' + a + op + b);
+      continue;
+    }
+    const res = evaluate(v.expr);
+    const st = build(v.expr);
+    failures.push(...checkSteps(st, v.expr, res));
+    if ((a * 31 + b * 7) % 9 === 0) {
+      if (JSON.stringify(build(v.expr)) !== JSON.stringify(st)) failures.push('nondeterministic ' + a + op + b);
+    }
+  }
+  return { count, failures };
+}
+
+function revealIndex(steps) { const i = steps.findIndex(s => s.reveals); return i < 0 ? steps.length - 1 : i; }
+function resultIndex(steps) { const i = steps.findIndex(s => s.phase === 'result'); return i < 0 ? steps.length - 1 : i; }
+
+/* ---------------- Diagnosis (§7.4) ---------------- */
+function findIdx(steps, pred, fallback) { const i = steps.findIndex(pred); return i < 0 ? (fallback == null ? 0 : fallback) : i; }
+
+function diagnose(e, res, steps, pred) {
+  const a = e.a, b = e.b, s = e.s, A = abs(a), Bm = abs(b);
+  const J = {
+    intro: 0,
+    op1: findIdx(steps, x => x.phase === 'op1'),
+    op2: findIdx(steps, x => x.phase === 'op2', resultIndex(steps)),
+    bsign: findIdx(steps, x => x.cause === 'sign' && x.on === 'B', findIdx(steps, x => x.phase === 'op2')),
+    subflip: findIdx(steps, x => x.cause === 'subtract'),
+    diffcheck: (() => { let k = -1; steps.forEach((x, i) => { if (x.phase === 'check') k = i; }); return k < 0 ? resultIndex(steps) : k; })(),
+    factor: findIdx(steps, x => x.cause === 'factor'),
+    unknown: findIdx(steps, x => x.on === 'unknown', findIdx(steps, x => x.cause === 'factor')),
+    result: resultIndex(steps),
+    firstflip: findIdx(steps, x => x.flip),
+    lastwalk: (() => { let k = 0; steps.forEach((x, i) => { if (x.to !== x.from) k = i; }); return k; })(),
+    derive: findIdx(steps, x => x.phase === 'derive'),
+    check: findIdx(steps, x => x.phase === 'check', resultIndex(steps)),
+  };
+  const mk = (id, cat, msg, jump) => ({ id, cat, msg, jump: J[jump] != null ? J[jump] : 0 });
+  if (res.kind === 'undefined') {
+    if (pred.kind === 'none') return { match: true };
+    const g = pred.value;
+    if (a !== 0) return mk('div-zero', 'Inverse relationship', 'Check it: 0 ' + TIMES + ' ' + O(g) + ' = 0, not ' + N(a) + '. Does any number work?', 'derive');
+    return mk('zero-zero', 'Inverse relationship', '0 ' + TIMES + ' ' + O(g) + ' = 0, true. But 0 ' + TIMES + ' 7 = 0 too, and 0 ' + TIMES + ' (' + MINUS + '3) = 0. Which one is "the" answer?', 'derive');
+  }
+  const v = res.value;
+  if (pred.kind === 'none') {
+    if (e.op === '/' && a === 0) return mk('zero-dividend', 'Inverse relationship', O(b) + ' ' + TIMES + ' 0 = 0, so 0 works: 0 ' + DIVIDE + ' ' + O(b) + ' = 0. Dividing by zero is the problem, not dividing zero.', 'check');
+    return mk('has-answer', 'Inverse relationship', 'There is an answer here: ' + O(b) + ' ' + TIMES + ' ' + O(v) + ' = ' + N(a) + '. Only dividing by 0 has no answer.', 'result');
+  }
+  const g = pred.value;
+  if (g === v) return { match: true };
+  const R = [];
+  if (e.op === '+') {
+    if (a < 0 && b < 0 && g === A + Bm) R.push(mk('add-two-minus', 'Sign vs size', 'The two minus signs flip two different trips, and both trips go left. Flips cancel only when they act on the same trip.', 'bsign'));
+    if (a > 0 && b < 0 && v > 0 && g === -v) R.push(mk('add-op-sign', 'Direction', '"+ ' + O(b) + '" is a trip to the left, not the answer. Where did you land after ' + N(a) + ' right and ' + N(Bm) + ' left?', 'op2'));
+    if (a !== 0 && b !== 0 && sgn(a) !== sgn(b) && (g === A + Bm || g === -(A + Bm))) R.push(mk('add-sizes', 'Distance', 'The trips point opposite ways, so the second walks back over the first. Their sizes do not add.', 'op2'));
+    if (a !== 0 && g === b) R.push(mk('skip-first', 'Start position', 'You walked only the second trip. The first trip, ' + N(a) + ', moved you before it started.', 'op1'));
+  }
+  if (e.op === '-') {
+    if (b !== 0 && g === a + b) R.push(mk('sub-no-flip', 'Subtraction as reversal', b < 0
+      ? 'You flipped the ' + N(Bm) + ' only once. In ' + Fmt.expr(e) + ' it is flipped twice: once by its own sign, once by subtracting.'
+      : 'You walked ' + N(b) + ' as it is. Subtracting undoes a trip, so it must be flipped first.', 'subflip'));
+    if (a !== 0 && b !== 0 && sgn(a) === -sgn(b) && g === sgn(a) * (A - Bm)) R.push(mk('sub-sizes', 'Sign vs size', 'You subtracted the sizes, ' + N(A) + ' ' + MINUS + ' ' + N(Bm) + '. But here both trips point ' + Fmt.dir(a) + ' (the second is flipped by subtracting), so the sizes add.', 'op2'));
+    if (a < 0 && b > 0 && g === A + Bm) R.push(mk('sub-two-minus', 'Sign vs size', 'The two minus signs flip different trips, the ' + N(A) + ' and the ' + N(b) + '. Nothing cancels; both trips go left.', 'subflip'));
+    if (a !== b && g === b - a) R.push(mk('sub-reversed', 'Direction', 'That is ' + O(b) + ' ' + MINUS + ' ' + O(a) + ': same size, other way. ' + Fmt.expr(e) + ' is the trip from ' + N(b) + ' to ' + N(a) + '.', 'diffcheck'));
+  }
+  if (e.op === '*') {
+    if (a < 0 && b > 0 && g === A * Bm) R.push(mk('mul-count', 'Negative factor', 'The negative count flips the whole product. ' + O(a) + ' ' + TIMES + ' ' + N(b) + ' must cancel ' + N(A) + ' ' + TIMES + ' ' + N(b) + '.', 'factor'));
+    if (a > 0 && b < 0 && g === A * Bm) R.push(mk('mul-copies', 'Sign vs size', 'Copies of a left-pointing trip point left. The trip ' + N(b) + ' was flipped by its own sign.', 'bsign'));
+    if (a < 0 && b < 0 && g === -(A * Bm)) R.push(mk('mul-one-flip', 'Negative factor', 'You flipped once. ' + N(b) + ' was already flipped by its own sign, and the negative count flips the product again.', 'unknown'));
+    if (v === 0 && g !== 0 && (g === a || g === b)) R.push(mk('mul-zero', 'Distance', 'Copies of no trip, or no copies, go nowhere.', 'op2'));
+    if (g === a + b && a + b !== v) R.push(mk('mul-as-add', 'Sign vs size', 'That is ' + O(a) + ' + ' + O(b) + '. Multiplying counts copies of a trip.', 'intro'));
+  }
+  if (e.op === '/') {
+    if (g === a * b && a * b !== v) R.push(mk('div-as-mul', 'Inverse relationship', 'That is ' + O(a) + ' ' + TIMES + ' ' + O(b) + '. Division asks the opposite question: ' + O(b) + ' ' + TIMES + ' ? = ' + N(a) + '.', 'intro'));
+    R.push(mk('div-check', 'Inverse relationship', 'Check it: ' + O(b) + ' ' + TIMES + ' ' + O(g) + ' = ' + N(b * g) + ', not ' + N(a) + '.', b < 0 ? 'factor' : (a < 0 ? 'op1' : 'op2')));
+  }
+  if (R.length) return R[0];
+  if (s !== 0 && g === s + v) return mk('landing', 'Start position', 'You gave the landing place. The answer is the trip, which starts at ' + N(s) + '.', 'result');
+  if (abs(g) === abs(v) && g !== v) return mk('direction', 'Direction', 'Right distance, wrong way. Count the flips on the trip.', 'firstflip');
+  if (sgn(g) === sgn(v) && g !== v) return mk('distance', 'Distance', 'Right way, wrong distance. Check the sizes.', 'lastwalk');
+  return mk('fallback', 'Walk it through', 'Let’s walk it and find where your answer and the line part ways.', 'intro');
+}
+
+/* ---------------- Alignment for Compare (LCS on beats) ---------------- */
+function align(A, B) {
+  const n = A.length, m = B.length;
+  const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
+    dp[i][j] = A[i].beat === B[j].beat ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+  const frames = [];
+  let i = 0, j = 0;
+  while (i < n || j < m) {
+    if (i < n && j < m && A[i].beat === B[j].beat) { frames.push({ a: i, b: j }); i++; j++; }
+    else if (j >= m || (i < n && dp[i + 1][j] >= dp[i][j + 1])) { frames.push({ a: i, b: null }); i++; }
+    else { frames.push({ a: null, b: j }); j++; }
+  }
+  return frames;
+}
+
+/* ---------------- Content ---------------- */
+const E = (a, op, b, s) => ({ a, op, b, s: s || 0 });
+
+const STAGES = [
+  { title: 'Places and trips', main: E(5, '+', -3), contrast: [E(5, '+', -3), E(-5, '+', 3)], wrong: { expr: E(-5, '+', -3), answer: 8, says: '(' + MINUS + '5) + (' + MINUS + '3) = 8, because two minuses make a plus.' },
+    parts: [
+      'A lift in a building with basements. Floor ' + MINUS + '2 is a place; "go down 3 floors" is a trip. The same numbers do two different jobs.',
+      null,
+      '5 + 3 = 8     5 + (' + MINUS + '3) = 2     (' + MINUS + '5) + 3 = ' + MINUS + '2     (' + MINUS + '5) + (' + MINUS + '3) = ' + MINUS + '8',
+      'A number says how far and which way. Adding means doing one trip, then the next.',
+      'Trips the same way stack, so their sizes add. Opposite trips overlap: the second walks back over the first, so the sizes subtract and the longer trip sets the direction. All of it is read off the arrows.',
+      null, null,
+      'Can adding a number move you left? Can it move you nowhere? Give an example of each, and explain why.' ] },
+  { title: 'Opposites', main: E(7, '+', -7), contrast: [E(0, '-', -7), E(-7, '-', 7)], wrong: { expr: E(0, '-', -5), answer: -5, says: MINUS + 'x is always negative, so ' + MINUS + '(' + MINUS + '5) must be ' + MINUS + '5.' },
+    parts: [
+      'Walk to the shop and back home. The trip home cancels the trip there: you end where you started.',
+      null,
+      '7 + (' + MINUS + '7) = 0     ' + MINUS + '(' + MINUS + '7) = 7',
+      'Every trip has exactly one partner that undoes it: same size, other way. A minus in front means "the opposite of".',
+      'If t + x = 0 and t + y = 0, then x and y both lead from the end of t back to its start, so x = y: the opposite is unique. Since t + (' + MINUS + 't) = 0, t is the opposite of ' + MINUS + 't, so ' + MINUS + '(' + MINUS + 't) = t.',
+      null, null,
+      'If x + (' + MINUS + '12) = 0, what is x? Why can there not be two different answers?' ] },
+  { title: 'Subtraction undoes addition', main: E(8, '-', -7), contrast: [E(8, '+', -7), E(8, '-', -7)], wrong: { expr: E(5, '-', -3), answer: 2, says: '5 ' + MINUS + ' (' + MINUS + '3) = 2, because subtracting always makes things smaller.' },
+    parts: [
+      'The undo button. If you walked 7 steps left, undoing it means walking 7 steps right.',
+      null,
+      'a ' + MINUS + ' b = a + (' + MINUS + 'b)     8 ' + MINUS + ' (' + MINUS + '7) = 8 + 7 = 15     8 ' + MINUS + ' 7 = 8 + (' + MINUS + '7) = 1',
+      'Subtracting a trip means doing it backwards. If the trip already pointed left, backwards is right.',
+      'a ' + MINUS + ' b is the number that b, added to it, brings back to a. Try a + (' + MINUS + 'b): (a + (' + MINUS + 'b)) + b = a + 0 = a. Only one number does that, so a ' + MINUS + ' b = a + (' + MINUS + 'b). The Pattern view shows the same thing as evidence first.',
+      null, null,
+      'If subtracting a negative moves you right, does that mean every subtraction moves you right? Explain 0 ' + MINUS + ' 5 and 0 ' + MINUS + ' (' + MINUS + '5) using flips.' ] },
+  { title: 'Copies', main: E(3, '*', -4), contrast: [E(3, '*', -4), E(3, '+', -4)], wrong: { expr: E(2, '*', -5), answer: 10, says: '2 ' + TIMES + ' (' + MINUS + '5) = 10, because multiplying makes things bigger.' },
+    parts: [
+      'Three identical hops on a board game. Each hop is the same trip.',
+      null,
+      '3 ' + TIMES + ' 4 = 4 + 4 + 4 = 12     3 ' + TIMES + ' (' + MINUS + '4) = ' + MINUS + '12     0 ' + TIMES + ' t = 0     3 ' + TIMES + ' (4 + 2) = 3 ' + TIMES + ' 4 + 3 ' + TIMES + ' 2',
+      'n ' + TIMES + ' t means n copies of the trip t. The copies point the way t points.',
+      'Repeated addition. The distributive law shows up when you regroup the hops 4, 2, 4, 2, 4, 2 into 4, 4, 4, 2, 2, 2: same landing, because the order of trips never matters.',
+      null, null,
+      'Why does 3 ' + TIMES + ' (' + MINUS + '4) need no new idea, while (' + MINUS + '3) ' + TIMES + ' 4 does?' ] },
+  { title: 'A negative count', main: E(-3, '*', 4), contrast: [E(-3, '*', 4), E(4, '*', -3)], wrong: { expr: E(-2, '*', 6), answer: 12, says: 'A minus sign on a count means nothing, so (' + MINUS + '2) ' + TIMES + ' 6 is just 2 ' + TIMES + ' 6 = 12.' },
+    parts: [
+      'You walk right at 4 steps a second. Where were you 3 seconds ago? 12 steps to the left: (' + MINUS + '3) ' + TIMES + ' 4 = ' + MINUS + '12.',
+      null,
+      '(' + MINUS + '3) ' + TIMES + ' 4 + 3 ' + TIMES + ' 4 = (' + MINUS + '3 + 3) ' + TIMES + ' 4 = 0 ' + TIMES + ' 4 = 0,  so  (' + MINUS + '3) ' + TIMES + ' 4 = ' + MINUS + '12',
+      '"Negative three copies" has no meaning of its own, so it must mean whatever keeps the laws true. Only "the copies, flipped" does.',
+      '(' + MINUS + 'n) ' + TIMES + ' t + n ' + TIMES + ' t = ((' + MINUS + 'n) + n) ' + TIMES + ' t = 0 ' + TIMES + ' t = 0. So (' + MINUS + 'n) ' + TIMES + ' t undoes n ' + TIMES + ' t, and because opposites are unique it is n ' + TIMES + ' t flipped.',
+      null, null,
+      'What is (' + MINUS + '1) ' + TIMES + ' t for any trip t? Prove it in one line.' ] },
+  { title: 'Two negatives', main: E(-3, '*', -4), contrast: [E(-3, '*', -4), E(-3, '+', -4)], wrong: { expr: E(-3, '+', -4), answer: 7, says: '(' + MINUS + '3) + (' + MINUS + '4) = 7, because two minuses make a plus.' },
+    parts: [
+      'Someone walks left at 4 steps a second. Where were they 3 seconds ago? 12 steps to the right: (' + MINUS + '3) ' + TIMES + ' (' + MINUS + '4) = 12. A film of someone walking backwards, played backwards, shows them walking forwards.',
+      null,
+      '(' + MINUS + '3) ' + TIMES + ' [4 + (' + MINUS + '4)] = 0  ⇒  (' + MINUS + '3) ' + TIMES + ' 4 + (' + MINUS + '3) ' + TIMES + ' (' + MINUS + '4) = 0  ⇒  ' + MINUS + '12 + (' + MINUS + '3) ' + TIMES + ' (' + MINUS + '4) = 0  ⇒  (' + MINUS + '3) ' + TIMES + ' (' + MINUS + '4) = 12',
+      'The answer is whatever number keeps the distributive law working, and only +12 does.',
+      'Step through the proof with the arrow keys. Each line uses one fact already earned: a trip and its opposite cancel; anything times 0 is 0; the distributive law; (' + MINUS + '3) ' + TIMES + ' 4 = ' + MINUS + '12; and the only trip that undoes ' + MINUS + '12 is +12.',
+      null, null,
+      'Prove (' + MINUS + '4) ' + TIMES + ' (' + MINUS + '6) = +24 without quoting a sign rule. Which model shows it directly, and where did you need a second model?' ] },
+  { title: 'Division undoes multiplication', main: E(12, '/', -3), contrast: [E(-12, '/', -3), E(-12, '/', 3)], wrong: { expr: E(-12, '/', -3), answer: -4, says: '(' + MINUS + '12) ' + DIVIDE + ' (' + MINUS + '3) = ' + MINUS + '4, because negatives stay negative.' },
+    parts: [
+      'Sharing a trip into equal parts. Division is the undo button for multiplication.',
+      null,
+      'a ' + DIVIDE + ' b = c  means  b ' + TIMES + ' c = a     12 ' + DIVIDE + ' (' + MINUS + '3) = ' + MINUS + '4  because  (' + MINUS + '3) ' + TIMES + ' (' + MINUS + '4) = 12',
+      'Division asks which trip, taken b times, makes a. A negative b flips, so the answer flips too.',
+      'b ' + TIMES + ' c = a. If b is negative, b ' + TIMES + ' c is (size of b) ' + TIMES + ' c flipped, so (size of b) ' + TIMES + ' c = ' + MINUS + 'a: flip the target, then split it into equal trips. And 0 ' + TIMES + ' c = 0 for every c, so a ' + DIVIDE + ' 0 has no answer.',
+      null, null,
+      'Without working out the size, decide the sign of (' + MINUS + '84) ' + DIVIDE + ' (' + MINUS + '7) and prove it using multiplication.' ] },
+  { title: 'Every minus flips something', main: E(-3, '-', 4), contrast: [E(8, '-', -7), E(-8, '-', 7)], wrong: { expr: E(-3, '-', 4), answer: 7, says: MINUS + '3 ' + MINUS + ' 4 has two minuses, so it is +7.' },
+    parts: [
+      'Every minus sign is a flip. Always ask: a flip of what?',
+      null,
+      MINUS + '3 ' + MINUS + ' 4 = (' + MINUS + '3) + (' + MINUS + '4) = ' + MINUS + '7     (' + MINUS + '3)² = 9  but  ' + MINUS + '3² = ' + MINUS + '9     if a = ' + MINUS + '5 then ' + MINUS + 'a = 5',
+      'Count the flips on each trip separately. Flips on different trips never cancel.',
+      'Rewrite any expression as a sum of trips, each with its own flips. "Two minuses make a plus" is true only when both minuses flip the same trip.',
+      null, null,
+      'Is (' + MINUS + '1) ' + TIMES + ' (' + MINUS + '1) ' + TIMES + ' … ' + TIMES + ' (' + MINUS + '1) with 2026 factors positive or negative? With 2027? Explain with flips.' ] },
+];
+const PART_NAMES = ['Intuition', 'Visual', 'Symbolic', 'Plain English', 'Derivation', 'Contrast', 'Wrong idea', 'Question'];
+const EXIT_TEST = [E(5, '-', -9), E(-6, '+', 2), E(-7, '*', 3), E(-4, '*', -5), E(-20, '/', 4), E(9, '/', 0)];
+
+const COMPARE_PRESETS = [
+  [E(8, '+', -7), E(8, '-', -7)],
+  [E(8, '-', 7), E(8, '+', -7)],
+  [E(8, '+', 7), E(8, '-', -7)],
+  [E(-3, '*', 4), E(-3, '*', -4)],
+  [E(-3, '*', 4), E(4, '*', -3)],
+  [E(12, '/', -3), E(-12, '/', 3)],
+  [E(8, '-', 3), E(3, '-', 8)],
+  [E(5, '+', -3), E(-3, '+', 5)],
+];
+
+const LADDERS = [
+  { id: 'sub', title: '3 ' + MINUS + ' b', rows: [5, 4, 3, 2, 1, 0, -1, -2].map(b => E(3, '-', b)), familiar: 6,
+    question: 'Each time the number you subtract goes down by 1, what happens to the answer? Why must that keep happening below 0?',
+    proof: 'Subtracting one less always lands one further right. And 3 ' + MINUS + ' (' + MINUS + '1) must be 4, because subtraction undoes addition: (3 ' + MINUS + ' (' + MINUS + '1)) + (' + MINUS + '1) has to give 3, and 4 + (' + MINUS + '1) = 3. No other number works.',
+    rule: 'a ' + MINUS + ' (' + MINUS + 'b) = a + b' },
+  { id: 'mul', title: 'a ' + TIMES + ' (' + MINUS + '4)', rows: [3, 2, 1, 0, -1, -2, -3].map(a => E(a, '*', -4)), familiar: 4,
+    question: 'Each time the count goes down by 1, what happens to the product? Why must that keep happening below 0?',
+    proof: 'The distributive law says (a ' + MINUS + ' 1) ' + TIMES + ' (' + MINUS + '4) = a ' + TIMES + ' (' + MINUS + '4) ' + MINUS + ' (' + MINUS + '4) = a ' + TIMES + ' (' + MINUS + '4) + 4. So every step down in the count adds exactly 4, below 0 as well. The pattern is a clue; this line is the reason it cannot break.',
+    rule: '(' + MINUS + 'a) ' + TIMES + ' (' + MINUS + 'b) = a ' + TIMES + ' b' },
+  { id: 'add', title: '5 + b', rows: [2, 1, 0, -1, -2, -3].map(b => E(5, '+', b)), familiar: 3,
+    question: 'Each time the number you add goes down by 1, what happens to the answer? What does adding a negative trip do?',
+    proof: 'Adding one less always lands one further left. Adding ' + MINUS + '1 walks the trip ' + MINUS + '1 exactly as it is: 1 step left. So 5 + (' + MINUS + '1) = 4, the same journey as 5 ' + MINUS + ' 1.',
+    rule: 'a + (' + MINUS + 'b) = a ' + MINUS + ' b' },
+];
+
+const BITES = [
+  { t: 'What zero means', c: 'Zero is the place every other number is measured from, and it is also the trip of no steps. A trip of no steps has no direction, so ' + MINUS + '0 = 0. Adding 0 changes nothing, and 0 copies of anything is 0.', q: 'Is 0 positive or negative? What would break if ' + MINUS + '0 were different from 0?' },
+  { t: 'What a negative number means', c: 'A place to the left of 0, or a trip pointing left: the opposite of a positive number. Further left is less, so ' + MINUS + '3 < ' + MINUS + '2. The minus sign belongs to the number.', q: 'Which is bigger, ' + MINUS + '3 or ' + MINUS + '2? Use the line, not a rule.' },
+  { t: 'Places and trips', c: 'One number can name a place and a trip. The place p is where the trip p ends when you start at 0. The answer to a calculation is a trip; where you land also depends on where you start.', q: 'Start at 5 and work out 8 + (' + MINUS + '7). Did the answer change, or only where you landed?' },
+  { t: 'Additive inverse', c: 'Every trip t has exactly one partner, ' + MINUS + 't, with t + (' + MINUS + 't) = 0. The partner of the partner is the original trip: ' + MINUS + '(' + MINUS + 't) = t.', q: 'If x + (' + MINUS + '12) = 0, what is x? Why can there be only one answer?' },
+  { t: 'Why a ' + MINUS + ' b = a + (' + MINUS + 'b)', c: 'Subtraction undoes addition, and you undo a trip by walking it backwards. Check: (a + (' + MINUS + 'b)) + b = a + 0 = a, so a + (' + MINUS + 'b) is exactly the number that b brings back to a.', q: 'If subtracting a negative moves you right, does every subtraction move you right?' },
+  { t: 'Why ' + TIMES + '(' + MINUS + '1) flips you', c: '(' + MINUS + '1) ' + TIMES + ' t + 1 ' + TIMES + ' t = 0 ' + TIMES + ' t = 0. So (' + MINUS + '1) ' + TIMES + ' t undoes t: it is t flipped. A negative count flips the whole product.', q: 'What is (' + MINUS + '1) ' + TIMES + ' (' + MINUS + '1) ' + TIMES + ' (' + MINUS + '1) ' + TIMES + ' 5? How many flips?' },
+  { t: 'Why (' + MINUS + ')(' + MINUS + ') = +', c: '(' + MINUS + '3) ' + TIMES + ' [4 + (' + MINUS + '4)] = 0, so (' + MINUS + '3) ' + TIMES + ' 4 + (' + MINUS + '3) ' + TIMES + ' (' + MINUS + '4) = 0, so ' + MINUS + '12 + (' + MINUS + '3) ' + TIMES + ' (' + MINUS + '4) = 0, so (' + MINUS + '3) ' + TIMES + ' (' + MINUS + '4) = 12. Honest version: two flips on the same trip cancel.', q: 'Prove (' + MINUS + '4) ' + TIMES + ' (' + MINUS + '6) = +24 without quoting a sign rule.' },
+  { t: 'Why division is inverse multiplication', c: 'a ' + DIVIDE + ' b = c means b ' + TIMES + ' c = a. Every sign in division follows from multiplication, and every division answer can be checked by multiplying back.', q: 'Without dividing, decide the sign of (' + MINUS + '84) ' + DIVIDE + ' 7. Then check by multiplying.' },
+  { t: 'Why ' + DIVIDE + ' 0 is undefined', c: '0 ' + TIMES + ' c = 0 for every c. So a ' + DIVIDE + ' 0 has no answer when a is not 0, and 0 ' + DIVIDE + ' 0 has every number as an answer, so no single one. But 0 ' + DIVIDE + ' b = 0 is fine.', q: 'A friend says 5 ' + DIVIDE + ' 0 = 0. Check his answer the division way.' },
+  { t: 'Common sign misconceptions', c: '(' + MINUS + '3) + (' + MINUS + '4) is not 7. 8 ' + MINUS + ' (' + MINUS + '7) is not 1. ' + MINUS + '3 ' + MINUS + ' 4 is not 7. ' + MINUS + 'a need not be negative. (' + MINUS + '3)² = 9 but ' + MINUS + '3² = ' + MINUS + '9. Subtracting can make a number bigger; multiplying can make it smaller.', q: 'Find the flaw: "' + MINUS + '3 ' + MINUS + ' 4 has two minuses, so it is +7."' },
+  { t: 'Memorising vs deriving', c: 'Rules break under pressure; derivations can be rebuilt in seconds from four ideas: trips, flips, undo, and the distributive law. Patterns can deceive: chords joining points on a circle cut it into 1, 2, 4, 8, 16 regions, and then 31, not 32.', q: 'Which model explains (' + MINUS + '3) ' + TIMES + ' (' + MINUS + '4) directly, and where do we need a second model?' },
+];
+
+const Core = { Fmt, MINUS, TIMES, DIVIDE, validate, evaluate, build, checkSteps, selfCheck, revealIndex, resultIndex, diagnose, align,
+  STAGES, PART_NAMES, EXIT_TEST, COMPARE_PRESETS, LADDERS, BITES, CAUSE_TEXT, E, sgn };
+if (typeof module !== 'undefined') module.exports = Core;
+
+/* ===================================================================
+   RENDER: coordinate mapper + SVG drawing. The picture for any
+   (step index, progress) is a pure function of those values.
+   =================================================================== */
+const Render = (() => {
+  const { Fmt, CAUSE_TEXT } = Core;
+  const N = Fmt.num, SG = Fmt.signed;
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const tw = (s, size) => String(s).length * size * 0.56;
+  let reduced = false;
+  const setReduced = (v) => { reduced = !!v; };
+
+  function seg(t, r) {
+    if (!r) return 1;
+    if (reduced) return t > 0 ? 1 : 0;
+    return clamp((t - r[0]) / Math.max(1e-6, r[1] - r[0]), 0, 1);
+  }
+
+  /* --- per-step timeline: fractions of the step's duration --- */
+  function timeline(st) {
+    const T = {}; let t = 0;
+    const moves = st.to !== st.from || st.zeroTrip;
+    if (st.newTrip) { T.cf = [0, 0.1]; t = 0.1; }
+    if (st.flip) { const d = moves ? 0.22 : 0.4; T.rot = [t, t + d]; t += d; }
+    if (moves) { const d = st.hops > 1 ? 0.5 : 0.42; T.move = [t, t + d]; t += d; }
+    T.ghost = [0, Math.max(0.4, T.rot ? T.rot[1] : 0.4)];
+    if (st.ghosts.some(g => g.rotateFrom != null && g.replaces != null)) T.grot = T.rot || [0, 0.4];
+    if (st.ghosts.some(g => g.rotateFrom != null && g.replaces == null)) { T.ghost = [0, 0.3]; T.grot = [0.3, 0.62]; t = Math.max(t, 0.62); }
+    if (st.phase === 'result') T.answer = [0, 0.4];
+    T.end = Math.max(t, 0.4);
+    return T;
+  }
+
+  /* --- d. Coordinate mapper --- */
+  const TICKS = [];
+  for (let k = 1; k <= 1e7; k *= 10) TICKS.push(k, 2 * k, 5 * k);
+  function computeScale(points, width, padL, padR) {
+    let lo = Math.min(0, ...points), hi = Math.max(0, ...points);
+    if (hi - lo < 10) { const mid = (hi + lo) / 2; lo = mid - 5; hi = mid + 5; }
+    const m = Math.max(1, 0.08 * (hi - lo)); lo -= m; hi += m;
+    const usable = Math.max(120, width - padL - padR);
+    let ppu = usable / (hi - lo);
+    const tick = TICKS.find(n => n * ppu >= 24) || TICKS[TICKS.length - 1];
+    lo = Math.floor(lo / tick) * tick; hi = Math.ceil(hi / tick) * tick;
+    ppu = usable / (hi - lo);
+    const chars = Math.max(N(lo).length, N(hi).length);
+    const need = Math.max(44, chars * 8.2 + 14);
+    const label = [tick, 2 * tick, 5 * tick, 10 * tick].find(n => n * ppu >= need) || 10 * tick;
+    return { lo, hi, ppu, tick, label, padL, x: (v) => padL + (v - lo) * ppu };
+  }
+  function positionsOf(steps, s, extra) {
+    const p = [s];
+    steps.forEach(st => {
+      p.push(st.from, st.to);
+      st.ghosts.forEach(g => { p.push(g.from, g.to); if (g.rotateFrom != null) p.push(g.rotateFrom); });
+    });
+    if (extra) p.push(...extra);
+    return p;
+  }
+
+  /* --- lanes --- */
+  function laneLayout(steps) {
+    let n = 0; const gl = {}; const replacedAt = {}; const walkLane = [];
+    steps.forEach((st, i) => {
+      walkLane[i] = st.walk ? n++ : -1;
+      st.ghosts.forEach(g => {
+        if (g.replaces != null && gl[g.replaces] != null) { g._lane = gl[g.replaces]; replacedAt[g.replaces] = i; }
+        else g._lane = n++;
+        gl[g.id] = g._lane;
+      });
+    });
+    return { count: n, walkLane, replacedAt };
+  }
+
+  function geom(top, h, laneCount, compact) {
+    // lanes stack upward from the axis; when there is spare height the whole group is centred
+    const below = compact ? 62 : 98, gap = compact ? 64 : 92;
+    const limit = top + (compact ? 50 : 112);
+    const n = Math.max(1, laneCount);
+    let axisY = top + h - below;
+    const avail = Math.max(30, axisY - gap - limit);
+    const laneH = clamp(avail / n, compact ? 15 : 17, compact ? 32 : 46);
+    const spare = avail - laneH * (n - 1) - 20;
+    if (spare > 0) axisY -= Math.min(spare * 0.45, compact ? 0 : Math.max(110, h * 0.22));
+    const laneBase = axisY - gap;
+    return { top, h, axisY, laneBase, laneH, limit, compact };
+  }
+  const laneY = (G, k) => G.laneBase - k * G.laneH;
+
+  /* --- primitives --- */
+  function arrowHead(x, y, dir, cls, size) {
+    size = size || 9;
+    const b = x - dir * size;
+    return `<path class="${cls}" d="M${x},${y} L${b},${y - size * 0.55} L${b},${y + size * 0.55} Z"/>`;
+  }
+  function label(x, y, text, cls, anchor, W) {
+    const size = cls.indexOf('lbl-sm') >= 0 ? 12 : 13;
+    const w = tw(text, size);
+    if (W) {
+      if (anchor === 'middle') x = clamp(x, w / 2 + 6, W - w / 2 - 6);
+      else if (anchor === 'start') x = clamp(x, 6, W - w - 6);
+      else x = clamp(x, w + 6, W - 6);
+    }
+    return `<text class="${cls}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="${anchor || 'middle'}">${esc(text)}</text>`;
+  }
+  function hopPath(X, from, hop, n, y, upto, lift) {
+    // arcs for hops; upto = number of hops drawn (fractional allowed)
+    let d = '';
+    const full = Math.floor(upto), frac = upto - full;
+    for (let i = 0; i < n && i < Math.ceil(upto); i++) {
+      const a = from + hop * i, f = i < full ? 1 : frac;
+      const x0 = X(a), x1 = X(a + hop * f);
+      const h = Math.min(lift, Math.abs(X(a + hop) - X(a)) * 0.45) * (i < full ? 1 : Math.sin(Math.PI * Math.min(1, f) / 2));
+      const cx = (x0 + x1) / 2;
+      d += `M${x0.toFixed(1)},${y} Q${cx.toFixed(1)},${(y - 2 * h).toFixed(1)} ${x1.toFixed(1)},${y} `;
+    }
+    return d;
+  }
+
+  /* --- base: regions, axis, ticks, labels --- */
+  function drawBase(sc, G, W, o) {
+    const X = sc.x; const y = G.axisY;
+    const x0 = clamp(X(0), 0, W);
+    let s = '';
+    const yTop = G.top + (G.compact ? 4 : 0), yBot = G.top + G.h;
+    if (x0 > 0) s += `<rect class="region-neg" x="0" y="${yTop}" width="${x0}" height="${yBot - yTop}"/><rect class="region-hatch" x="0" y="${yTop}" width="${x0}" height="${yBot - yTop}" fill="url(#hatch)"/>`;
+    if (x0 < W) s += `<rect class="region-pos" x="${x0}" y="${yTop}" width="${W - x0}" height="${yBot - yTop}"/>`;
+    if (X(0) >= 0 && X(0) <= W) s += `<line class="zero-guide" x1="${X(0)}" x2="${X(0)}" y1="${G.limit - 18}" y2="${y + 30}"/>`;
+    // axis with arrowheads both ends
+    s += `<line class="axis" x1="10" x2="${W - 10}" y1="${y}" y2="${y}"/>`;
+    s += arrowHead(W - 4, y, 1, 'axis-head', 10) + arrowHead(4, y, -1, 'axis-head', 10);
+    // side labels sit in the bottom corners, away from markers on the axis
+    const yb = G.top + G.h - (G.compact ? 8 : 12);
+    if (!G.compact && sc.lo < 0 && x0 > 150) s += `<path class="side-neg" d="M14,${yb - 4} l7,-4 v8 z"/>` + `<text class="side-lbl side-neg-t" x="26" y="${yb}">negative side</text>`;
+    if (!G.compact && sc.hi > 0 && W - x0 > 150) s += `<text class="side-lbl side-pos-t" x="${W - 26}" y="${yb}" text-anchor="end">positive side</text><path class="side-pos" d="M${W - 14},${yb - 4} l-7,-4 v8 z"/>`;
+    // ticks
+    const first = Math.ceil(sc.lo / sc.tick) * sc.tick;
+    const hide = o.hideLabelsNear || [];
+    let ticks = '', labels = '';
+    for (let v = first; v <= sc.hi + 1e-9; v += sc.tick) {
+      const x = X(v); if (x < 16 || x > W - 16) continue;
+      const isZero = v === 0;
+      const labelled = isZero || Math.round(v / sc.label) * sc.label === v;
+      const len = isZero ? 11 : labelled ? 7 : 4;
+      ticks += `M${x.toFixed(1)},${y - len} V${y + len} `;
+      const halfW = N(v).length * 4.2 + 2;
+      if (labelled && x - halfW > 2 && x + halfW < W - 2 && !hide.some(h => Math.abs(h - x) < 30 && !isZero) && !(isZero && hide.some(h => Math.abs(h - x) < 18))) {
+        labels += `<text class="${isZero ? 'tick-zero' : 'tick-lbl'}" x="${x.toFixed(1)}" y="${y + (G.compact ? 22 : 27)}" text-anchor="middle">${N(v)}</text>`;
+      }
+    }
+    s += `<path class="ticks" d="${ticks}"/>` + labels;
+    if (sc.tick > 1) s += `<text class="scale-note" x="${W / 2}" y="${yb}" text-anchor="middle">Each tick = ${N(sc.tick)} units</text>`;
+    return s;
+  }
+
+  /* --- one walked trip in its lane --- */
+  function drawWalk(st, sc, y, pr, W, compact, axisY) {
+    const X = sc.x, dir = st.to > st.from ? 1 : -1;
+    const cls = dir > 0 ? 'pos' : 'neg';
+    const x0 = X(st.from), x1full = X(st.to);
+    const lenPx = Math.abs(x1full - x0);
+    let s = '';
+    const n = st.hops || 1, hopPx = lenPx / n;
+    const collapsed = n > 24 || (n > 1 && hopPx < 14);
+    if (lenPx < 10) {
+      const xm = (x0 + x1full) / 2;
+      s += `<path class="trip ${cls}" d="M${xm - 5},${y - 5} V${y + 5} M${xm + 5},${y - 5} V${y + 5} M${xm - 5},${y} H${xm + 5}"/>`;
+      if (pr >= 1) s += label(xm + 10, y - 6, SG(st.to - st.from) + ' (too small to draw at this scale)', 'lbl-sm lbl-quiet', 'start', W);
+      return s;
+    }
+    s += `<line class="tail ${cls}" x1="${x0}" x2="${x0}" y1="${y - 6}" y2="${y + 6}"/>`;
+    const cur = st.from + (st.to - st.from) * pr;
+    const xc = X(cur);
+    if (n > 1 && !collapsed) {
+      const hop = (st.to - st.from) / n;
+      s += `<path class="trip hop ${cls}" d="${hopPath(X, st.from, hop, n, y, pr * n, Math.min(14, (compact ? 10 : 14)))}"/>`;
+      for (let i = 1; i < Math.floor(pr * n + 1e-9) && i < n; i++) s += `<circle class="hop-dot ${cls}" cx="${X(st.from + hop * i)}" cy="${y}" r="2.6"/>`;
+    } else if (collapsed) {
+      const h = 14;
+      s += `<path class="trip ${cls}" d="M${x0},${y} Q${(x0 + xc) / 2},${y - 2 * h * Math.min(1, pr * 2)} ${xc},${y}"/>`;
+    } else {
+      s += `<line class="trip ${cls}" x1="${x0}" x2="${xc}" y1="${y}" y2="${y}"/>`;
+    }
+    if (pr > 0.02) s += arrowHead(xc + dir * 1.5, y, dir, 'head ' + cls, 10);
+    // drop line to the axis from the end
+    if (pr >= 1) s += `<line class="drop" x1="${xc}" x2="${xc}" y1="${y + 6}" y2="${axisY - 3}"/>`;
+    if (pr >= 0.98) {
+      let main = st.walk.label || SG(st.to - st.from);
+      if (collapsed) main += ' (' + N(n) + ' copies)';
+      const sub = st.walk.sub || '';
+      const w = tw(main, 13) + (sub ? tw(sub, 12) + 10 : 0);
+      const apex = collapsed ? 14 : (n > 1 ? Math.min(compact ? 10 : 14, hopPx * 0.45) : 0);
+      const anchor = 'middle';
+      const yy = y - apex - 8;
+      const x = clamp((x0 + xc) / 2, w / 2 + 6, W - w / 2 - 6);
+      s += `<text class="lbl lbl-${cls}" x="${x.toFixed(1)}" y="${yy.toFixed(1)}" text-anchor="${anchor}">${esc(main)}` +
+        (sub ? `<tspan class="lbl-sub" dx="10">${esc(sub)}</tspan>` : '') + '</text>';
+    }
+    return s;
+  }
+
+  /* --- a ghost (reasoning trip) --- */
+  function drawGhost(g, sc, y, t, tl, current, W, limit, compact) {
+    const X = sc.x;
+    const op = current ? 0.95 : 0.42;
+    let s = `<g opacity="${op}">`;
+    const x0 = X(g.from);
+    if (g.dot || g.from === g.to) {
+      const r = current ? seg(t, tl.ghost) : 1;
+      s += `<circle class="gdot" cx="${x0}" cy="${y}" r="4.5" opacity="${r}"/>`;
+      if (r > 0.5) s += label(x0 + 12, y + 4, g.label, 'lbl-sm lbl-ghost', 'start', W);
+      return s + '</g>';
+    }
+    let rotP = null, drawP = 1;
+    if (current) {
+      if (g.rotateFrom != null && g.replaces != null) rotP = seg(t, tl.grot);
+      else if (g.rotateFrom != null) { drawP = seg(t, tl.ghost); rotP = seg(t, tl.grot); }
+      else drawP = seg(t, tl.ghost);
+    }
+    const preTo = g.rotateFrom != null ? g.rotateFrom : g.to;
+    if (rotP != null && rotP < 1) {
+      if (drawP < 1 || rotP <= 0) {
+        // draw-on of the pre-rotation trip
+        const xe = X(g.from + (preTo - g.from) * drawP), d0 = preTo > g.from ? 1 : -1;
+        const cls = d0 > 0 ? 'pos' : 'neg';
+        if (g.hops > 1) s += `<path class="ghost ${cls}" d="${hopPath(X, g.from, (preTo - g.from) / g.hops, g.hops, y, drawP * g.hops, 12)}"/>`;
+        else s += `<line class="ghost ${cls}" x1="${x0}" x2="${xe}" y1="${y}" y2="${y}"/>`;
+        if (drawP > 0.05) s += arrowHead(xe, y, d0, 'ghead ' + cls, 9);
+        return s + '</g>';
+      }
+      const L = Math.abs(X(preTo) - x0), d0 = preTo > g.from ? 1 : -1;
+      const th = Math.PI * ease(rotP), ry = Math.max(12, Math.min(L * 0.6, 40, y - (limit || 0) + 6));
+      const ex = x0 + L * Math.cos(th) * d0, ey = y - ry * Math.sin(th);
+      const cls = Math.cos(th) * d0 >= 0 ? 'pos' : 'neg';
+      // swing trail
+      let trail = '';
+      const steps = 24;
+      for (let i = 0; i <= steps; i++) {
+        const a = th * i / steps;
+        trail += (i ? 'L' : 'M') + (x0 + L * Math.cos(a) * d0).toFixed(1) + ',' + (y - ry * Math.sin(a)).toFixed(1) + ' ';
+      }
+      s += `<path class="swing" d="${trail}"/>`;
+      s += `<line class="ghost ${cls}" x1="${x0}" x2="${ex.toFixed(1)}" y1="${y}" y2="${ey.toFixed(1)}"/>`;
+      const ang = Math.atan2(ey - y, ex - x0);
+      const hx = ex, hy = ey, sz = 9;
+      const bx = hx - Math.cos(ang) * sz, by = hy - Math.sin(ang) * sz;
+      const px = -Math.sin(ang) * sz * 0.55, py = Math.cos(ang) * sz * 0.55;
+      s += `<path class="ghead ${cls}" d="M${hx},${hy} L${bx + px},${by + py} L${bx - px},${by - py} Z"/>`;
+      s += label(x0 + d0 * L * 0.5, y - ry - 6, 'flip', 'lbl-sm lbl-act', 'middle', W);
+      return s + '</g>';
+    }
+    const d = g.to > g.from ? 1 : -1, cls = d > 0 ? 'pos' : 'neg';
+    const xe = X(g.from + (g.to - g.from) * drawP);
+    if (g.hops > 1 && Math.abs(X(g.to) - x0) / g.hops >= 10 && g.hops <= 24) {
+      s += `<path class="ghost ${cls}" d="${hopPath(X, g.from, (g.to - g.from) / g.hops, g.hops, y, drawP * g.hops, 12)}"/>`;
+    } else {
+      s += `<line class="ghost ${cls}" x1="${x0}" x2="${xe}" y1="${y}" y2="${y}"/>`;
+    }
+    s += `<line class="ghost-tail ${cls}" x1="${x0}" x2="${x0}" y1="${y - 5}" y2="${y + 5}"/>`;
+    if (drawP > 0.05) s += arrowHead(xe, y, d, 'ghead ' + cls, 9);
+    if (drawP >= 0.9 && g.label && (current || !compact)) {
+      const hopW = Math.abs(X(g.to) - x0) / Math.max(1, g.hops);
+      const apex = g.hops > 1 && hopW >= 10 && g.hops <= 24 ? Math.min(12, hopW * 0.45) : 0;
+      s += label((x0 + xe) / 2, y - apex - 7, g.label, 'lbl-sm lbl-ghost', 'middle', W);
+    }
+    return s + '</g>';
+  }
+
+  /* --- token --- */
+  const TOKEN = 'M-15,-10 L5,-10 L16,0 L5,10 L-15,10 L-9,0 Z';
+  function tokenSvg(x, y, angle, op) {
+    const a = ((angle % 360) + 360) % 360;
+    const facingRight = a < 90 || a > 270;
+    return `<g class="token" transform="translate(${x.toFixed(1)},${y.toFixed(1)}) rotate(${angle.toFixed(1)})" opacity="${op == null ? 1 : op}">` +
+      `<ellipse class="token-shadow" cx="0" cy="13" rx="14" ry="3" transform="rotate(${(-angle).toFixed(1)})"/>` +
+      `<path class="token-body ${facingRight ? 'tk-pos' : 'tk-neg'}" d="${TOKEN}"/><circle class="token-eye" cx="4" cy="0" r="2"/></g>`;
+  }
+
+  function tokenState(st, t) {
+    const tl = timeline(st);
+    let pos = st.from, lift = 0, hopK = 0;
+    const mv = seg(t, tl.move);
+    if (st.to !== st.from) {
+      const n = st.hops || 1;
+      if (n > 1 && n <= 24) {
+        const u = mv * n, k = Math.min(n - 1, Math.floor(u)), f = mv >= 1 ? 1 : u - k;
+        const hop = (st.to - st.from) / n;
+        pos = st.from + hop * (k + ease(f));
+        lift = mv >= 1 ? 0 : Math.sin(Math.PI * f) * 9;
+        hopK = mv >= 1 ? n : k + (f > 0.5 ? 1 : 0);
+      } else {
+        pos = st.from + (st.to - st.from) * ease(mv);
+        hopK = Math.round(mv * n);
+      }
+    }
+    const faceAng = st.face === 'R' ? 0 : 180;
+    let angle = faceAng, r = 0;
+    if (st.flip) {
+      r = seg(t, tl.rot);
+      const end = st.face === 'R' ? -180 : 360;
+      angle = faceAng + (end - faceAng) * ease(r);
+    }
+    const cf = st.newTrip ? seg(t, tl.cf) : 1;
+    return { pos, lift, angle, r, cf, mv, hopK, tl };
+  }
+
+  function drawTokenAndCard(st, t, sc, G, W, o) {
+    const X = sc.x, y = G.axisY;
+    const ts = tokenState(st, t);
+    const x = X(ts.pos);
+    let s = '';
+    // flip arc
+    if (st.flip && ts.r > 0 && !o.held) {
+      // the turn, drawn over the top: right-facing tokens sweep anticlockwise, left-facing clockwise
+      const r = 24, ry = 17, yA = y - 13;
+      const span = Math.PI * Math.max(0.04, ts.r);
+      const fromRight = st.face === 'R';
+      let d = '';
+      for (let i = 0; i <= 18; i++) {
+        const a = fromRight ? span * i / 18 : Math.PI - span * i / 18;
+        d += (i ? 'L' : 'M') + (x + r * Math.cos(a)).toFixed(1) + ',' + (yA - ry * Math.sin(a)).toFixed(1) + ' ';
+      }
+      s += `<path class="flip-arc" d="${d}"/>`;
+      const aE = fromRight ? span : Math.PI - span;
+      const ex = x + r * Math.cos(aE), ey = yA - ry * Math.sin(aE);
+      let tx = fromRight ? -r * Math.sin(aE) : r * Math.sin(aE), ty = fromRight ? -ry * Math.cos(aE) : ry * Math.cos(aE);
+      const L = Math.hypot(tx, ty) || 1; tx /= L; ty /= L;
+      const sz = 7, bx = ex - tx * sz, by = ey - ty * sz, px = -ty * sz * 0.55, py = tx * sz * 0.55;
+      s += `<path class="flip-arc-head" d="M${ex.toFixed(1)},${ey.toFixed(1)} L${(bx + px).toFixed(1)},${(by + py).toFixed(1)} L${(bx - px).toFixed(1)},${(by - py).toFixed(1)} Z"/>`;
+    }
+    // zero trip pulse
+    if (st.zeroTrip) {
+      const p = seg(t, ts.tl.move);
+      if (reduced) s += `<circle class="pulse" cx="${x}" cy="${y}" r="20" opacity="0.5"/>`;
+      else if (p > 0 && p < 1) s += `<circle class="pulse" cx="${x}" cy="${y}" r="${14 + 14 * p}" opacity="${(1 - p) * 0.9}"/>`;
+      if (p >= 1 || reduced) s += label(x, y + (G.compact ? 40 : 48), 'no movement', 'lbl-sm lbl-quiet', 'middle', W);
+    }
+    // token (crossfade on a fresh trip)
+    if (ts.cf < 1) {
+      s += tokenSvg(x, y - ts.lift, st.face === 'R' ? 180 : 0, 1 - ts.cf);
+      s += tokenSvg(x, y - ts.lift, ts.angle, ts.cf);
+    } else s += tokenSvg(x, y - ts.lift, ts.angle, 1);
+    // trip card
+    if (st.trip && !o.noCard) s += drawCard(st, ts, x, y - (G.compact ? 44 : 52), W);
+    return s;
+  }
+
+  function drawCard(st, ts, x, y, W) {
+    const tr = st.trip;
+    const head = tr.on === 'unknown' ? tr.label : tr.label;
+    const chips = tr.flips.map(c => '↻ ' + CAUSE_TEXT[c]);
+    let counter = '';
+    if (st.to !== st.from && st.hops > 1) counter = 'copy ' + Math.max(0, Math.min(st.hops, ts.hopK)) + ' of ' + N(st.hops);
+    const headW = tw(head, 12.5) + 16;
+    const chipW = chips.map(c => tw(c, 11.5) + 14);
+    const cntW = counter ? tw(counter, 11.5) + 12 : 0;
+    const total = headW + chipW.reduce((a, b) => a + b + 4, 0) + cntW + 6;
+    let left = clamp(x - total / 2, 6, W - total - 6);
+    let s = `<g class="card">`;
+    s += `<rect class="card-bg" x="${left}" y="${y - 12}" width="${total}" height="24" rx="12"/>`;
+    s += `<text class="card-head" x="${left + 10}" y="${y + 4.5}">${esc(head)}</text>`;
+    let cx = left + headW;
+    chips.forEach((c, i) => {
+      const isNew = st.flip && i === chips.length - 1;
+      const op = isNew ? Math.max(0.15, ts.r) : 1;
+      s += `<g opacity="${op.toFixed(2)}"><rect class="chip${isNew && ts.r < 1 ? ' chip-live' : ''}" x="${cx}" y="${y - 9}" width="${chipW[i]}" height="18" rx="9"/>` +
+        `<text class="chip-t" x="${cx + 7}" y="${y + 4}">${esc(c)}</text></g>`;
+      cx += chipW[i] + 4;
+    });
+    if (counter) s += `<text class="card-count" x="${cx + 4}" y="${y + 4.5}">${esc(counter)}</text>`;
+    return s + '</g>';
+  }
+
+  /* --- result markers --- */
+  function drawResult(m, idx, t, G, W, o) {
+    const X = m.scale.x, y = G.axisY, s0 = m.expr.s;
+    let s = '';
+    if (idx < m.resIdx) return s;
+    const p = idx > m.resIdx ? 1 : seg(t, [0, 0.4]);
+    if (m.res.kind === 'value') {
+      const v = m.res.value, land = s0 + v, yA = y + (G.compact ? 42 : 56);
+      if (v !== 0) {
+        const d = v > 0 ? 1 : -1, xa = X(s0), xb = X(s0 + v * p);
+        s += `<line class="answer" x1="${xa}" x2="${xb}" y1="${yA}" y2="${yA}"/><line class="answer-tail" x1="${xa}" x2="${xa}" y1="${yA - 6}" y2="${yA + 6}"/>`;
+        s += arrowHead(xb + d * 2, yA, d, 'answer-head', 12);
+        if (p >= 0.95) {
+          const txt = '= ' + SG(v) + (s0 !== 0 ? '   (the answer is the trip)' : '');
+          s += label(xb + d * 16, yA + 5, txt, 'lbl lbl-answer', d > 0 ? 'start' : 'end', W);
+        }
+      } else if (p >= 0.95) {
+        s += `<circle class="answer-ring" cx="${X(s0)}" cy="${yA}" r="5"/>` + label(X(s0) + 12, yA + 5, '= 0', 'lbl lbl-answer', 'start', W);
+      }
+      // landing pill
+      if (p >= 0.5) {
+        const xl = X(land), txt = N(land), w = tw(txt, 13) + 16, yl = y + (G.compact ? 17 : 22);
+        s += `<rect class="land-pill" x="${xl - w / 2}" y="${yl - 1}" width="${w}" height="20" rx="10"/><text class="land-t" x="${xl}" y="${yl + 13.5}" text-anchor="middle">${esc(txt)}</text>`;
+      }
+    } else if (m.res.kind === 'undefined' && p >= 0.5) {
+      if (m.res.reason === 'no-answer') {
+        const xt = X(s0 + m.expr.a);
+        s += `<circle class="noland" cx="${xt}" cy="${y}" r="11"/><line class="noland" x1="${xt - 8}" x2="${xt + 8}" y1="${y + 8}" y2="${y - 8}"/>`;
+        s += label(xt, y - 24, 'no number lands here', 'lbl-sm lbl-act', 'middle', W);
+      } else {
+        const xt = X(s0);
+        s += `<circle class="noland" cx="${xt}" cy="${y}" r="11"/>` + label(xt, y - 24, 'every number lands here', 'lbl-sm lbl-act', 'middle', W);
+      }
+    }
+    // prediction
+    if (o.prediction && p >= 0.95) {
+      const who = o.predBy === 'someone' ? 'their answer' : 'your prediction';
+      if (o.prediction.kind === 'value') {
+        const want = s0 + o.prediction.value;
+        let xp = X(want), off = '';
+        if (xp < 14) { xp = 14; off = ' (' + N(o.prediction.value) + ', off the line)'; }
+        if (xp > W - 14) { xp = W - 14; off = ' (' + N(o.prediction.value) + ', off the line)'; }
+        s += `<circle class="pred-ring" cx="${xp}" cy="${y}" r="13"/>`;
+        s += label(xp, y - 25, who + off, 'lbl-sm lbl-pred', 'middle', W);
+      } else {
+        s += label(W - 16, G.top + (G.compact ? 36 : 24), who + ': no answer', 'lbl-sm lbl-pred', 'end', W);
+      }
+    }
+    return s;
+  }
+
+  /* --- whole panel for one step array --- */
+  function drawPanel(m, idx, t, G, W, o) {
+    const steps = m.steps, sc = m.scale, lanes = m.lanes;
+    let s = '';
+    const hide = [];
+    if (idx >= m.resIdx && m.res.kind === 'value') hide.push(sc.x(m.expr.s + m.res.value));
+    s += drawBase(sc, G, W, { hideLabelsNear: hide });
+    let lanesSvg = '';
+    for (let k = 0; k <= idx && k < steps.length; k++) {
+      const st = steps[k];
+      const tl = timeline(st);
+      st.ghosts.forEach(g => {
+        const rep = lanes.replacedAt[g.id];
+        if (rep != null && rep <= idx) return;
+        if (g.transient && k < idx) return;
+        lanesSvg += drawGhost(g, sc, laneY(G, g._lane), k === idx ? t : 1, tl, k === idx, W, G.limit, G.compact);
+      });
+      if (st.walk) {
+        const pr = k < idx ? 1 : seg(t, tl.move);
+        if (pr > 0) lanesSvg += drawWalk(st, sc, laneY(G, lanes.walkLane[k]), pr, W, G.compact, G.axisY);
+      }
+    }
+    s += lanesSvg;
+    s += drawResult(m, idx, t, G, W, o);
+    const st = steps[Math.max(0, Math.min(idx, steps.length - 1))];
+    s += drawTokenAndCard(st, idx < 0 ? 1 : t, sc, G, W, o);
+    if (o.badge) s += label(sc.x(st.to), G.axisY - (G.compact ? 74 : 84), o.badge, 'lbl-sm lbl-badge', 'middle', W);
+    return s;
+  }
+
+  const DEFS = `<defs><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" class="hatch-line"/></pattern></defs>`;
+
+  function explore(svg, m, idx, t, o) {
+    const W = o.W, H = o.H;
+    const G = geom(0, H, m.lanes.count, H < 330);
+    svg.innerHTML = DEFS + drawPanel(m, idx, t, G, W, o);
+  }
+
+  function emptyLine(svg, o) {
+    const W = o.W, H = o.H;
+    const sc = computeScale([-10, 10], W, 28, 28);
+    const G = geom(0, H, 1, H < 330);
+    svg.innerHTML = DEFS + drawBase(sc, G, W, {}) + tokenSvg(sc.x(0), G.axisY, 0, 0.35);
+  }
+
+  function compare(svg, ms, sideState, o) {
+    const W = o.W, H = o.H, h = H / 2;
+    let s = DEFS;
+    [0, 1].forEach(i => {
+      const m = ms[i], st = sideState[i];
+      const G = geom(i * h, h, m.lanes.count, true);
+      s += `<g>${drawPanel(m, st.idx, st.t, G, W, { prediction: null, badge: st.badge, held: st.held })}</g>`;
+    });
+    s += `<line class="divider" x1="0" x2="${W}" y1="${h}" y2="${h}"/>`;
+    svg.innerHTML = s;
+  }
+
+  /* --- Pattern ladder --- */
+  function pattern(svg, pm, o) {
+    const W = o.W, H = o.H, n = pm.rows.length;
+    const top = 14, rowH = Math.min(70, (H - 34) / n);
+    const sc = pm.scale, X = sc.x;
+    let s = DEFS;
+    const x0 = X(0);
+    s += `<rect class="region-neg" x="${sc.padL}" y="0" width="${Math.max(0, x0 - sc.padL)}" height="${H}"/><rect class="region-hatch" x="${sc.padL}" y="0" width="${Math.max(0, x0 - sc.padL)}" height="${H}" fill="url(#hatch)"/>`;
+    s += `<rect class="region-pos" x="${x0}" y="0" width="${W - x0}" height="${H}"/>`;
+    s += `<line class="zero-guide" x1="${x0}" x2="${x0}" y1="4" y2="${H - 4}"/>`;
+    const dots = [];
+    pm.rows.forEach((r, i) => {
+      const yc = top + rowH * i + rowH * 0.62;
+      r._y = yc;
+      const revealed = i < pm.revealed;
+      const animating = pm.anim && pm.anim.row === i;
+      const hidden = i >= pm.familiar && !revealed && !animating;
+      const active = animating || (pm.focusRow === i);
+      s += `<g class="prow${active ? ' prow-active' : ''}">`;
+      s += `<text class="prow-expr${hidden ? ' prow-hidden' : ''}" x="${sc.padL - 22}" y="${yc + 6}" text-anchor="end">${esc(Fmt.expr(r.expr))}${revealed || animating ? '' : ' = ?'}</text>`;
+      s += `<line class="paxis" x1="${sc.padL - 6}" x2="${W - 16}" y1="${yc}" y2="${yc}"/>`;
+      let ticks = '';
+      const first = Math.ceil(sc.lo / sc.tick) * sc.tick;
+      for (let v = first; v <= sc.hi; v += sc.tick) { const x = X(v); ticks += `M${x.toFixed(1)},${yc - (v === 0 ? 7 : 3)} V${yc + (v === 0 ? 7 : 3)} `; }
+      s += `<path class="ticks" d="${ticks}"/>`;
+      if (i === n - 1) {
+        for (let v = first; v <= sc.hi; v += sc.label) s += `<text class="${v === 0 ? 'tick-zero' : 'tick-lbl'} psmall" x="${X(v)}" y="${yc + 20}" text-anchor="middle">${N(v)}</text>`;
+      }
+      if (hidden) {
+        s += `<rect class="ptarget" x="${sc.padL - 6}" y="${yc - rowH * 0.42}" width="${W - sc.padL - 10}" height="${rowH * 0.84}" rx="8" data-row="${i}"/>`;
+        const pv = pm.preds[i];
+        if (pv != null) s += `<circle class="pred-ring" cx="${X(pv)}" cy="${yc}" r="9"/>` + label(X(pv), yc - 14, 'your prediction: ' + N(pv), 'lbl-sm lbl-pred', 'middle', W);
+        else s += `<text class="lbl-sm lbl-quiet" x="${W - 20}" y="${yc - 9}" text-anchor="end">tap where it lands</text>`;
+      }
+      if (revealed || animating) {
+        const p = animating ? (reduced ? 1 : pm.anim.t) : 1;
+        const pts = r.path; // places visited: start, after each trip
+        const nSeg = pts.length - 1;
+        const draw = (a, b, f, yy) => {
+          if (f <= 0 || a === b) return '';
+          const d = b > a ? 1 : -1, cls = d > 0 ? 'pos' : 'neg';
+          const xe = X(a + (b - a) * f);
+          return `<line class="trip thin ${cls}" x1="${X(a)}" x2="${xe}" y1="${yy}" y2="${yy}"/>` + arrowHead(xe, yy, d, 'head ' + cls, 7);
+        };
+        let cur = pts[0];
+        for (let k = 0; k < nSeg; k++) {
+          const f = clamp(p * nSeg - k, 0, 1);
+          s += draw(pts[k], pts[k + 1], f, yc - 12 - 9 * k);
+          if (f > 0) cur = pts[k] + (pts[k + 1] - pts[k]) * ease(f);
+        }
+        if (p >= 1) {
+          const xl = X(pts[nSeg]);
+          s += `<circle class="pdot" cx="${xl}" cy="${yc}" r="6"/>` + `<text class="pdot-t" x="${xl + 10}" y="${yc + 18}">${N(r.value)}</text>`;
+          dots.push([xl, yc]);
+          if (pm.preds[i] != null && pm.preds[i] !== r.value) s += `<circle class="pred-ring" cx="${X(pm.preds[i])}" cy="${yc}" r="9"/>`;
+        } else {
+          s += `<circle class="pdot moving" cx="${X(cur)}" cy="${yc}" r="5"/>`;
+        }
+      }
+      s += '</g>';
+    });
+    if (pm.guide && dots.length > 1) {
+      s += `<path class="guide" d="M${dots.map(d => d[0].toFixed(1) + ',' + d[1].toFixed(1)).join(' L')}"/>`;
+    }
+    if (sc.tick > 1) s += `<text class="scale-note" x="16" y="${H - 8}">Each tick = ${N(sc.tick)} units</text>`;
+    svg.innerHTML = s;
+    return { rowH, top };
+  }
+
+  return { timeline, computeScale, positionsOf, laneLayout, explore, compare, pattern, emptyLine, setReduced, seg };
+})();
+
+/* ===================================================================
+   APP: state machine, playback engine, editor, modes, keyboard.
+   =================================================================== */
+(function () {
+  'use strict';
+  const { Fmt, validate, evaluate, build, revealIndex, resultIndex, diagnose, align,
+    STAGES, PART_NAMES, EXIT_TEST, COMPARE_PRESETS, LADDERS, BITES, selfCheck, E, CAUSE_TEXT } = Core;
+  const N = Fmt.num, SG = Fmt.signed;
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+  const el = {
+    app: $('app'), top: $('top'), editor: $('editor'), stage: $('stage'), svg: $('line'), ladder: $('ladder'), result: $('result'),
+    signS: $('signS'), sizeS: $('sizeS'), signA: $('signA'), sizeA: $('sizeA'), signB: $('signB'), sizeB: $('sizeB'),
+    opS: $('opS'), opA: $('opA'), opB: $('opB'), ops: $('ops'), editMsg: $('editMsg'), startGroup: $('startGroup'),
+    exprGroup: $('exprGroup'), cmpPick: $('cmpPick'), ladderPick: $('ladderPick'),
+    viewSeg: $('viewSeg'), lessonBtn: $('lessonBtn'), predictBtn: $('predictBtn'), themeBtn: $('themeBtn'),
+    keysBtn: $('keysBtn'), bitesBtn: $('bitesBtn'), drawer: $('drawer'), drawerClose: $('drawerClose'), bites: $('bites'),
+    keys: $('keys'), keysClose: $('keysClose'), diag: $('diag'), banner: $('banner'),
+    cmpLabel: [$('cmpLabel0'), $('cmpLabel1')], cmpPresetsWrap: $('cmpPresetsWrap'), cmpPresets: $('cmpPresets'),
+    strip: $('strip'), stripMain: $('stripMain'), stripActions: $('stripActions'), says: $('saysCard'), whyBtn: $('whyBtn'), lessonRow: $('lessonRow'),
+    stagePrev: $('stagePrev'), stageNext: $('stageNext'), stageTitle: $('stageTitle'), parts: $('parts'), partNext: $('partNext'),
+    restartBtn: $('restartBtn'), backBtn: $('backBtn'), playBtn: $('playBtn'), fwdBtn: $('fwdBtn'), resetBtn: $('resetBtn'),
+    scrub: $('scrub'), speed: $('speed'), speedOut: $('speedOut'),
+  };
+
+  const sideOf = (n) => ({ sign: n < 0 ? -1 : 1, size: String(Math.abs(n)) });
+  const toInputs = (e) => ({ a: sideOf(e.a), op: e.op, b: sideOf(e.b), s: sideOf(e.s || 0) });
+  const mq = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
+
+  /* ---------------- state ---------------- */
+  const S = {
+    view: 'explore', lesson: false, stage: 0, part: 0, lessonExpr: null,
+    predictOn: false, theme: null, reduced: !!mq.matches, speedU: 0.5236,
+    inputs: toInputs(E(8, '-', -7)), ex: null, errors: [],
+    idx: 0, t: 1, playing: false, single: false,
+    revealed: false, hold: false, prediction: null, predBy: 'you', diag: null, diagClosed: false,
+    whyOpen: false, holdDir: 0,
+    cmp: { inputs: [toInputs(E(8, '+', -7)), toInputs(E(8, '-', -7))], sel: 1, models: null, frames: null, errors: [], preset: 0 },
+    pat: null, patIdx: 0,
+    W: 800, H: 500, gen: 0,
+  };
+  Render.setReduced(S.reduced);
+
+  const stepSeconds = () => 12 * Math.pow(0.05, S.speedU);
+
+  /* ---------------- models ---------------- */
+  function makeModel(expr, cutChecks) {
+    const res = evaluate(expr);
+    let steps = build(expr);
+    if (cutChecks) { const k = steps.findIndex(s => s.phase === 'check'); if (k > 0) steps = steps.slice(0, k); }
+    return { expr, res, steps, lanes: Render.laneLayout(steps), resIdx: resultIndex(steps), revIdx: revealIndex(steps) };
+  }
+  function rescale() {
+    const W = S.W;
+    if (S.view === 'explore' && S.ex) {
+      const m = S.ex;
+      m.scale = Render.computeScale(Render.positionsOf(m.steps, m.expr.s, m.res.kind === 'value' ? [m.expr.s + m.res.value] : []), W, 28, 28);
+    } else if (S.view === 'compare' && S.cmp.models) {
+      const pts = [];
+      S.cmp.models.forEach(m => pts.push(...Render.positionsOf(m.steps, m.expr.s, m.res.kind === 'value' ? [m.expr.s + m.res.value] : [])));
+      const sc = Render.computeScale(pts, W, 28, 28);
+      S.cmp.models.forEach(m => { m.scale = sc; });
+    } else if (S.view === 'pattern' && S.pat) {
+      const pts = [];
+      S.pat.rows.forEach(r => pts.push(...r.path));
+      S.pat.scale = Render.computeScale(pts, W, Math.min(250, Math.max(W < 600 ? 128 : 190, W * 0.2)), W < 600 ? 14 : 30);
+    }
+  }
+
+  /* ---------------- explore ---------------- */
+  function applyExplore(opts) {
+    opts = opts || {};
+    stopAll();
+    S.gen++;
+    const v = validate(S.inputs);
+    if (!v.ok) { S.errors = v.errors; S.ex = null; }
+    else { S.errors = []; S.ex = makeModel(v.expr, false); }
+    S.idx = 0; S.t = 1; S.hold = false; S.revealed = false; S.whyOpen = false;
+    if (!opts.keepPrediction) { S.prediction = null; S.predBy = 'you'; }
+    S.diag = null; S.diagClosed = false;
+    rescale();
+    updateEditor(); drawFrame(); updateChrome(true);
+  }
+
+  /* ---------------- compare ---------------- */
+  function applyCompare() {
+    stopAll();
+    S.gen++;
+    const vs = S.cmp.inputs.map(i => validate(Object.assign({}, i, { s: sideOf(0) })));
+    S.cmp.errors = [];
+    vs.forEach((v, i) => { if (!v.ok) v.errors.forEach(e => S.cmp.errors.push(Object.assign({ side: i }, e))); });
+    if (S.cmp.errors.length) { S.cmp.models = null; S.cmp.frames = null; }
+    else {
+      S.cmp.models = vs.map(v => makeModel(v.expr, true));
+      S.cmp.frames = align(S.cmp.models[0].steps, S.cmp.models[1].steps);
+    }
+    S.idx = 0; S.t = 1; S.whyOpen = false;
+    rescale();
+    updateEditor(); drawFrame(); updateChrome(true);
+  }
+  function sideStates() {
+    const fr = S.cmp.frames, f = fr[S.idx];
+    return [0, 1].map(i => {
+      const key = i ? 'b' : 'a', okey = i ? 'a' : 'b';
+      if (f[key] != null) return { idx: f[key], t: S.t };
+      let j = S.idx - 1; while (j >= 0 && fr[j][key] == null) j--;
+      const other = f[okey] != null ? S.cmp.models[1 - i].steps[f[okey]] : null;
+      const badge = other && other.flip ? 'no flip here' : null;
+      return { idx: j >= 0 ? fr[j][key] : 0, t: 1, badge, held: true };
+    });
+  }
+  function diffParts(e1, e2) {
+    const ch = [];
+    if (e1.op !== e2.op) ch.push({ k: 'op', d: 'the operation, ' + Fmt.sym[e1.op] + ' to ' + Fmt.sym[e2.op] });
+    if (Math.sign(e1.a) !== Math.sign(e2.a) && Math.abs(e1.a) === Math.abs(e2.a)) ch.push({ k: 'a', d: 'the sign of the first number' });
+    else if (e1.a !== e2.a) ch.push({ k: 'a', d: 'the first number' });
+    if (Math.sign(e1.b) !== Math.sign(e2.b) && Math.abs(e1.b) === Math.abs(e2.b)) ch.push({ k: 'b', d: 'the sign of the second number' });
+    else if (e1.b !== e2.b) ch.push({ k: 'b', d: 'the second number' });
+    const swapped = e1.op === e2.op && e1.a === e2.b && e1.b === e2.a && e1.a !== e1.b;
+    return { ch, swapped };
+  }
+
+  /* ---------------- pattern ---------------- */
+  function buildPattern(i) {
+    stopAll();
+    const L = LADDERS[i];
+    const rows = L.rows.map(e => {
+      const res = evaluate(e);
+      const path = e.op === '*' || e.op === '/' ? [e.s, e.s + res.value] : [e.s, e.s + e.a, e.s + res.value];
+      return { expr: e, value: res.value, path };
+    });
+    S.patIdx = i;
+    S.pat = { L, rows, familiar: L.familiar, revealed: 0, preds: {}, stage: 'observe', anim: null, auto: false, wait: 0, guide: false, focusRow: 0, queue: [], holdDir: 0 };
+    rescale();
+    updateEditor(); drawFrame(); updateChrome(true);
+  }
+  function patRevealNext() {
+    const P = S.pat; if (!P || P.anim) return false;
+    if (P.stage === 'observe' && P.revealed < P.familiar) { P.anim = { row: P.revealed, t: 0 }; P.focusRow = P.revealed; startLoop(); return true; }
+    return false;
+  }
+  function patTick(dt) {
+    const P = S.pat; if (!P) return;
+    const dur = Math.max(0.5, stepSeconds() * 0.7);
+    if (P.anim) {
+      P.anim.t = S.reduced ? 1 : Math.min(1, P.anim.t + dt / dur);
+      if (P.anim.t >= 1) {
+        P.revealed = Math.max(P.revealed, P.anim.row + 1);
+        P.anim = null; P.wait = stepSeconds() * 0.4;
+        if (P.stage === 'observe' && P.revealed >= P.familiar) { P.stage = 'predict'; P.auto = false; P.focusRow = P.familiar; }
+        if (P.stage === 'revealing') {
+          if (P.revealed >= P.rows.length) { P.stage = 'explain'; P.focusRow = -1; }
+          else { P.anim = { row: P.revealed, t: 0 }; P.focusRow = P.revealed; }
+        }
+        updateChrome(true);
+      }
+    } else if (P.auto) {
+      P.wait -= dt;
+      if (P.wait <= 0) { if (!patRevealNext()) P.auto = false; updateChrome(); }
+    }
+  }
+  function patHiddenRows() { const P = S.pat; const out = []; for (let i = P.familiar; i < P.rows.length; i++) out.push(i); return out; }
+  function patRevealHidden() {
+    const P = S.pat; P.stage = 'revealing'; P.anim = { row: P.revealed, t: 0 }; P.focusRow = P.revealed; startLoop(); updateChrome(true);
+  }
+
+  /* ---------------- playback engine ---------------- */
+  function tlLen() {
+    if (S.view === 'explore') return S.ex ? S.ex.steps.length : 0;
+    if (S.view === 'compare') return S.cmp.frames ? S.cmp.frames.length : 0;
+    return S.pat ? S.pat.rows.length : 0;
+  }
+  function motionEnd(i) {
+    if (S.view === 'explore') return Render.timeline(S.ex.steps[i]).end;
+    const f = S.cmp.frames[i]; let m = 0.4;
+    if (f.a != null) m = Math.max(m, Render.timeline(S.cmp.models[0].steps[f.a]).end);
+    if (f.b != null) m = Math.max(m, Render.timeline(S.cmp.models[1].steps[f.b]).end);
+    return m;
+  }
+  const holdActive = () => S.view === 'explore' && S.ex && (S.lesson || S.predictOn) && !S.revealed;
+  const needsHold = (i) => holdActive() && i === S.ex.revIdx;
+
+  let raf = 0, last = 0;
+  function startLoop() { if (!raf) { last = performance.now(); raf = requestAnimationFrame(loop); } }
+  function stopAll() { S.playing = false; S.single = false; if (S.pat) { S.pat.auto = false; } }
+  function loop(now) {
+    raf = 0;
+    try {
+      const dt = Math.min(0.1, Math.max(0, (now - last) / 1000)); last = now;
+      if (S.view === 'pattern') {
+        patTick(dt); drawFrame();
+        if (S.pat && (S.pat.anim || S.pat.auto)) raf = requestAnimationFrame(loop);
+        else updateChrome();
+        return;
+      }
+      if (!S.playing && !S.single) return;
+      if (!tlLen()) { stopAll(); updateChrome(); return; }
+      S.t += dt / stepSeconds();
+      let changed = false;
+      if (S.single && S.t >= motionEnd(S.idx)) { S.t = 1; S.single = false; }
+      if (S.t >= 1) {
+        S.t = 1;
+        if (S.playing) {
+          if (S.idx < tlLen() - 1) {
+            if (needsHold(S.idx + 1)) { S.playing = false; enterHold(); }
+            else { S.idx++; S.t = 0; changed = true; }
+          } else S.playing = false;
+        }
+      }
+      drawFrame();
+      if (changed) onStepChange();
+      else if (!S.playing && !S.single) updateChrome();
+      if (S.playing || S.single) raf = requestAnimationFrame(loop);
+    } catch (err) {
+      stopAll();
+      showBanner('Something went wrong while drawing this step. Press Reset to continue.');
+    }
+  }
+
+  function play() {
+    if (S.view === 'pattern') {
+      const P = S.pat; if (!P) return;
+      if (P.stage === 'observe') { P.auto = true; if (!patRevealNext()) P.auto = false; startLoop(); updateChrome(); }
+      return;
+    }
+    if (!tlLen() || S.hold) return;
+    if (S.idx >= tlLen() - 1 && S.t >= 1) { S.idx = 0; S.t = 0; onStepChange(); }
+    S.playing = true; S.single = false; startLoop(); updateChrome();
+  }
+  function pause() { stopAll(); updateChrome(); }
+  function togglePlay() { (S.playing || (S.pat && S.pat.auto)) ? pause() : play(); }
+  let lastStepKey = 0;
+  function stepFwd() {
+    if (S.view === 'pattern') { const P = S.pat; if (P) { P.auto = false; patRevealNext(); updateChrome(); } return; }
+    if (!tlLen() || S.hold) return;
+    const wasMoving = S.playing || S.single;
+    S.playing = false;
+    if (wasMoving && S.t < 1) { S.t = 1; S.single = false; drawFrame(); updateChrome(); return; }
+    if (S.idx >= tlLen() - 1) { S.t = 1; drawFrame(); updateChrome(); return; }
+    if (needsHold(S.idx + 1)) { enterHold(); return; }
+    S.idx++; S.t = 0; S.single = true; onStepChange(); startLoop();
+  }
+  function stepBack() {
+    if (S.view === 'pattern') {
+      const P = S.pat; if (!P) return;
+      P.auto = false; P.anim = null;
+      if (P.stage === 'observe' && P.revealed > 0) { P.revealed--; P.focusRow = P.revealed; }
+      drawFrame(); updateChrome(); return;
+    }
+    if (!tlLen()) return;
+    stopAll(); S.hold = false;
+    S.idx = Math.max(0, S.idx - (S.t >= 1 ? 1 : 0)); S.t = 1;
+    if (S.idx === 0) S.t = 1;
+    drawFrame(); onStepChange();
+  }
+  function jumpTo(k) {
+    if (!tlLen()) return;
+    stopAll(); S.hold = false;
+    k = Math.max(0, Math.min(tlLen() - 1, k));
+    if (holdActive() && k >= S.ex.revIdx) { S.idx = S.ex.revIdx - 1; S.t = 1; drawFrame(); onStepChange(); enterHold(); return; }
+    S.idx = k; S.t = 1; drawFrame(); onStepChange();
+  }
+  function restart() {
+    if (S.view === 'pattern') { buildPattern(S.patIdx); play(); return; }
+    if (!tlLen()) return;
+    stopAll(); S.hold = false; S.idx = 0; S.t = 0; S.playing = true; onStepChange(); startLoop();
+  }
+  function reset() {
+    if (S.view === 'pattern') { buildPattern(S.patIdx); return; }
+    stopAll(); S.hold = false; S.idx = 0; S.t = 1;
+    if (S.predBy !== 'someone') { S.prediction = null; S.revealed = false; }
+    S.diag = null; S.diagClosed = false; S.whyOpen = false;
+    drawFrame(); updateChrome(true);
+  }
+
+  function enterHold() { S.hold = true; stopAll(); S.holdDir = 0; updateChrome(true); setTimeout(() => { const f = el.stripMain.querySelector('.dirpick button'); if (f) f.focus(); }, 0); }
+  function resolveHold() {
+    S.hold = false; S.revealed = true;
+    if (S.idx < S.ex.revIdx) { S.idx = S.ex.revIdx; S.t = 0; S.playing = true; onStepChange(); startLoop(); }
+    else updateChrome(true);
+  }
+
+  function onStepChange() {
+    if (S.view === 'explore' && S.ex && S.prediction && S.idx >= S.ex.resIdx && !S.diag) {
+      S.diag = diagnose(S.ex.expr, S.ex.res, S.ex.steps, S.prediction);
+    }
+    updateChrome(true);
+  }
+
+  /* ---------------- drawing ---------------- */
+  function measure() {
+    document.documentElement.style.setProperty('--top-h', Math.round(el.top.getBoundingClientRect().height) + 'px');
+    const r = el.stage.getBoundingClientRect();
+    S.W = Math.max(200, Math.round(r.width)); S.H = Math.max(120, Math.round(r.height));
+    el.svg.setAttribute('viewBox', '0 0 ' + S.W + ' ' + S.H);
+  }
+  function drawFrame() {
+    const o = { W: S.W, H: S.H };
+    if (S.view === 'explore') {
+      if (!S.ex) Render.emptyLine(el.svg, o);
+      else Render.explore(el.svg, S.ex, S.idx, S.t, Object.assign(o, {
+        prediction: S.idx >= S.ex.resIdx ? S.prediction : null, predBy: S.predBy }));
+    } else if (S.view === 'compare') {
+      if (!S.cmp.models) Render.emptyLine(el.svg, o);
+      else Render.compare(el.svg, S.cmp.models, sideStates(), o);
+    } else if (S.pat) {
+      Render.pattern(el.svg, S.pat, o);
+    }
+  }
+
+  /* ---------------- chrome ---------------- */
+  const PHASE = { intro: 'Start', op1: 'First trip', flip: 'Flip', op2: 'Second trip', derive: 'Reasoning', result: 'Result', check: 'Check' };
+  function phaseName(st, e) {
+    if (!st) return '';
+    if (e.op === '/') { if (st.phase === 'op1') return 'Target'; if (st.phase === 'op2') return 'Share'; }
+    if (e.op === '*' && st.phase === 'op2') return 'Copies';
+    if (st.phase === 'derive' && st.to !== st.from) return 'Forced trip';
+    return PHASE[st.phase] || st.phase;
+  }
+
+  function updateEditor() {
+    const inp = S.view === 'compare' ? S.cmp.inputs[S.cmp.sel] : S.inputs;
+    [['a', el.signA, el.sizeA, el.opA], ['b', el.signB, el.sizeB, el.opB], ['s', el.signS, el.sizeS, el.opS]].forEach(([k, sb, sz, wrap]) => {
+      const side = inp[k];
+      if (document.activeElement !== sz) sz.value = side.size;
+      const n = parseInt(side.size, 10);
+      const zero = !isNaN(n) && n === 0, neg = side.sign < 0 && !zero;
+      wrap.classList.toggle('is-neg', neg); wrap.classList.toggle('is-pos', !neg && !zero); wrap.classList.toggle('is-zero', zero);
+      sb.textContent = zero ? '' : neg ? Core.MINUS : '+';
+      sb.disabled = zero;
+      const name = k === 'a' ? 'first number' : k === 'b' ? 'second number' : 'start position';
+      sb.setAttribute('aria-label', zero ? '0 has no direction' : 'Direction of the ' + name + ': ' + (neg ? 'negative, points left' : 'positive, points right') + '. Activate to flip.');
+      sb.title = zero ? '0 has no direction' : 'Flip the direction';
+      sz.style.width = (Math.max(1, String(side.size).length) + 0.45) + 'ch';
+      const errs = (S.view === 'compare' ? S.cmp.errors.filter(e => e.side === S.cmp.sel) : S.errors);
+      sz.setAttribute('aria-invalid', errs.some(e => e.field === k && e.code !== 'fraction') ? 'true' : 'false');
+    });
+    el.editor.classList.toggle('start-set', !!S.inputs.s.size && S.inputs.s.size !== '0');
+    el.ops.querySelectorAll('button').forEach(b => { const on = b.dataset.op === inp.op; b.setAttribute('aria-checked', on); b.tabIndex = on ? 0 : -1; });
+    el.startGroup.hidden = S.view !== 'explore';
+    el.cmpPick.hidden = S.view !== 'compare';
+    el.cmpPick.querySelectorAll('button').forEach(b => { const on = +b.dataset.side === S.cmp.sel; b.setAttribute('aria-checked', on); b.tabIndex = on ? 0 : -1; });
+    el.exprGroup.hidden = S.view === 'pattern';
+    el.ladderPick.hidden = S.view !== 'pattern';
+    el.ladderPick.querySelectorAll('button').forEach(b => { const on = +b.dataset.i === S.patIdx; b.setAttribute('aria-checked', on); b.tabIndex = on ? 0 : -1; });
+    // errors popover
+    const errs = S.view === 'compare' ? S.cmp.errors : S.view === 'explore' ? S.errors : [];
+    if (errs.length) {
+      const e = errs[0];
+      const who = S.view === 'compare' ? (e.side ? 'Bottom: ' : 'Top: ') : '';
+      el.editMsg.innerHTML = '<span>' + esc(who + e.msg) + '</span>' + (e.suggestion ? '<button type="button" id="useSug">Use ' + esc(Fmt.op(e.suggestion.a) + ' ' + Core.DIVIDE + ' ' + Fmt.op(e.suggestion.b)) + '</button>' : '');
+      el.editMsg.hidden = false;
+      const u = $('useSug');
+      if (u) u.onclick = () => { const tgt = S.view === 'compare' ? S.cmp.inputs[e.side] : S.inputs; tgt.a = sideOf(e.suggestion.a); tgt.b = sideOf(e.suggestion.b); S.view === 'compare' ? applyCompare() : applyExplore(); };
+    } else el.editMsg.hidden = true;
+  }
+
+  function resultText() {
+    if (S.view === 'explore' && S.ex && S.idx >= S.ex.resIdx && !S.hold) {
+      return S.ex.res.kind === 'value' ? '= ' + N(S.ex.res.value) : 'is undefined';
+    }
+    if (S.view === 'compare' && S.cmp.models) {
+      const st = sideStates()[S.cmp.sel], m = S.cmp.models[S.cmp.sel];
+      if (st.idx >= m.resIdx) return m.res.kind === 'value' ? '= ' + N(m.res.value) : 'is undefined';
+    }
+    return '= ?';
+  }
+
+  function updateChrome(pulse) {
+    // header result
+    const rt = resultText();
+    el.result.textContent = rt; el.result.classList.toggle('known', rt !== '= ?');
+    // play button
+    const moving = S.playing || S.single || (S.pat && S.view === 'pattern' && (S.pat.auto || S.pat.anim));
+    el.playBtn.classList.toggle('playing', !!(S.playing || (S.view === 'pattern' && S.pat && S.pat.auto)));
+    el.playBtn.setAttribute('aria-label', S.playing ? 'Pause' : 'Play');
+    const len = tlLen();
+    const dis = !len || S.hold;
+    [el.playBtn, el.fwdBtn, el.restartBtn].forEach(b => { b.disabled = dis; });
+    el.backBtn.disabled = !len;
+    el.resetBtn.disabled = !len && S.view !== 'pattern';
+    void moving;
+    renderScrub();
+    renderLadder();
+    renderCompareLabels();
+    renderDiag();
+    renderStrip(pulse);
+    renderLessonRow();
+    // svg label
+    el.svg.setAttribute('aria-label', svgSummary());
+  }
+
+  function svgSummary() {
+    if (S.view === 'explore' && S.ex) {
+      const st = S.ex.steps[S.idx];
+      const pos = S.t >= 1 ? st.to : st.from;
+      const face = S.t >= 1 ? st.endFace : st.face;
+      return 'Number line. Token at ' + N(pos) + ', facing ' + (face === 'R' ? 'right' : 'left') + '. Step ' + (S.idx + 1) + ' of ' + S.ex.steps.length + ', ' + phaseName(st, S.ex.expr) + '.';
+    }
+    if (S.view === 'compare' && S.cmp.models) return 'Two number lines compared: ' + Fmt.expr(S.cmp.models[0].expr) + ' on top, ' + Fmt.expr(S.cmp.models[1].expr) + ' below.';
+    if (S.view === 'pattern' && S.pat) return 'Pattern ladder ' + S.pat.L.title + ', ' + S.pat.revealed + ' of ' + S.pat.rows.length + ' rows shown.';
+    return 'Number line';
+  }
+
+  function renderScrub() {
+    let h = '';
+    if (S.view === 'explore' && S.ex) {
+      S.ex.steps.forEach((st, i) => {
+        const held = holdActive() && i >= S.ex.revIdx;
+        const cls = i === S.idx ? 'cur' : i < S.idx ? 'done' : '';
+        if (i) h += '<b class="sline" aria-hidden="true"></b>';
+        h += `<button type="button" class="sdot ${cls}${held ? ' held' : ''}" data-i="${i}" aria-label="Step ${i + 1}, ${esc(phaseName(st, S.ex.expr))}"${i === S.idx ? ' aria-current="step"' : ''}><i></i><span>${esc(phaseName(st, S.ex.expr))}</span></button>`;
+      });
+    } else if (S.view === 'compare' && S.cmp.frames) {
+      S.cmp.frames.forEach((f, i) => {
+        const st = f.a != null ? S.cmp.models[0].steps[f.a] : S.cmp.models[1].steps[f.b];
+        const nm = (f.a == null || f.b == null) ? 'One line' : phaseName(st, S.cmp.models[0].expr);
+        const cls = i === S.idx ? 'cur' : i < S.idx ? 'done' : '';
+        if (i) h += '<b class="sline" aria-hidden="true"></b>';
+        h += `<button type="button" class="sdot ${cls}" data-i="${i}" aria-label="Moment ${i + 1}, ${esc(nm)}"${i === S.idx ? ' aria-current="step"' : ''}><i></i><span>${esc(nm)}</span></button>`;
+      });
+    } else if (S.view === 'pattern' && S.pat) {
+      S.pat.rows.forEach((r, i) => {
+        const cls = (S.pat.anim && S.pat.anim.row === i) ? 'cur' : i < S.pat.revealed ? 'done' : '';
+        if (i) h += '<b class="sline" aria-hidden="true"></b>';
+        h += `<button type="button" class="sdot ${cls}" data-i="${i}" aria-label="Row ${i + 1}, ${esc(Fmt.expr(r.expr))}"><i></i><span>${esc(Fmt.expr(r.expr))}</span></button>`;
+      });
+    }
+    el.scrub.innerHTML = h;
+  }
+
+  function renderLadder() {
+    if (S.view !== 'explore' || !S.ex) { el.ladder.innerHTML = ''; return; }
+    const lines = [];
+    for (let k = 0; k <= S.idx; k++) { const e = S.ex.steps[k].eq; if (e && lines[lines.length - 1] !== e) lines.push(e); }
+    const short = S.H < 330;
+    el.ladder.classList.toggle('short', short);
+    const show = lines.slice(short ? -1 : -3);
+    el.ladder.innerHTML = show.map((l, i) => `<div class="lad-line${i === show.length - 1 ? ' cur' : ''}">${esc(l)}</div>`).join('');
+  }
+
+  function renderCompareLabels() {
+    const on = S.view === 'compare';
+    el.cmpPresetsWrap.hidden = !on;
+    el.cmpLabel.forEach((b, i) => {
+      b.hidden = !on;
+      if (!on) return;
+      b.style.top = (i === 0 ? 8 : S.H / 2 + 8) + 'px';
+      b.classList.toggle('sel', S.cmp.sel === i);
+      const inp = S.cmp.inputs[i];
+      const v = validate(Object.assign({}, inp, { s: sideOf(0) }));
+      if (!v.ok) { b.innerHTML = '<span class="tag">' + (i ? 'Bottom' : 'Top') + '</span> needs a fix'; return; }
+      const e = v.expr;
+      const other = validate(Object.assign({}, S.cmp.inputs[1 - i], { s: sideOf(0) }));
+      const d = other.ok ? diffParts(other.expr, e) : { ch: [], swapped: false };
+      const keys = new Set(d.ch.map(c => c.k));
+      const part = (k, txt) => keys.has(k) && i === 1 ? '<span class="chg">' + esc(txt) + '</span>' : esc(txt);
+      let val = '';
+      if (S.cmp.models) { const st = sideStates()[i], m = S.cmp.models[i]; if (st.idx >= m.resIdx) val = ' <span class="val">' + (m.res.kind === 'value' ? '= ' + esc(N(m.res.value)) : 'undefined') + '</span>'; }
+      b.innerHTML = '<span class="tag">' + (i ? 'Bottom' : 'Top') + '</span><span>' + part('a', Fmt.op(e.a)) + ' ' + part('op', Fmt.sym[e.op]) + ' ' + part('b', Fmt.op(e.b)) + '</span>' + val +
+        (i === 1 && (d.ch.length || d.swapped) ? '<span class="chg-note">' + (d.swapped ? 'swapped' : 'changed') + '</span>' : '');
+      b.setAttribute('aria-label', (i ? 'Bottom' : 'Top') + ' expression ' + Fmt.expr(e) + '. Select to edit it.');
+    });
+  }
+
+  function renderDiag() {
+    const show = S.view === 'explore' && S.ex && S.diag && !S.diagClosed;
+    el.diag.hidden = !show;
+    if (!show) return;
+    const d = S.diag, who = S.predBy === 'someone' ? 'Their answer' : 'Your prediction';
+    const pv = S.prediction.kind === 'value' ? SG(S.prediction.value) : 'no answer';
+    const lv = S.ex.res.kind === 'value' ? SG(S.ex.res.value) : 'undefined';
+    let body;
+    if (d.match) body = '<p>' + (S.predBy === 'someone' ? 'Their answer matches the line. Can you explain why, without quoting a rule?' : 'Matched. Now explain why, without quoting a rule.') + '</p>';
+    else body = `<p class="cat">${esc(d.cat)}</p><p>${esc(d.msg)}</p><button type="button" class="link-btn" id="diagJump">Show me step ${d.jump + 1}</button>`;
+    el.diag.innerHTML = `<div class="diag-head"><span>${who}</span><button type="button" class="icon" id="diagClose" aria-label="Close"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>` +
+      `<div class="diag-vs"><span><i class="ring hollow"></i>${esc(pv)}</span><span><i class="ring filled"></i>${esc(lv)}</span></div>` + body;
+    $('diagClose').onclick = () => { S.diagClosed = true; renderDiag(); };
+    const j = $('diagJump'); if (j) j.onclick = () => { S.diagClosed = false; jumpTo(d.jump); };
+  }
+
+  const LIVE_PARTS = { 1: true, 4: true, 5: true, 6: true };
+  function renderStrip(pulse) {
+    const m = el.stripMain;
+    let h = '', actions = '';
+    let whyAvail = false;
+    const lessonText = S.lesson && !LIVE_PARTS[S.part];
+    if (S.hold && S.view === 'explore' && S.ex) {
+      h = holdForm();
+    } else if (lessonText) {
+      const st = STAGES[S.stage];
+      const txt = S.part === 2 ? st.parts[2] : st.parts[S.part];
+      const cls = S.part === 2 ? 'part-text math' : S.part === 7 ? 'part-text big' : 'part-text';
+      h = `<div class="step-meta"><span class="phase">${esc(PART_NAMES[S.part])}</span></div><p class="${cls}">${esc(txt)}</p>`;
+      if (S.part === 7 && S.stage === STAGES.length - 1) {
+        h += '<div class="inline-actions"><span class="muted">Exit test, derive each aloud:</span>' + EXIT_TEST.map((e, i) => `<button type="button" class="chip-btn" data-exit="${i}">${esc(Fmt.expr(e))}</button>`).join('') + '</div>';
+      }
+    } else if (S.view === 'pattern') {
+      const ps = patternStrip(); h = ps[0]; actions = ps[1];
+    } else if (S.view === 'compare') {
+      if (!S.cmp.models) h = `<p class="err-text">${esc(S.cmp.errors[0] ? S.cmp.errors[0].msg : '')}</p>`;
+      else h = compareStrip();
+      whyAvail = !!S.cmp.models;
+    } else if (!S.ex) {
+      h = `<div class="step-meta"><span class="phase">Fix the expression</span></div><p class="err-text">${esc(S.errors[0] && S.errors[0].code === 'fraction' ? 'This division does not come out to a whole number. Pick a suggestion above, or change a number.' : 'Fix the number marked above to continue. ' + (S.errors[0] ? S.errors[0].msg : ''))}</p>`;
+    } else if (S.hold) {
+      h = holdForm();
+    } else {
+      const st = S.ex.steps[S.idx];
+      whyAvail = true;
+      let pre = '';
+      if (S.lesson && S.part === 4 && !S.whyOpen) pre = '';
+      const meta = `<div class="step-meta"><span>Step ${S.idx + 1} of ${S.ex.steps.length}</span><span class="phase${st.flip ? ' p-flip' : ''}">${esc(phaseName(st, S.ex.expr))}</span>${st.flip ? '<span>' + esc('flip: ' + CAUSE_TEXT[st.cause]) + '</span>' : ''}</div>`;
+      if (S.whyOpen) h = pre + meta + `<p class="why-text">${esc(st.why)}</p>`;
+      else h = pre + meta + `<p class="narr">${esc(st.narration)}</p>`;
+      if (S.idx === S.ex.steps.length - 1 && S.t >= 1 && !S.lesson && !S.whyOpen) {
+        h += '';
+      }
+    }
+    m.innerHTML = h;
+    m.scrollTop = 0;
+    el.app.classList.toggle('has-form', !!((S.hold && S.view === 'explore') || (S.view === 'pattern' && S.pat && S.pat.stage === 'predict')));
+    el.stripActions.innerHTML = actions;
+    el.stripActions.hidden = !actions;
+    const saysOn = S.lesson && S.part === 6 && S.view === 'explore';
+    el.says.hidden = !saysOn;
+    if (saysOn) el.says.innerHTML = '<span class="says-who">Someone says</span><p>' + esc(STAGES[S.stage].wrong.says) + '</p><span class="muted">Watch where the line lands.</span>';
+    el.whyBtn.hidden = !whyAvail;
+    el.whyBtn.setAttribute('aria-expanded', S.whyOpen ? 'true' : 'false');
+    el.whyBtn.textContent = S.whyOpen ? 'Back to step' : 'Why?';
+    if (pulse && !S.reduced) { m.classList.remove('pulse-in'); void m.offsetWidth; m.classList.add('pulse-in'); }
+    else if (pulse) { m.classList.add('pulse-in'); }
+    wireStrip();
+  }
+
+  function compareStrip() {
+    const ms = S.cmp.models, f = S.cmp.frames[S.idx];
+    const last = S.idx === S.cmp.frames.length - 1 && S.t >= 1;
+    const nar = (i) => {
+      const key = i ? 'b' : 'a';
+      if (f[key] == null) {
+        const other = ms[1 - i].steps[f[i ? 'a' : 'b']];
+        return other && other.flip ? 'No flip here. The ' + (i ? 'top' : 'bottom') + ' line flips its trip at this moment (' + CAUSE_TEXT[other.cause] + ').' : 'Waiting: the other line takes an extra step here.';
+      }
+      const st = ms[i].steps[f[key]];
+      return S.whyOpen ? st.why : st.narration;
+    };
+    let h = `<div class="step-meta"><span>Moment ${S.idx + 1} of ${S.cmp.frames.length}</span></div>`;
+    if (last && !S.whyOpen) {
+      const d = diffParts(ms[0].expr, ms[1].expr);
+      const v = ms.map(m => m.res.kind === 'value' ? N(m.res.value) : 'undefined');
+      const sw = d.swapped ? (ms[0].expr.op === '-' ? ' Swapping the numbers in a subtraction gives the opposite trip.' : ms[0].expr.op === '/' ? ' Swapping the numbers in a division changes the size, not the sign.' : ' For this operation the order does not matter.') : '';
+      const what = d.swapped ? 'The two numbers swapped places.' + sw : d.ch.length === 1 ? 'One thing changed: ' + d.ch[0].d + '.' : d.ch.length ? 'Changed: ' + d.ch.map(c => c.d).join('; ') + '.' : 'The two expressions are the same.';
+      const story = (e) => {
+        const N2 = (n) => N(n);
+        if (e.op === '+') return { what: 'second trip', list: e.b < 0 ? ['its own sign'] : [] };
+        if (e.op === '-') return { what: 'second trip', list: (e.b < 0 ? ['its own sign'] : []).concat(['subtracting']) };
+        if (e.op === '*') return { what: 'product', list: (e.b < 0 ? ['the sign of ' + N2(e.b)] : []).concat(e.a < 0 ? ['the negative count'] : []) };
+        return { what: 'answer', list: (e.a < 0 ? ['the sign of ' + N2(e.a)] : []).concat(e.b < 0 ? ['the negative count'] : []) };
+      };
+      const s0 = story(ms[0].expr), s1 = story(ms[1].expr);
+      const fmt = (st) => st.list.length === 0 ? 'none' : st.list.length + ' (' + st.list.join(', ') + ')';
+      const fl = s0.what === s1.what && (s0.list.length !== s1.list.length || s0.list.join() !== s1.list.join())
+        ? ' Flips on the ' + s0.what + ': top ' + fmt(s0) + ', bottom ' + fmt(s1) + '.' : '';
+      h += `<p class="narr">${esc(what + fl + ' Top lands on ' + v[0] + ', bottom on ' + v[1] + '.')}</p>`;
+    } else {
+      h += `<p class="narr two"><span class="who">Top</span>${esc(nar(0))}</p><p class="narr two"><span class="who">Bottom</span>${esc(nar(1))}</p>`;
+    }
+    return h;
+  }
+
+  function holdForm() {
+    const e = S.ex.expr;
+    const div = e.op === '/';
+    return `<div class="hold" role="group" aria-label="Prediction">
+      <span class="hold-q">Where will it land? Predict the answer first.</span>
+      <div class="seg dirpick" role="radiogroup" aria-label="Which way">
+        <button type="button" role="radio" data-dir="-1" aria-checked="${S.holdDir === -1}">Left, negative</button>
+        <button type="button" role="radio" data-dir="1" aria-checked="${S.holdDir === 1}">Right, positive</button>
+        ${div ? `<button type="button" role="radio" data-dir="0" aria-checked="${S.holdDir === 'none'}">No answer</button>` : ''}
+      </div>
+      <label class="muted">how far <input class="pred-size" id="predSize" inputmode="numeric" autocomplete="off" aria-label="How far, in steps"></label>
+      <button type="button" class="primary" id="lockBtn">Lock in</button>
+      <button type="button" class="secondary" id="revealBtn">${S.lesson ? 'Reveal' : 'Show me without predicting'}</button>
+    </div>`;
+  }
+
+  function patternStrip() {
+    const P = S.pat; if (!P) return ['', ''];
+    const L = P.L;
+    const meta = (ph, extra) => `<div class="step-meta"><span class="phase">${ph}</span>${extra ? '<span>' + extra + '</span>' : ''}</div>`;
+    if (P.stage === 'observe') {
+      const r = P.revealed;
+      const done = r > 0 ? P.rows[r - 1] : null;
+      const txt = done ? Fmt.expr(done.expr) + ' lands on ' + N(done.value) + '. Watch what changes from one row to the next.' : 'Watch where each row lands. The rule is not shown until you have explained the pattern.';
+      return [meta('Observe', 'Row ' + Math.min(r, P.familiar) + ' of ' + P.familiar) + `<p class="narr">${esc(txt)}</p>`,
+        `<button type="button" class="primary" data-pat="next">${r ? 'Next row' : 'Show the first row'}</button>`];
+    }
+    if (P.stage === 'predict') {
+      const hidden = patHiddenRows();
+      const pending = hidden.filter(i => P.preds[i] == null);
+      const allIn = pending.length === 0;
+      let form = '';
+      if (!allIn) {
+        const i = pending[0];
+        form = `<div class="hold"><span class="hold-q">${esc(Fmt.expr(P.rows[i].expr))} = ?</span>
+          <div class="seg dirpick" role="radiogroup" aria-label="Which way"><button type="button" role="radio" data-pdir="-1" aria-checked="${P.holdDir === -1}">Left, negative</button><button type="button" role="radio" data-pdir="1" aria-checked="${P.holdDir === 1}">Right, positive</button></div>
+          <label class="muted">how far <input class="pred-size" id="patSize" inputmode="numeric" autocomplete="off" aria-label="How far"></label>
+          <button type="button" class="primary" data-pat="lockrow" data-row="${i}">Lock in</button><span class="muted">or tap the row's line</span></div>`;
+      } else form = '<p class="narr">Every hidden row has a prediction. Reveal them and see if the pattern held.</p>';
+      return [meta('Predict', (hidden.length - pending.length) + ' of ' + hidden.length + ' predicted') + form,
+        `<button type="button" class="${allIn ? 'primary' : 'secondary'}" data-pat="reveal">${allIn ? 'Reveal the hidden rows' : 'Reveal without predicting'}</button>`];
+    }
+    if (P.stage === 'revealing') return [meta('Reveal') + '<p class="narr">Watch the hidden rows land.</p>', ''];
+    if (P.stage === 'explain') return [meta('Explain', 'say it aloud first') + `<p class="part-text big">${esc(L.question)}</p>`, '<button type="button" class="secondary" data-pat="prove">Show the proof</button>'];
+    if (P.stage === 'prove') return [meta('Prove') + `<p class="part-text">${esc(L.proof)}</p>`, '<button type="button" class="secondary" data-pat="name">Name the rule</button>'];
+    if (P.stage === 'name') return [meta('Name it') + '<p class="part-text">Say the rule in your own words first. Then check it against what you proved.</p>', '<button type="button" class="primary" data-pat="rule">I have said it</button>'];
+    return [meta('What you just proved', 'a pattern is a clue; the proof is the reason') + `<p class="part-text math">${esc(L.rule)}</p>`, '<button type="button" class="secondary" data-pat="again">Try this ladder again</button>'];
+  }
+
+  function readPredSize(id) {
+    const inp = $(id); if (!inp) return null;
+    const t = inp.value.trim();
+    if (!/^\d{1,7}$/.test(t)) { inp.focus(); inp.setAttribute('aria-invalid', 'true'); return null; }
+    return parseInt(t, 10);
+  }
+
+  function wireStrip() {
+    const m = el.stripMain;
+    m.querySelectorAll('[data-exit]').forEach(b => b.onclick = () => { S.lessonExpr = EXIT_TEST[+b.dataset.exit]; gotoPart(1); });
+    if (S.hold) {
+      m.querySelectorAll('[data-dir]').forEach(b => b.onclick = () => {
+        const d = b.dataset.dir; S.holdDir = d === '0' ? 'none' : +d;
+        m.querySelectorAll('[data-dir]').forEach(x => x.setAttribute('aria-checked', x === b));
+        const ps = $('predSize'); if (ps) { ps.disabled = S.holdDir === 'none'; if (S.holdDir !== 'none') ps.focus(); }
+      });
+      const ps = $('predSize'), lb = $('lockBtn'), rb = $('revealBtn');
+      if (ps && lb) ps.onkeydown = (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); lb.click(); } };
+      if (lb) lb.onclick = () => {
+        if (S.holdDir === 'none') { S.prediction = { kind: 'none' }; S.predBy = 'you'; resolveHold(); return; }
+        const n = readPredSize('predSize'); if (n == null) return;
+        if (n !== 0 && !S.holdDir) { const g = m.querySelector('.dirpick button'); if (g) g.focus(); return; }
+        S.prediction = { kind: 'value', value: n === 0 ? 0 : n * S.holdDir }; S.predBy = 'you'; resolveHold();
+      };
+      if (rb) rb.onclick = () => resolveHold();
+    }
+    if (S.view === 'pattern' && S.pat) {
+      const P = S.pat;
+      m.querySelectorAll('[data-pdir]').forEach(b => b.onclick = () => { P.holdDir = +b.dataset.pdir; m.querySelectorAll('[data-pdir]').forEach(x => x.setAttribute('aria-checked', x === b)); const s = $('patSize'); if (s) s.focus(); });
+      const s = $('patSize'); if (s) s.onkeydown = (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); const lb = m.querySelector('[data-pat="lockrow"]'); if (lb) lb.click(); } };
+      [...m.querySelectorAll('[data-pat]'), ...el.stripActions.querySelectorAll('[data-pat]')].forEach(b => b.onclick = () => {
+        const a = b.dataset.pat;
+        if (a === 'next') { P.auto = false; patRevealNext(); updateChrome(); }
+        if (a === 'lockrow') { const n = readPredSize('patSize'); if (n == null) return; if (n !== 0 && !P.holdDir) return; P.preds[+b.dataset.row] = n === 0 ? 0 : n * P.holdDir; P.holdDir = 0; drawFrame(); updateChrome(); const ns = $('patSize'); if (ns) setTimeout(() => { const d = el.stripMain.querySelector('[data-pdir]'); if (d) d.focus(); }, 0); }
+        if (a === 'reveal') patRevealHidden();
+        if (a === 'prove') { P.stage = 'prove'; P.guide = true; drawFrame(); updateChrome(true); }
+        if (a === 'name') { P.stage = 'name'; updateChrome(true); }
+        if (a === 'rule') { P.stage = 'done'; updateChrome(true); }
+        if (a === 'again') buildPattern(S.patIdx);
+      });
+    }
+  }
+
+  function renderLessonRow() {
+    el.strip.classList.toggle('lesson-on', S.lesson);
+    el.app.classList.toggle('lesson', S.lesson);
+    if (!S.lesson) return;
+    const st = STAGES[S.stage];
+    el.stageTitle.textContent = 'Stage ' + (S.stage + 1) + ' of ' + STAGES.length + ': ' + st.title;
+    el.stagePrev.disabled = S.stage === 0; el.stageNext.disabled = S.stage === STAGES.length - 1;
+    if (!el.parts.children.length) {
+      el.parts.innerHTML = PART_NAMES.map((p, i) => `<button type="button" role="tab" data-part="${i}">${esc(p)}</button>`).join('');
+      el.parts.querySelectorAll('button').forEach(b => b.onclick = () => gotoPart(+b.dataset.part));
+    }
+    el.parts.querySelectorAll('button').forEach(b => { const on = +b.dataset.part === S.part; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; });
+    el.partNext.textContent = S.part < 7 ? 'Next: ' + PART_NAMES[S.part + 1] : (S.stage < STAGES.length - 1 ? 'Next stage' : 'Finish');
+  }
+
+  /* ---------------- lesson ---------------- */
+  function setLesson(on) {
+    S.lesson = on;
+    el.lessonBtn.setAttribute('aria-pressed', on);
+    el.viewSeg.querySelectorAll('button').forEach(b => { b.disabled = on; });
+    if (on) { S.stage = S.stage || 0; gotoPart(0); }
+    else { S.lessonExpr = null; if (S.view !== 'explore') setView('explore'); else applyExplore(); }
+    updateChrome();
+  }
+  function gotoStage(i) { S.stage = Math.max(0, Math.min(STAGES.length - 1, i)); S.lessonExpr = null; gotoPart(0); }
+  function gotoPart(p) {
+    S.part = p;
+    const st = STAGES[S.stage];
+    const main = S.lessonExpr || st.main;
+    S.whyOpen = false;
+    if (p === 5) {
+      S.cmp.inputs = [toInputs(st.contrast[0]), toInputs(st.contrast[1])]; S.cmp.sel = 1;
+      setView('compare', true); applyCompare(); restart(); return;
+    }
+    if (S.view !== 'explore') setView('explore', true);
+    if (p === 6) {
+      S.inputs = toInputs(st.wrong.expr); applyExplore();
+      S.prediction = { kind: 'value', value: st.wrong.answer }; S.predBy = 'someone'; S.revealed = true;
+      restart(); return;
+    }
+    S.inputs = toInputs(main); applyExplore();
+    if (p === 0) { /* first step, paused */ }
+    else if (p === 1) restart();
+    else if (p === 4) {
+      S.revealed = true; S.whyOpen = true;
+      const k = S.ex ? Math.max(1, S.ex.steps.findIndex(s => s.phase === 'derive')) : 0;
+      jumpTo(k > 0 ? k : 1);
+    } else { S.revealed = true; if (S.ex) jumpTo(S.ex.steps.length - 1); }
+    updateChrome(true);
+  }
+  function nextPart() {
+    if (S.part < 7) gotoPart(S.part + 1);
+    else if (S.stage < STAGES.length - 1) gotoStage(S.stage + 1);
+    else setLesson(false);
+  }
+
+  /* ---------------- views ---------------- */
+  function setView(v, quiet) {
+    S.view = v;
+    el.viewSeg.querySelectorAll('button').forEach(b => { const on = b.dataset.view === v; b.setAttribute('aria-checked', on); b.tabIndex = on ? 0 : -1; });
+    stopAll(); S.hold = false; S.whyOpen = false;
+    if (quiet) { updateEditor(); return; }
+    if (v === 'explore') applyExplore();
+    else if (v === 'compare') applyCompare();
+    else buildPattern(S.patIdx);
+  }
+
+  /* ---------------- editor events ---------------- */
+  const curInputs = () => (S.view === 'compare' ? S.cmp.inputs[S.cmp.sel] : S.inputs);
+  const applyCur = () => (S.view === 'compare' ? applyCompare() : applyExplore());
+  let debounce = 0;
+  [el.sizeA, el.sizeB, el.sizeS].forEach(inp => {
+    inp.addEventListener('input', () => {
+      const k = inp.dataset.k, target = curInputs();
+      let v = inp.value.replace(/\s/g, '');
+      if (/^[-−]/.test(v)) { target[k].sign = -1; v = v.slice(1); inp.value = v; }
+      if (/^\+/.test(v)) { target[k].sign = 1; v = v.slice(1); inp.value = v; }
+      target[k].size = v;
+      inp.style.width = (Math.max(1, v.length) + 0.45) + 'ch';
+      clearTimeout(debounce); debounce = setTimeout(applyCur, 300);
+    });
+    inp.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter') { ev.preventDefault(); clearTimeout(debounce); applyCur(); }
+      if (ev.key === 'ArrowUp' || ev.key === 'ArrowDown') {
+        ev.preventDefault();
+        const target = curInputs(), k = inp.dataset.k;
+        const n = parseInt(target[k].size, 10);
+        if (!isNaN(n)) {
+          let val = (target[k].sign < 0 && n ? -n : n) + (ev.key === 'ArrowUp' ? 1 : -1);
+          val = Math.max(-999, Math.min(999, val));
+          target[k] = sideOf(val); inp.value = target[k].size; clearTimeout(debounce); applyCur();
+        }
+      }
+    });
+    inp.addEventListener('focus', () => inp.select());
+  });
+  [el.signA, el.signB, el.signS].forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.k, target = curInputs();
+    if (target[k].size === '0') return;
+    target[k].sign = -target[k].sign; applyCur();
+  }));
+  function radioGroup(container, sel, onPick) {
+    container.addEventListener('click', (ev) => { const b = ev.target.closest('button'); if (b && container.contains(b) && !b.disabled) onPick(b); });
+    container.addEventListener('keydown', (ev) => {
+      if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(ev.key)) return;
+      const bs = [...container.querySelectorAll(sel)].filter(b => !b.disabled); if (!bs.length) return;
+      ev.preventDefault();
+      let i = bs.indexOf(document.activeElement);
+      if (ev.key === 'Home') i = 0; else if (ev.key === 'End') i = bs.length - 1;
+      else i = (i + (ev.key === 'ArrowRight' || ev.key === 'ArrowDown' ? 1 : -1) + bs.length) % bs.length;
+      bs[i].focus(); onPick(bs[i]);
+    });
+  }
+  radioGroup(el.ops, 'button', (b) => { curInputs().op = b.dataset.op; applyCur(); });
+  radioGroup(el.viewSeg, 'button', (b) => { if (!S.lesson && b.dataset.view !== S.view) setView(b.dataset.view); });
+  radioGroup(el.cmpPick, 'button', (b) => { S.cmp.sel = +b.dataset.side; updateEditor(); updateChrome(); });
+  el.ladderPick.innerHTML = LADDERS.map((L, i) => `<button type="button" role="radio" data-i="${i}" aria-checked="${i === 0}">${esc(L.title)}</button>`).join('');
+  radioGroup(el.ladderPick, 'button', (b) => { if (+b.dataset.i !== S.patIdx) buildPattern(+b.dataset.i); });
+  el.cmpLabel.forEach((b, i) => b.addEventListener('click', () => { S.cmp.sel = i; updateEditor(); updateChrome(); el.sizeA.focus(); }));
+  el.cmpPresets.innerHTML = COMPARE_PRESETS.map((p, i) => `<option value="${i}">${esc(Fmt.expr(p[0]) + '   vs   ' + Fmt.expr(p[1]))}</option>`).join('');
+  el.cmpPresets.addEventListener('change', () => {
+    const p = COMPARE_PRESETS[+el.cmpPresets.value];
+    S.cmp.inputs = [toInputs(p[0]), toInputs(p[1])]; S.cmp.sel = 1; applyCompare();
+  });
+
+  /* ---------------- toolbar ---------------- */
+  el.lessonBtn.addEventListener('click', () => setLesson(!S.lesson));
+  el.predictBtn.addEventListener('click', () => {
+    S.predictOn = !S.predictOn; el.predictBtn.setAttribute('aria-pressed', S.predictOn);
+    if (S.view === 'explore' && S.ex && S.predictOn && S.idx < S.ex.revIdx) S.revealed = false;
+    if (!S.predictOn && S.hold) { S.hold = false; S.revealed = true; }
+    updateChrome(true);
+  });
+  function currentDark() { return S.theme ? S.theme === 'dark' : !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches); }
+  function applyTheme() {
+    if (S.theme) document.documentElement.setAttribute('data-theme', S.theme); else document.documentElement.removeAttribute('data-theme');
+    const dark = currentDark();
+    el.themeBtn.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+    drawFrame();
+  }
+  el.themeBtn.addEventListener('click', () => { S.theme = currentDark() ? 'light' : 'dark'; applyTheme(); });
+  function setDrawer(open) {
+    el.drawer.classList.toggle('open', open);
+    el.bitesBtn.setAttribute('aria-expanded', open);
+    if (open) setTimeout(() => { const s = el.drawer.querySelector('summary'); if (s) s.focus(); }, 30);
+    else el.bitesBtn.focus();
+  }
+  el.bitesBtn.addEventListener('click', () => setDrawer(!el.drawer.classList.contains('open')));
+  el.drawerClose.addEventListener('click', () => setDrawer(false));
+  el.bites.innerHTML = BITES.map(b => `<details><summary>${esc(b.t)}</summary><p>${esc(b.c)}</p><p class="think">${esc(b.q)}</p></details>`).join('');
+  function setKeys(open) { el.keys.hidden = !open; if (open) el.keysClose.focus(); else el.keysBtn.focus(); }
+  el.keysBtn.addEventListener('click', () => setKeys(true));
+  el.keysClose.addEventListener('click', () => setKeys(false));
+  el.keys.addEventListener('click', (ev) => { if (ev.target === el.keys) setKeys(false); });
+
+  /* ---------------- playback controls ---------------- */
+  el.playBtn.addEventListener('click', togglePlay);
+  el.fwdBtn.addEventListener('click', stepFwd);
+  el.backBtn.addEventListener('click', stepBack);
+  el.restartBtn.addEventListener('click', restart);
+  el.resetBtn.addEventListener('click', reset);
+  el.scrub.addEventListener('click', (ev) => {
+    const b = ev.target.closest('.sdot'); if (!b) return;
+    const i = +b.dataset.i;
+    if (S.view === 'pattern') {
+      const P = S.pat; if (P && P.stage === 'observe' && i < P.familiar) { P.auto = false; P.anim = null; P.revealed = i + 1; P.focusRow = i; if (P.revealed >= P.familiar) { P.stage = 'predict'; P.focusRow = P.familiar; } drawFrame(); updateChrome(true); }
+      return;
+    }
+    jumpTo(i);
+  });
+  el.whyBtn.addEventListener('click', () => { S.whyOpen = !S.whyOpen; renderStrip(false); });
+  el.stagePrev.addEventListener('click', () => gotoStage(S.stage - 1));
+  el.stageNext.addEventListener('click', () => gotoStage(S.stage + 1));
+  el.partNext.addEventListener('click', nextPart);
+  function setSpeedFromSlider() {
+    S.speedU = +el.speed.value / 1000;
+    const s = stepSeconds();
+    el.speedOut.textContent = (s >= 10 ? s.toFixed(0) : s.toFixed(1)) + ' s per step';
+  }
+  el.speed.value = String(Math.round(S.speedU * 1000));
+  el.speed.addEventListener('input', setSpeedFromSlider);
+  setSpeedFromSlider();
+
+  /* pattern: tap a hidden row's line to predict */
+  el.svg.addEventListener('click', (ev) => {
+    if (S.view !== 'pattern' || !S.pat || S.pat.stage !== 'predict') return;
+    const t = ev.target; if (!t.classList || !t.classList.contains('ptarget')) return;
+    const row = +t.getAttribute('data-row');
+    const r = el.svg.getBoundingClientRect();
+    const x = (ev.clientX - r.left) * (S.W / r.width);
+    const sc = S.pat.scale;
+    const v = Math.round(sc.lo + (x - sc.padL) / sc.ppu);
+    S.pat.preds[row] = Math.max(sc.lo, Math.min(sc.hi, v));
+    drawFrame(); updateChrome();
+  });
+
+  /* ---------------- keyboard ---------------- */
+  document.addEventListener('keydown', (ev) => {
+    const t = ev.target, tag = t.tagName;
+    if (ev.key === 'Escape') {
+      if (!el.keys.hidden) { setKeys(false); return; }
+      if (el.drawer.classList.contains('open')) { setDrawer(false); return; }
+      if (!el.diag.hidden) { S.diagClosed = true; renderDiag(); return; }
+      return;
+    }
+    if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    const typing = (tag === 'INPUT' && t.type !== 'range') || tag === 'TEXTAREA' || tag === 'SELECT' || t.isContentEditable;
+    if (typing) return;
+    if (!el.keys.hidden) return;
+    if (ev.key === '?') { ev.preventDefault(); setKeys(true); return; }
+    if (t.closest && t.closest('[role="radiogroup"]') && ev.key.startsWith('Arrow')) return;
+    if (t.type === 'range' && ev.key.startsWith('Arrow')) return;
+    if (ev.key === ' ' || ev.code === 'Space') {
+      if (tag === 'BUTTON' || tag === 'SUMMARY' || t.type === 'range') return;
+      ev.preventDefault(); togglePlay(); return;
+    }
+    const now = performance.now();
+    if (ev.key === 'ArrowRight' || ev.key === 'ArrowLeft') {
+      ev.preventDefault();
+      if (now - lastStepKey < 120) return;
+      lastStepKey = now;
+      ev.key === 'ArrowRight' ? stepFwd() : stepBack();
+      return;
+    }
+    if (ev.key === 'Home') { ev.preventDefault(); if (S.view !== 'pattern') jumpTo(0); }
+    if (ev.key === 'End') { ev.preventDefault(); if (S.view !== 'pattern') jumpTo(tlLen() - 1); }
+  });
+
+  /* ---------------- banner, resize, motion ---------------- */
+  let bannerTimer = 0;
+  function showBanner(msg, sticky) {
+    el.banner.textContent = msg; el.banner.hidden = false;
+    clearTimeout(bannerTimer); if (!sticky) bannerTimer = setTimeout(() => { el.banner.hidden = true; }, 6000);
+  }
+  const ro = new ResizeObserver(() => {
+    const w = S.W, h = S.H; measure();
+    if (w !== S.W || h !== S.H) { rescale(); drawFrame(); renderCompareLabels(); renderLadder(); }
+  });
+  ro.observe(el.stage);
+  ro.observe(el.top);
+  const onMotion = () => { S.reduced = !!mq.matches; Render.setReduced(S.reduced); el.app.classList.toggle('reduced', S.reduced); drawFrame(); };
+  if (mq.addEventListener) mq.addEventListener('change', onMotion);
+  if (window.matchMedia) {
+    const dm = window.matchMedia('(prefers-color-scheme: dark)');
+    if (dm.addEventListener) dm.addEventListener('change', () => { if (!S.theme) applyTheme(); });
+  }
+  window.addEventListener('error', () => { showBanner('Something went wrong. Press Reset to continue.'); });
+
+  /* ---------------- start ---------------- */
+  measure();
+  el.app.classList.toggle('reduced', S.reduced);
+  applyTheme();
+  applyExplore();
+  setTimeout(() => {
+    try {
+      const r = selfCheck();
+      if (r.failures.length) showBanner('Self-check found ' + r.failures.length + ' problem(s) in the step generator. Results may be wrong.', true);
+      window.__nllSelfCheck = { count: r.count, failures: r.failures.length };
+    } catch (err) { showBanner('Self-check could not run.', true); }
+  }, 60);
+
+  // test hooks (read-only views of state for automated checks)
+})();
+
+</script>
+</body>
+</html>

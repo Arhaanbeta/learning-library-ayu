@@ -1,0 +1,1004 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Grammar of Graphs — a guided film</title>
+<link rel="icon" href="data:,">
+<style>
+:root{
+  --bg:#0B1322; --panel:#0F1B2E; --panel2:#0D1728; --line:#1C2C45; --line2:#22344E;
+  --ink:#E9EFF8; --soft:#8FA3BC; --amber:#F2B84B; --teal:#53D6C7; --plum:#C792EA;
+  --coral:#FF8A5C; --warn:#FF6B6B; --ok:#7BD88F; --violet:#9B8CFF;
+  --serif:Georgia,'Iowan Old Style','Times New Roman',serif;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box} html,body{margin:0;height:100%}
+body{background:radial-gradient(1200px 700px at 60% -10%, #101E36 0%, var(--bg) 55%);
+  color:var(--ink);font-family:var(--sans);overflow:hidden;display:flex;flex-direction:column}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px;border-radius:6px}
+
+/* ---------- header ---------- */
+header{display:flex;align-items:baseline;gap:18px;padding:14px 22px 10px;border-bottom:1px solid var(--line)}
+.kick{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--soft)}
+h1{font-family:var(--serif);font-weight:600;font-size:21px;margin:0}
+.runtime{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--soft);letter-spacing:.08em}
+#tocbtn{display:none;border:1px solid var(--line2);border-radius:8px;padding:6px 12px;font-size:13px;color:var(--soft)}
+
+/* ---------- shell ---------- */
+.shell{flex:1;display:flex;min-height:0}
+nav{width:288px;min-width:288px;border-right:1px solid var(--line);overflow-y:auto;padding:10px 0 24px;background:rgba(13,23,40,.5)}
+nav h2{font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--soft);margin:10px 20px 8px;font-weight:600}
+.tocitem{display:block;width:100%;text-align:left;padding:11px 18px 13px 20px;position:relative;border-left:3px solid transparent}
+.tocitem:hover{background:#12203795}
+.tocitem.active{background:#14233B;border-left-color:var(--amber)}
+.tocitem .row{display:flex;gap:10px;align-items:baseline}
+.tocitem .idx{font-family:var(--mono);font-size:11px;color:var(--soft);width:20px}
+.tocitem.done .idx{color:var(--ok)}
+.tocitem .tt{font-size:13.5px;flex:1;line-height:1.3}
+.tocitem .dur{font-family:var(--mono);font-size:10.5px;color:var(--soft)}
+.tocitem .bar{position:absolute;left:20px;right:18px;bottom:6px;height:2px;background:var(--line);border-radius:2px}
+.tocitem .bar i{display:block;height:100%;width:0%;background:var(--teal);border-radius:2px}
+
+main{flex:1;display:flex;flex-direction:column;align-items:center;min-width:0;padding:16px 26px 8px;overflow:hidden}
+.kicker{align-self:flex-start;max-width:1020px;width:100%;margin:0 auto 8px;font-family:var(--mono);
+  font-size:11px;letter-spacing:.22em;color:var(--amber)}
+.kicker b{color:var(--soft);font-weight:400}
+.stagewrap{width:100%;max-width:1020px;aspect-ratio:16/9;background:var(--panel2);
+  border:1px solid var(--line);border-radius:12px;overflow:hidden;position:relative;
+  box-shadow:0 30px 80px -40px rgba(0,0,0,.8)}
+svg{display:block;width:100%;height:100%}
+.capwrap{width:100%;max-width:1020px;margin:12px auto 0;min-height:64px;display:flex;align-items:flex-start;justify-content:center}
+#cap{font-size:clamp(15px,1.7vw,20px);line-height:1.5;text-align:center;max-width:72ch;margin:0;color:var(--ink)}
+#cap b{color:var(--amber);font-weight:600} #cap i{color:var(--teal);font-style:normal;font-weight:600}
+#cap em{color:var(--plum);font-style:normal;font-weight:600}
+.swap{animation:rise .5s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+/* ---------- footer / transport ---------- */
+footer{border-top:1px solid var(--line);background:var(--panel);padding:12px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.tbtn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line2);color:var(--soft);font-size:15px;display:grid;place-items:center}
+.tbtn:hover{color:var(--ink);border-color:var(--soft)}
+#play{width:48px;height:48px;background:var(--amber);color:#0B1322;font-size:19px;border:0}
+#play:hover{filter:brightness(1.08)}
+.prog{flex:1;min-width:200px;height:26px;display:flex;align-items:center;cursor:pointer;position:relative}
+.prog .track{position:absolute;left:0;right:0;height:5px;background:var(--line2);border-radius:3px}
+.prog .fill{position:absolute;left:0;height:5px;background:var(--amber);border-radius:3px;width:0%}
+.prog .notch{position:absolute;top:8px;width:2px;height:10px;background:#31486B}
+#clock{font-family:var(--mono);font-size:12px;color:var(--soft);min-width:96px;text-align:center}
+.speed{display:flex;align-items:center;gap:10px}
+.speed label{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--soft)}
+#spdrange{width:170px;accent-color:var(--amber);height:26px}
+#spdval{font-family:var(--mono);font-size:12px;color:var(--amber);min-width:44px;text-align:right}
+.spdchip{font-family:var(--mono);font-size:10.5px;color:var(--soft);border:1px solid var(--line2);border-radius:20px;padding:3px 9px}
+.spdchip:hover{color:var(--ink)}
+kbd{font-family:var(--mono);font-size:10px;color:var(--soft)}
+.hints{font-family:var(--mono);font-size:10px;color:var(--soft);letter-spacing:.04em}
+
+/* ---------- SVG classes ---------- */
+text{font-family:var(--mono)} .serif{font-family:var(--serif)}
+.ink{fill:var(--ink)} .soft{fill:var(--soft)} .tick{fill:#5F7492} .mono{font-family:var(--mono)}
+.grid{stroke:var(--line2);stroke-width:1} .axis{stroke:#C7D4E6;stroke-width:2;stroke-linecap:round}
+.lab{letter-spacing:.06em} .q-time{fill:var(--amber)} .q-pos{fill:var(--teal)} .q-rate{fill:var(--coral)}
+.q-plum{fill:var(--plum)} .q-violet{fill:var(--violet)}
+.c-pos{stroke:var(--teal);stroke-width:3;fill:none;stroke-linecap:round}
+.c-b{stroke:var(--plum);stroke-width:3;fill:none;stroke-dasharray:9 6;stroke-linecap:round}
+.c-rate{stroke:var(--coral);stroke-width:3;fill:none;stroke-linecap:round}
+.c-violet{stroke:var(--violet);stroke-width:3;fill:none;stroke-linecap:round}
+.c-warn{stroke:var(--warn);stroke-width:3;fill:none;stroke-linecap:round}
+.c-ok{stroke:var(--ok);stroke-width:3;fill:none;stroke-linecap:round}
+.ghost{stroke:#6B7FA0;stroke-width:2.5;fill:none;stroke-dasharray:3 6;stroke-linecap:round}
+.dash{stroke:#5F7492;stroke-width:1.5;stroke-dasharray:4 5;fill:none}
+.thick{stroke-width:3.5}
+.dot{fill:var(--teal)} .dot-b{fill:var(--plum)} .dot-soft{fill:#41597c}
+.ring{fill:none;stroke:var(--ink);stroke-width:2.5}
+.ring-a{fill:none;stroke:var(--amber);stroke-width:2.5}
+.area{fill:rgba(83,214,199,.16);stroke:none}
+.area-x{fill:rgba(255,107,107,.13);stroke:none}
+.floor{stroke:#C7D4E6;stroke-width:2.5;stroke-linecap:round} .tickline{stroke:#5F7492;stroke-width:1}
+.chip-bg{fill:#16273f;stroke:var(--line2)} .chip-t{fill:var(--ink)}
+.chipA-bg{fill:#2b2312;stroke:#6b5522} .chipA-t{fill:var(--amber)}
+.chipT-bg{fill:#0f2b29;stroke:#1f5a54} .chipT-t{fill:var(--teal)}
+.chipR-bg{fill:#331c10;stroke:#7a4526} .chipR-t{fill:var(--coral)}
+.stamp-warn{fill:rgba(255,107,107,.08);stroke:var(--warn);stroke-width:2.5}
+.stamp-warn-t{fill:var(--warn);font-weight:700;letter-spacing:.08em}
+.stamp-ok{fill:rgba(123,216,143,.08);stroke:var(--ok);stroke-width:2.5}
+.stamp-ok-t{fill:var(--ok);font-weight:700;letter-spacing:.08em}
+.hill{fill:#182A44;stroke:#31486B;stroke-width:1.5}
+.title-big{fill:var(--ink);font-family:var(--serif);font-weight:600}
+.glow{filter:drop-shadow(0 0 6px rgba(242,184,75,.45))}
+
+/* ---------- responsive ---------- */
+@media (max-width:920px){
+  nav{position:fixed;z-index:30;top:0;bottom:0;left:0;transform:translateX(-100%);transition:transform .25s ease;background:var(--panel)}
+  nav.open{transform:none;box-shadow:20px 0 60px rgba(0,0,0,.5)}
+  #tocbtn{display:block}
+  main{padding:12px 12px 6px}
+  footer{gap:10px;padding:10px 12px}
+  .hints{display:none}
+}
+</style>
+</head>
+<body>
+<header>
+  <button id="tocbtn" aria-label="Show chapters">☰ Chapters</button>
+  <div>
+    <div class="kick">ATLAS OF CHANGE · A GUIDED FILM IN 11 CHAPTERS</div>
+    <h1>The Grammar of Graphs</h1>
+  </div>
+  <div class="runtime" id="runtime"></div>
+</header>
+
+<div class="shell">
+  <nav id="toc" aria-label="Chapters"><h2>CHAPTERS — CLICK TO JUMP</h2></nav>
+  <main>
+    <div class="kicker" id="kicker"></div>
+    <div class="stagewrap"><svg id="stage" viewBox="0 0 960 540" role="img" aria-label="Animated illustration"></svg></div>
+    <div class="capwrap"><p id="cap"></p></div>
+  </main>
+</div>
+
+<footer>
+  <button class="tbtn" id="prev" title="Previous chapter (←)" aria-label="Previous chapter">⏮</button>
+  <button class="tbtn" id="play" title="Play / pause (space)" aria-label="Play or pause">▶</button>
+  <button class="tbtn" id="next" title="Next chapter (→)" aria-label="Next chapter">⏭</button>
+  <div class="prog" id="prog" title="Seek"><div class="track"></div><div class="fill" id="fill"></div></div>
+  <span id="clock">0:00 / 0:00</span>
+  <div class="speed">
+    <label for="spdrange">SPEED</label>
+    <button class="spdchip" data-s="0.5">½×</button>
+    <input id="spdrange" type="range" min="0.2" max="4" step="0.05" value="1" aria-label="Playback speed">
+    <button class="spdchip" data-s="2">2×</button>
+    <span id="spdval">1.0×</span>
+  </div>
+  <span class="hints"><kbd>space</kbd> play · <kbd>←→</kbd> chapters · <kbd>↑↓</kbd> speed</span>
+</footer>
+<script>
+'use strict';
+/* ================= tiny SVG builder ================= */
+let S=[];
+const A=s=>S.push(s);
+const n1=v=>{const r=Math.round(v*10)/10;return Number.isInteger(r)?String(r):r.toFixed(1)};
+const n2=v=>{const r=Math.round(v*100)/100;return Number.isInteger(r)?String(r):String(r)};
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const seg=(p,a,b)=>clamp((p-a)/(b-a),0,1);
+const ez=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+const pop=p=>{const q=clamp(p,0,1);return q<.7?ez(q/.7)*1.06:1.06-.06*ez((q-.7)/.3)};
+function T(x,y,t,cls='ink',anc='start',sz=13,extra=''){A(`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" class="${cls}" text-anchor="${anc}" font-size="${sz}" ${extra}>${t}</text>`)}
+function Ln(x1,y1,x2,y2,cls,extra=''){A(`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" class="${cls}" ${extra}/>`)}
+function Ci(cx,cy,r,cls,extra=''){A(`<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r}" class="${cls}" ${extra}/>`)}
+function Rt(x,y,w,h,cls,rx=0,extra=''){A(`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="${rx}" class="${cls}" ${extra}/>`)}
+function Pa(d,cls,extra=''){A(`<path d="${d}" class="${cls}" ${extra}/>`)}
+function gO(op,extra=''){A(`<g opacity="${clamp(op,0,1).toFixed(3)}" ${extra}>`)}
+function gT(tr){A(`<g transform="${tr}">`)}
+function gC(){A('</g>')}
+
+/* ================= graph frame ================= */
+function frame(fx,fy,fw,fh,xmax,ymax,o={}){
+  const X=v=>fx+v/xmax*fw, Y=v=>fy+fh-v/ymax*fh;
+  const gx=o.gx||1, gy=o.gy||1;
+  if(!o.nogrid){
+    for(let v=gx;v<=xmax+1e-9;v+=gx)Ln(X(v),Y(0),X(v),Y(ymax),'grid');
+    for(let v=gy;v<=ymax+1e-9;v+=gy)Ln(X(0),Y(v),X(xmax),Y(v),'grid');
+  }
+  Ln(X(0),Y(0),X(xmax),Y(0),'axis');Ln(X(0),Y(0),X(0),Y(ymax),'axis');
+  const tx=o.tx??2, ty=o.ty??2;
+  if(!o.noticks){
+    for(let v=0;v<=xmax+1e-9;v+=tx)T(X(v),Y(0)+17,n1(v),'tick','middle',10.5);
+    for(let v=0;v<=ymax+1e-9;v+=ty)T(X(0)-8,Y(v)+3.5,n1(v),'tick','end',10.5);
+  }
+  if(o.xl)T(X(xmax/2),fy+fh+36,o.xl,'lab '+(o.xcls||'q-time'),'middle',12.5);
+  if(o.yl)A(`<text x="${(fx-40).toFixed(1)}" y="${(fy+fh/2).toFixed(1)}" class="lab ${o.ycls||'q-pos'}" text-anchor="middle" font-size="12.5" transform="rotate(-90 ${(fx-40).toFixed(1)} ${(fy+fh/2).toFixed(1)})">${o.yl}</text>`);
+  return {X,Y,fx,fy,fw,fh,xmax,ymax};
+}
+function curve(m,f,x0,x1,cls,rev=1,extra=''){
+  const r=clamp(rev,0,1);if(r<=0)return;
+  const N=72,xe=x0+(x1-x0)*r;let d='';
+  for(let i=0;i<=N;i++){const x=x0+(xe-x0)*i/N;d+=`${i?'L':'M'}${m.X(x).toFixed(1)} ${m.Y(f(x)).toFixed(1)} `}
+  Pa(d,cls,extra);
+}
+function dots(m,pts,cls,upTo=1,pr=1){
+  const k=Math.floor(pts.length*clamp(upTo,0,1)+1e-6);
+  for(let i=0;i<k;i++){
+    const grow=(i===k-1&&upTo<1)?pop(pr):1;
+    Ci(m.X(pts[i][0]),m.Y(pts[i][1]),4.6*grow,cls);
+  }
+}
+function cross(m,xv,yv,o={}){
+  const p=o.p==null?1:clamp(o.p,0,1);
+  const p1=seg(p,0,.5),p2=seg(p,.4,.9);
+  if(p2>0)Ln(m.X(xv),m.Y(0),m.X(xv),m.Y(0)+(m.Y(yv)-m.Y(0))*p2,'dash');
+  if(p1>0)Ln(m.X(0),m.Y(yv),m.X(0)+(m.X(xv)-m.X(0))*p1,m.Y(yv),'dash');
+  if(p>.85)Ci(m.X(xv),m.Y(yv),o.r||8,'ring-a glow');
+  if(o.xl&&p>.9)chip(m.X(xv),m.Y(0)+34,o.xl,'chipA');
+  if(o.yl&&p>.55)chip(m.X(0)-10,m.Y(yv)-2,o.yl,'chipT','end');
+}
+function tri(m,f,x1,x2,pr,o={}){
+  const y1=f(x1),y2=f(x2);
+  const p1=seg(pr,0,.45),p2=seg(pr,.45,.9);
+  Ci(m.X(x1),m.Y(y1),5.5,'ring');Ci(m.X(x2),m.Y(y2),5.5,'ring');
+  if(p1>0)Ln(m.X(x1),m.Y(y1),m.X(x1)+(m.X(x2)-m.X(x1))*p1,m.Y(y1),'c-rate thick');
+  if(p2>0)Ln(m.X(x2),m.Y(y1),m.X(x2),m.Y(y1)+(m.Y(y2)-m.Y(y1))*p2,'c-rate thick');
+  if(p1>.85)chip(m.X((x1+x2)/2),m.Y(y1)+24,o.dt||`Δtime = ${n1(x2-x1)} s`,'chipR');
+  if(p2>.85)chip(m.X(x2)+14,m.Y((y1+y2)/2)+4,o.dx||`Δposition = ${n1(y2-y1)} m`,'chipR','start');
+}
+function tangent(m,f,x,lenPx,cls='c-rate',h=.02){
+  // Numeric derivative, then a fixed PIXEL-length segment along the screen direction of
+  // the tangent, clamped to the frame — so a steep slope can never slash across the film.
+  const s=(f(x+h)-f(x-h))/(2*h);
+  const ux=m.fw/m.xmax, uy=m.fh/m.ymax;           // px per unit on each axis
+  const hyp=Math.hypot(ux,s*uy), k=lenPx/2/hyp;
+  const cx=m.X(x), cy=m.Y(f(x));
+  const x1=clamp(cx-ux*k,m.fx,m.fx+m.fw), y1=clamp(cy+s*uy*k,m.fy,m.fy+m.fh);
+  const x2=clamp(cx+ux*k,m.fx,m.fx+m.fw), y2=clamp(cy-s*uy*k,m.fy,m.fy+m.fh);
+  Ln(x1,y1,x2,y2,cls+' thick');
+  Ci(cx,cy,5,'dot');
+  return s;
+}
+function areaUnder(m,f,x0,x1,cls,rev=1){
+  const r=clamp(rev,0,1);if(r<=0)return;
+  const N=60,xe=x0+(x1-x0)*r;let d=`M${m.X(x0).toFixed(1)} ${m.Y(0).toFixed(1)} `;
+  for(let i=0;i<=N;i++){const x=x0+(xe-x0)*i/N;d+=`L${m.X(x).toFixed(1)} ${m.Y(f(x)).toFixed(1)} `}
+  d+=`L${m.X(xe).toFixed(1)} ${m.Y(0).toFixed(1)} Z`;Pa(d,cls);
+}
+function slices(m,f,x0,x1,n,upTo){
+  const k=Math.floor(n*clamp(upTo,0,1)+1e-6),w=(x1-x0)/n;let sum=0;
+  for(let i=0;i<k;i++){
+    const xa=x0+i*w,mid=xa+w/2,hgt=f(mid);sum+=hgt*w;
+    Rt(m.X(xa),m.Y(hgt),m.X(xa+w)-m.X(xa),m.Y(0)-m.Y(hgt),'area');
+    Ln(m.X(xa),m.Y(0),m.X(xa),m.Y(hgt),'grid');
+  }
+  return sum;
+}
+
+/* ================= world (corridor) ================= */
+function worldStrip(yB,walkers,o={}){
+  const x0=o.x0||150,x1=o.x1||810,M=v=>x0+(v/12)*(x1-x0);
+  if(o.rot){gT(`rotate(${o.rot} ${(x0+x1)/2} ${yB}) translate(0 ${o.rotLift||0}) scale(${o.rotScale||1})`)}
+  Ln(x0-3,yB,x1+3,yB,'floor');
+  for(let mm=0;mm<=12;mm++){
+    Ln(M(mm),yB,M(mm),yB+(mm%2?5:9),'tickline');
+    if(mm%2===0)T(M(mm),yB+23,mm,'tick','middle',10,o.rot?`transform="rotate(${-o.rot} ${M(mm).toFixed(1)} ${(yB+23).toFixed(1)})"`:'');
+  }
+  Ln(x0-3,yB-50,x0-3,yB,'floor');Ln(x1+3,yB-50,x1+3,yB,'floor');
+  if(!o.rot&&o.axisTag!=='')T((x0+x1)/2,yB+40,o.axisTag||'metres along the corridor','soft','middle',11);
+  walkers.forEach((w,i)=>walkerFig(M(clamp(w.x,0,12)),yB,w.c||'#53D6C7',(w.ph!=null?w.ph:w.x)*2.4,w.name,o.rot,w.dim,i*15));
+  if(o.rot)gC();
+  if(o.clock!=null)T(x0-6,yB-78,`⏱ ${o.clock.toFixed(1)} ${o.cu||'s'}`,'q-time',o.rot?'middle':'start',15);
+  if(o.tag)T(x1+3,yB-78,o.tag,'soft','end',11);
+  return M;
+}
+function walkerFig(cx,fy,color,phase,name,rot,dim,nameLift=0){
+  const sw=Math.sin(phase)*7;
+  gO(dim?0.35:1);
+  if(rot)gT(`rotate(${-rot} ${cx} ${fy-20})`);
+  Ci(cx,fy-36,7.5,'',`fill="${color}"`);
+  A(`<line x1="${cx}" y1="${(fy-28).toFixed(1)}" x2="${cx}" y2="${(fy-13).toFixed(1)}" stroke="${color}" stroke-width="5.5" stroke-linecap="round"/>`);
+  A(`<line x1="${cx}" y1="${(fy-13).toFixed(1)}" x2="${(cx-sw).toFixed(1)}" y2="${fy}" stroke="${color}" stroke-width="4.5" stroke-linecap="round"/>`);
+  A(`<line x1="${cx}" y1="${(fy-13).toFixed(1)}" x2="${(cx+sw).toFixed(1)}" y2="${fy}" stroke="${color}" stroke-width="4.5" stroke-linecap="round"/>`);
+  if(name)T(cx,fy-49-nameLift,name,'soft','middle',10.5);
+  if(rot)gC();
+  gC();
+}
+/* chips & stamps */
+function chip(x,y,txt,kind='chip',anchor='middle'){
+  const w=String(txt).length*7.4+22;
+  const xx=anchor==='middle'?x-w/2:anchor==='end'?x-w:x;
+  Rt(xx,y-14,w,25,kind+'-bg',13);
+  T(xx+w/2,y+3.5,txt,kind+'-t','middle',12.5);
+}
+function stamp(x,y,txt,kind='warn',rot=-7,pr=1){
+  const s=pop(pr);if(pr<=0)return;
+  gT(`translate(${x} ${y}) rotate(${rot}) scale(${s.toFixed(3)})`);gO(clamp(pr*2.5,0,1));
+  const w=String(txt).length*13.5+34;
+  Rt(-w/2,-22,w,44,`stamp-${kind}`,7);T(0,7.5,txt,`stamp-${kind}-t`,'middle',21);
+  gC();gC();
+}
+function bigTitle(x,y,txt,sz,pr){gO(clamp(pr,0,1));T(x,y,txt,'title-big','middle',sz);gC()}
+
+/* =========================================================
+   THE CHAPTERS — each beat: {d: seconds, cap: html, draw(p)}
+   ========================================================= */
+const walkF=t=>1.5*t;                       // the steady walk
+const PTS=[...Array(9).keys()].map(t=>[t,1.5*t]);
+
+const CHS=[];
+
+/* ---------------- CH0 · THE CLAIM ---------------- */
+CHS.push({title:'The Claim',beats:[
+{d:9,cap:'Watch her walk. <b>Now watch the same walk become a line.</b>',draw(p){
+  const t=8*p;
+  worldStrip(150,[{x:walkF(t),name:'Mira'}],{clock:t});
+  const m=frame(300,235,420,240,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,walkF,0,t,'c-pos');
+  Ci(m.X(t),m.Y(walkF(t)),6,'dot glow');
+}},
+{d:7,cap:'The movie is over. <i>The line remembers all of it</i> — every moment of the walk, held on one page.',draw(p){
+  gO(0.35);worldStrip(150,[{x:12,name:'Mira'}],{clock:8});gC();
+  const m=frame(300,235,420,240,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,walkF,0,8,'c-pos');
+  dots(m,PTS,'dot',p,seg(p,.8,1));
+}},
+{d:8,cap:'Every <b>point</b> is a <b>state</b> — one moment paired with one value.',draw(p){
+  const m=frame(300,120,420,300,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,walkF,0,8,'c-pos');dots(m,PTS,'dot');
+  cross(m,3,4.5,{p,xl:'3 s',yl:'4.5 m'});
+  bigTitle(160,180,'a state',26,seg(p,.5,.9));
+}},
+{d:8,cap:'Every <b>slope</b> is a <b>rate</b> — how fast one quantity changes with the other.',draw(p){
+  const m=frame(300,120,420,300,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,walkF,0,8,'c-pos');dots(m,PTS,'dot');
+  tri(m,walkF,2,4,p);
+  bigTitle(160,180,'a rate',26,seg(p,.5,.9));
+}},
+{d:9,cap:'Every <b>bend</b> says the rate itself is changing. Every <b>area</b> is an amount accumulated. <i>This film shows you why.</i>',draw(p){
+  const m1=frame(120,140,320,260,8,12,{xl:'time (s)',yl:'position (m)',tx:4,ty:4});
+  curve(m1,t=>0.1875*t*t,0,8,'c-pos');
+  const xx=1.5+5*ez(seg(p,0,.55));tangent(m1,t=>0.1875*t*t,xx,150);
+  T(280,110,'the bend = rate changing','q-rate','middle',13);
+  const m2=frame(560,140,320,260,8,6,{xl:'time (s)',yl:'speed (m/s)',tx:4,ty:2});
+  areaUnder(m2,t=>0.7*t,0,8,'area',seg(p,.35,1));
+  curve(m2,t=>0.7*t,0,8,'c-rate');
+  T(720,110,'the area = amount gathered','q-pos','middle',13);
+}},
+]});
+
+/* ---------------- CH1 · AXES ARE CHOICES ---------------- */
+CHS.push({title:'Axes Are Choices',beats:[
+{d:8,cap:'A graph begins with two decisions: <b>what goes across</b>, and <b>what goes up</b>?',draw(p){
+  const m=frame(270,110,440,310,8,12,{noticks:true,nogrid:p<.2});
+  const p1=ez(seg(p,.05,.5)),p2=ez(seg(p,.45,.9));
+  const tx=270+(m.X(4)-270)*p1, ty0=60, tyy=ty0+((m.fy+m.fh/2)-ty0)*p2;
+  chip(tx*0+  (140+(m.X(4)-140)*p1), 60+((m.fy+m.fh+36)-60)*p1,'⏱ time','chipA');
+  chip(820+((m.fx-46)-820)*p2, tyy,'📏 position','chipT');
+}},
+{d:8,cap:'Then hand every axis its <b>unit</b>. A number without a unit is a rumour.',draw(p){
+  const m=frame(270,110,440,310,8,12,{xl:'time (s)',yl:'position (m)'});
+  gO(seg(p,.2,.7));
+  chip(m.X(7),m.Y(0)+58,'seconds','chipA');
+  chip(m.X(0)+64,m.Y(11),'metres','chipT','start');
+  gC();
+}},
+{d:12,cap:'The same rising shape can tell <b>three different stories</b> — a walk, a filling jug, a warming room…',draw(p){
+  const defs=[['position (m)','a walk',0],['volume (L)','a jug filling',.25],['temperature (°C)','a room warming',.5]];
+  defs.forEach((d,i)=>{
+    gO(seg(p,d[2],d[2]+.3));
+    const m=frame(90+i*300,150,220,230,8,12,{noticks:true,xl:'time (s)',yl:d[0]});
+    curve(m,walkF,0,8,'c-pos',seg(p,d[2]+.1,d[2]+.45));
+    T(90+i*300+110,120,d[1],'ink serif','middle',15);
+    gC();
+  });
+}},
+{d:8,cap:'…so a shape means <b>nothing</b> until both axes are read. <i>Axes first. Always.</i>',draw(p){
+  const defs=['position (m)','volume (L)','temperature (°C)'];
+  defs.forEach((d,i)=>{
+    const m=frame(90+i*300,150,220,230,8,12,{noticks:true,xl:'time (s)',yl:d});
+    curve(m,walkF,0,8,'c-pos');
+    const ph=pop(seg(p,.1+i*.12,.5+i*.12));
+    if(ph>0){gT(`translate(${90+i*300-40} ${150+115}) scale(${ph})`);Ci(0,0,26,'ring-a glow');gC();}
+  });
+}},
+{d:10,cap:'And every graph is true only <b>under conditions</b>: what was deliberately changed, what was watched — and what was <b>held still</b>?',draw(p){
+  const m=frame(270,95,440,290,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,walkF,0,8,'c-pos');dots(m,PTS,'dot');
+  const items=['her pace','her route','the corridor'];
+  gO(seg(p,.15,.4));T(480,455,'HELD CONSTANT','soft','middle',11,'letter-spacing=".2em"');gC();
+  items.forEach((it,i)=>{gO(seg(p,.3+i*.18,.5+i*.18));chip(330+i*150,485,it,'chip');gC()});
+  stamp(770,140,'CONDITIONS',"ok",6,seg(p,.75,1));
+}},
+]});
+
+/* ---------------- CH2 · A POINT IS A STATE ---------------- */
+CHS.push({title:'A Point Is a State',beats:[
+{d:9,cap:'Rewind. This time we freeze a <b>single moment</b> of the walk.',draw(p){
+  const t=3*ez(p);
+  worldStrip(150,[{x:walkF(t),name:'Mira'}],{clock:t});
+  const m=frame(300,235,420,240,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,walkF,0,t,'c-pos');
+  Ci(m.X(t),m.Y(walkF(t)),6,'dot');
+}},
+{d:10,cap:'At <b>3 seconds</b> she was <i>4.5 metres</i> along. One dot = one <b>when</b> paired with one <b>where</b>. A snapshot.',draw(p){
+  worldStrip(150,[{x:4.5,name:'Mira'}],{clock:3,tag:'frozen'});
+  Ln(150+(4.5/12)*660,168,150+(4.5/12)*660,120,'dash');
+  const m=frame(300,235,420,240,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,walkF,0,3,'c-pos');
+  cross(m,3,4.5,{p,xl:'3 s',yl:'4.5 m'});
+}},
+{d:12,cap:'Let <b>every second</b> leave its own snapshot — a fact minted on the page.',draw(p){
+  const k=clamp(Math.floor(p*9),0,8),t=Math.min(8,p*9);
+  worldStrip(150,[{x:walkF(Math.min(t,8)),name:'Mira'}],{clock:Math.min(t,8)});
+  const m=frame(300,235,420,240,8,12,{xl:'time (s)',yl:'position (m)'});
+  dots(m,PTS,'dot',(k+1)/9,(t-k));
+  for(let i=0;i<=k;i++)Ln(m.X(i),m.Y(0),m.X(i),m.Y(0)+5,'c-rate');
+}},
+{d:10,cap:'Nine dots, nine facts. Read a dot <b>across first, then up</b> — when, then where.',draw(p){
+  const m=frame(270,110,440,310,8,12,{xl:'time (s)',yl:'position (m)'});
+  dots(m,PTS,'dot');
+  const p1=ez(seg(p,.1,.5)),p2=ez(seg(p,.5,.9));
+  Ln(m.X(0),m.Y(0),m.X(5*p1),m.Y(0),'c-rate thick');
+  if(p1>.98)Ln(m.X(5),m.Y(0),m.X(5),m.Y(7.5*p2),'c-rate thick');
+  if(p1>.5)chip(m.X(2.5),m.Y(0)+56,'1 · across: 5 s','chipR');
+  if(p2>.5)chip(m.X(5)+16,m.Y(4),'2 · up: 7.5 m','chipR','start');
+  Ci(m.X(5),m.Y(7.5),8,'ring-a glow');
+}},
+{d:10,cap:'The dots are <b>observed</b>. The line between them is our <em>claim</em> — a model filling the gaps. Keep the two ideas apart.',draw(p){
+  const m=frame(270,110,440,310,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,walkF,0,8,'ghost',seg(p,.15,.7));
+  dots(m,PTS,'dot');
+  gO(seg(p,.55,.85));chip(m.X(2),m.Y(9),'dots = data','chipT');gC();
+  gO(seg(p,.7,1));chip(m.X(5.6),m.Y(4),'line = model','chip');gC();
+}},
+]});
+
+/* ---------------- CH3 · SLOPE IS A RATE ---------------- */
+CHS.push({title:'Slope Is a Rate',beats:[
+{d:10,cap:'Pick two states. <b>Compare the changes</b> — how much position, for how much time?',draw(p){
+  const m=frame(270,110,440,310,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,walkF,0,8,'c-pos');dots(m,PTS,'dot');
+  tri(m,walkF,2,4,p);
+}},
+{d:10,cap:'3 metres in 2 seconds → <b>1.5 metres each second</b>. Change divided by change. That ratio <i>is</i> the slope.',draw(p){
+  const m=frame(270,110,440,310,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,walkF,0,8,'c-pos');dots(m,PTS,'dot');
+  tri(m,walkF,2,4,1);
+  gO(seg(p,.2,.6));chip(m.X(6),m.Y(10.6),'3 m ÷ 2 s = 1.5 m/s','chipR');gC();
+  stamp(m.X(6),m.Y(8.2),'SLOPE = RATE','ok',-5,seg(p,.6,1));
+}},
+{d:9,cap:'Slope carries <b>units</b>: metres <b>per</b> second. Say them every time — a rate without a unit is a rumour.',draw(p){
+  const m=frame(270,130,440,280,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,walkF,0,8,'c-pos');
+  tri(m,walkF,2,4,1);
+  const s=pop(seg(p,.2,.7));
+  gT(`translate(480 88) scale(${s.toFixed(3)})`);
+  T(0,0,'m / s','q-rate','middle',34,'font-weight="700"');
+  T(0,52,'a distance ÷ a time','soft','middle',12);
+  gC();
+}},
+{d:12,cap:'She gains the <b>same 1.5 m every single second</b> — equal steps in, equal steps out. <i>That</i> is why the dots fall on a straight line.',draw(p){
+  const m=frame(270,110,440,310,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,walkF,0,8,'c-pos');dots(m,PTS,'dot');
+  const k=Math.floor(8*seg(p,.05,.85));
+  for(let i=0;i<k;i++){
+    Ln(m.X(i),m.Y(walkF(i)),m.X(i+1),m.Y(walkF(i)),'dash');
+    Ln(m.X(i+1),m.Y(walkF(i)),m.X(i+1),m.Y(walkF(i+1)),'c-rate');
+    T(m.X(i+1)+5,m.Y(walkF(i)+0.75)+4,'+1.5','q-rate','start',10.5);
+  }
+  stamp(430,150,'EQUAL GAINS → STRAIGHT','ok',-4,seg(p,.85,1));
+}},
+{d:14,cap:'<b>Steeper means faster</b>: more metres packed into every second. Watch them race — same start, different rates.',draw(p){
+  const t=8*ez(seg(p,.08,.92));
+  worldStrip(150,[{x:1.5*t,name:'1.5 m/s'},{x:Math.min(12,3*t),name:'3 m/s',c:'#C792EA'}],{clock:t});
+  const m=frame(300,235,420,240,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,walkF,0,t,'c-pos');
+  curve(m,x=>Math.min(12,3*x),0,t,'c-b');
+  chip(m.X(6.6),m.Y(9.9)-16,'1.5 m/s','chipT');
+  chip(m.X(2.7),m.Y(8.1)-16,'3 m/s','chip');
+}},
+{d:12,cap:'Careful — <b>squash an axis and any line LOOKS steeper</b>. Your eye reads tilt; the <i>number</i> reads truth. Both of these are 1.5 m/s.',draw(p){
+  const m1=frame(110,140,320,260,8,12,{xl:'time (s)',yl:'position (m)',ty:4});
+  curve(m1,walkF,0,8,'c-pos');chip(270,120,'1.5 m/s','chipT');
+  const m2=frame(560,220,320,180,8,30,{xl:'time (s)',yl:'position (m)',ty:10});
+  curve(m2,walkF,0,8,'c-pos');chip(720,200,'still 1.5 m/s','chipT');
+  gO(seg(p,.45,.8));T(720,140,'same data,','soft','middle',13);T(720,160,'squashed scale','soft','middle',13);gC();
+  stamp(480,480,'SCALE CAN LIE — UNITS CANNOT','warn',0,seg(p,.75,1));
+}},
+{d:6,cap:'<i>Slope is not how tilted it looks.</i> <b>Slope is how much, per how much.</b>',draw(p){
+  bigTitle(480,250,'how much,',40,seg(p,.05,.4));
+  bigTitle(480,310,'per how much.',40,seg(p,.35,.7));
+  gO(seg(p,.6,1));T(480,370,'Δ position ÷ Δ time — with units','q-rate','middle',16);gC();
+}},
+]});
+
+/* ---------------- CH4 · NOT A PICTURE ---------------- */
+const hillPath=(x0,y0,w,h)=>`M${x0} ${y0} q ${w*.25} ${-h} ${w*.5} 0 q ${w*.25} ${h*.7} ${w*.5} 0`;
+CHS.push({title:'The Graph Is Not a Picture',beats:[
+{d:10,cap:'A rising line. <b>Is she climbing a hill?</b>',draw(p){
+  const m=frame(270,110,440,310,8,12,{xl:'time (s)',yl:'position (m)'});
+  gO(seg(p,.2,.5)*.9);Pa(`M${m.X(0)} ${m.Y(0)} Q ${m.X(4)} ${m.Y(14)} ${m.X(8)} ${m.Y(0)} Z`,'hill');gC();
+  curve(m,walkF,0,8,'c-pos');dots(m,PTS,'dot');
+  stamp(480,190,'NO','warn',-8,seg(p,.62,.95));
+}},
+{d:13,cap:'Rotate the whole corridor. <b>The dots do not move</b> — because the graph never drew the corridor. It plots <i>how far along</i>, against <i>when</i>.',draw(p){
+  const rot=-90*ez(seg(p,.15,.6));
+  worldStrip(280,[{x:4.5,name:'Mira',ph:4.5}],{clock:3,rot,rotScale:1-.34*ez(seg(p,.15,.6)),x0:110,x1:450,tag:''});
+  const m=frame(560,120,340,300,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,walkF,0,8,'c-pos');dots(m,PTS,'dot');
+  Ci(m.X(3),m.Y(4.5),8,'ring-a glow');
+  gO(seg(p,.65,.95));T(280,470,'the corridor turned — the graph didn’t blink','soft','middle',14);gC();
+}},
+{d:14,cap:'Two <b>different worlds</b> — a flat corridor, a real hill — walked at the same pace give the <b>same graph</b>. The graph only knows its axes.',draw(p){
+  T(230,80,'flat corridor','soft','middle',12.5);
+  worldStrip(150,[{x:4.5}],{x0:90,x1:370,clock:3});
+  T(700,80,'a real hill','soft','middle',12.5);
+  Pa(hillPath(560,190,280,55),'hill');
+  const hx=560+280*(4.5/12),hy=190-55*Math.sin(Math.PI*4.5/12)*.98;
+  walkerFig(hx,hy,'#C792EA',4.5*2.4,'');
+  T(700,215,'distance measured ALONG the path','tick','middle',10);
+  const m=frame(300,265,400,215,8,12,{xl:'time (s)',yl:'distance along (m)',ty:4});
+  curve(m,walkF,0,8,'c-pos',seg(p,.35,.8));
+  gO(seg(p,.75,1));chip(m.X(4),m.Y(11),'one graph — two worlds','chipA');gC();
+}},
+{d:14,cap:'<b>Higher is not faster.</b> At 2 s, Anaya is <i>ahead</i> — her line is <b>higher</b>. But Mira is <em>faster</em> — her line is <b>steeper</b>.',draw(p){
+  const t=2;
+  worldStrip(140,[{x:3,name:'Mira'},{x:5.5,name:'Anaya',c:'#C792EA'}],{clock:t});
+  const m=frame(300,225,420,250,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,x=>1.5*x,0,8,'c-pos');curve(m,x=>4+0.75*x,0,8,'c-b');
+  Ln(m.X(2),m.Y(0),m.X(2),m.Y(12),'dash');
+  Ci(m.X(2),m.Y(3),6,'dot');Ci(m.X(2),m.Y(5.5),6,'dot-b');
+  gO(seg(p,.25,.55));chip(m.X(2)+14,m.Y(5.5)-18,'higher = ahead','chip','start');gC();
+  gO(seg(p,.55,.85));chip(m.X(6),m.Y(9)+30,'steeper = faster','chipT');gC();
+}},
+{d:12,cap:'Where the lines cross, nothing collides. They simply <b>share a state</b>: same time, same place — 5⅓ s, 8 m.',draw(p){
+  const t=2+(16/3-2)*ez(seg(p,.1,.6));
+  worldStrip(140,[{x:1.5*t,name:'Mira'},{x:4+0.75*t,name:'Anaya',c:'#C792EA'}],{clock:t});
+  const m=frame(300,225,420,250,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,x=>1.5*x,0,8,'c-pos');curve(m,x=>4+0.75*x,0,8,'c-b');
+  Ln(m.X(t),m.Y(0),m.X(t),m.Y(12),'dash');
+  Ci(m.X(t),m.Y(1.5*t),6,'dot');Ci(m.X(t),m.Y(4+0.75*t),6,'dot-b');
+  if(p>.62){Ci(m.X(16/3),m.Y(8),10,'ring-a glow');chip(m.X(16/3),m.Y(8)-26,'same time · same place','chipA')}
+}},
+{d:9,cap:'<b>Height</b> answers <i>where</i>. <b>Slope</b> answers <i>how fast</i>. Two different questions — never let one impersonate the other.',draw(p){
+  const m=frame(270,120,440,290,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,x=>1.5*x,0,8,'c-pos');curve(m,x=>4+0.75*x,0,8,'c-b');
+  gO(seg(p,.1,.4));chip(310,90,'HEIGHT → where / who is ahead','chipT','start');gC();
+  gO(seg(p,.4,.7));chip(310,470,'SLOPE → how fast / who is faster','chipR','start');gC();
+}},
+]});
+
+/* ---------------- CH5 · STARTS & THE ORIGIN ---------------- */
+CHS.push({title:'Starts & the Origin',beats:[
+{d:12,cap:'Same pace, different start. The line <b>lifts</b> — the tilt does <b>not</b>. Starting point and speed are two separate facts.',draw(p){
+  const lift=3*ez(seg(p,.15,.6));
+  worldStrip(145,[{x:lift,name:'Mira',ph:0}],{clock:0});
+  const m=frame(300,230,420,245,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,x=>1.5*x,0,8,'ghost');
+  curve(m,x=>Math.min(12,lift+1.5*x),0,8,'c-pos');
+  gO(seg(p,.55,.9));chip(m.X(1.6),m.Y(1.2),'old start: 0 m','chip');chip(m.X(5.9),m.Y(11.4),'same tilt: 1.5 m/s','chipT');gC();
+}},
+{d:11,cap:'“When time is 0, position is 0.” Here? <b>FALSE.</b> The origin is a <i>claim about the world</i>, not a habit of graph paper.',draw(p){
+  const m=frame(270,110,440,310,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,x=>Math.min(12,3+1.5*x),0,8,'c-pos');
+  Ci(m.X(0),m.Y(3),8,'ring-a glow');
+  chip(m.X(0)+16,m.Y(3)-18,'starts at 3 m','chipA','start');
+  Ci(m.X(0),m.Y(0),8,'ring');
+  stamp(m.X(2.4),m.Y(1.1),'FALSE','warn',-8,seg(p,.35,.7));
+  gO(seg(p,.7,1));T(480,470,'a line owes the corner nothing — check, don’t assume','soft','middle',13);gC();
+}},
+{d:13,cap:'<b>Straight is not proportional.</b> Through zero: double the time and the distance doubles too…',draw(p){
+  const m=frame(270,110,440,310,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,x=>1.5*x,0,8,'c-pos');
+  cross(m,2,3,{p:seg(p,.05,.3)});cross(m,4,6,{p:seg(p,.3,.55)});
+  gO(seg(p,.55,.85));
+  chip(m.X(3),m.Y(0)+58,'2 s → 4 s   (×2)','chipA');
+  chip(m.X(0)-8,m.Y(4.5)-26,'3 m → 6 m   (×2)','chipT','end');
+  gC();
+  stamp(m.X(6),m.Y(10.4),'PROPORTIONAL ✓','ok',-5,seg(p,.8,1));
+}},
+{d:11,cap:'…but give her a head start and the doubling <b>fails</b>: at 2 s she is 6 m, at 4 s only 9 m. Linear, yes — <em>proportional, no</em>.',draw(p){
+  const m=frame(270,110,440,310,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,x=>3+1.5*x,0,6,'c-pos');
+  cross(m,2,6,{p:seg(p,.05,.3)});cross(m,4,9,{p:seg(p,.3,.55)});
+  gO(seg(p,.5,.8));chip(m.X(0)-8,m.Y(7.5)-26,'6 m → 9 m  (not ×2)','chip','end');gC();
+  stamp(m.X(5.6),m.Y(3.3),'NOT PROPORTIONAL','warn',-6,seg(p,.75,1));
+}},
+{d:7,cap:'Before you trust a ratio, <b>check the intercept</b>. Only through-zero lines let you say “double one, double the other”.',draw(p){
+  const m=frame(300,140,380,270,8,12,{noticks:true,xl:'time',yl:'position'});
+  curve(m,x=>1.5*x,0,8,'c-ok');curve(m,x=>3+1.13*x,0,8,'c-warn');
+  gO(seg(p,.2,.6));chip(m.X(6.2),m.Y(9.3)+34,'y = m·x  → proportion','chipT');gC();
+  gO(seg(p,.45,.85));chip(m.X(3.2),m.Y(8.2)-20,'y = m·x + c → merely linear','chip');gC();
+}},
+]});
+
+/* ---------------- CH6 · CURVATURE ---------------- */
+const accX=t=>0.175*t*t, accV=t=>0.35*t;          // gentle acceleration, x(8)=11.2
+const brkX=t=>2.2*t-0.1*t*t;                      // braking, still forward, x(8)=11.2
+const ballH=t=>6*t-0.75*t*t;                      // thrown ball, peak (4,12)
+CHS.push({title:'Curvature — the Rate Changing',beats:[
+{d:12,cap:'Now she <b>speeds up</b>. Watch the tangent — the local slope — <i>grow</i>. The curve bends upward because each second buys more metres than the last.',draw(p){
+  const t=8*ez(seg(p,.05,.95));
+  worldStrip(150,[{x:accX(t),name:'',ph:accX(t)}],{clock:t});
+  const m=frame(300,235,420,240,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,accX,0,t,'c-pos');
+  if(t>0.6){const s=tangent(m,accX,Math.max(.6,t-.01),140);chip(m.X(1.6),m.Y(10.6),`slope now: ${n1(s)} m/s`,'chipR')}
+}},
+{d:10,cap:'Read the gains: +0.5, +1.6, +2.6, +3.7 metres… <b>bending up = gaining MORE each second.</b> The rate itself is rising.',draw(p){
+  const m=frame(270,110,440,310,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,accX,0,8,'c-pos');
+  const k=Math.floor(8*seg(p,.05,.9));
+  for(let i=0;i<k;i++){
+    Ln(m.X(i+1),m.Y(accX(i)),m.X(i+1),m.Y(accX(i+1)),'c-rate');
+    Ln(m.X(i),m.Y(accX(i)),m.X(i+1),m.Y(accX(i)),'dash');
+    if(i>=1)T(m.X(i+1)+5,m.Y((accX(i)+accX(i+1))/2)+4,'+'+n1(accX(i+1)-accX(i)),'q-rate','start',10.5);
+  }
+}},
+{d:10,cap:'Braking: still moving <i>forward</i>, but gaining <b>less</b> each second. The curve bends over — rising, yet flattening.',draw(p){
+  const t=8*ez(seg(p,.05,.85));
+  worldStrip(150,[{x:brkX(t),name:'',ph:brkX(t)}],{clock:t});
+  const m=frame(300,235,420,240,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,brkX,0,t,'c-pos');
+  if(t>0.6){const s=tangent(m,brkX,Math.max(.6,t-.01),140);chip(m.X(6.3),m.Y(3.4),`slope now: ${n1(s)} m/s`,'chipR')}
+}},
+{d:16,cap:'<b>One motion — three graphs.</b> Constant acceleration is <i>flat</i> on acceleration–time, <i>straight</i> on velocity–time, <em>curved</em> on position–time.',draw(p){
+  const t=8*ez(seg(p,.1,.9));
+  const ma=frame(80,180,240,220,8,1,{xl:'time (s)',yl:'acceleration (m/s²)',ty:.5,tx:4,ycls:'q-rate'});
+  curve(ma,x=>0.35,0,t,'c-rate');
+  const mv=frame(390,180,240,220,8,3,{xl:'time (s)',yl:'velocity (m/s)',ty:1,tx:4,ycls:'q-plum'});
+  curve(mv,accV,0,t,'c-b');
+  const mx=frame(700,180,240,220,8,12,{xl:'time (s)',yl:'position (m)',ty:4,tx:4});
+  curve(mx,accX,0,t,'c-pos');
+  [ [ma,'FLAT'],[mv,'STRAIGHT'],[mx,'CURVED'] ].forEach(([m,w],i)=>{gO(seg(p,.15+i*.12,.35+i*.12));T(m.fx+m.fw/2,150,w,'ink','middle',15,'letter-spacing=".18em"');gC()});
+  [ma,mv,mx].forEach(m=>{if(t>0)Ln(m.X(t),m.Y(0),m.X(t),m.fy,'dash')});
+}},
+{d:9,cap:'So “constant acceleration makes a parabola” is only <b>half a sentence</b>. The other half names the axes. A shape means nothing until both are read.',draw(p){
+  const ma=frame(80,180,240,220,8,1,{xl:'time (s)',yl:'acceleration (m/s²)',ty:.5,tx:4,ycls:'q-rate'});
+  curve(ma,x=>0.35,0,8,'c-rate');
+  const mv=frame(390,180,240,220,8,3,{xl:'time (s)',yl:'velocity (m/s)',ty:1,tx:4,ycls:'q-plum'});
+  curve(mv,accV,0,8,'c-b');
+  const mx=frame(700,180,240,220,8,12,{xl:'time (s)',yl:'position (m)',ty:4,tx:4});
+  curve(mx,accX,0,8,'c-pos');
+  [ma,mv,mx].forEach((m,i)=>{const ph=pop(seg(p,.12+i*.16,.42+i*.16));
+    if(ph>0){gT(`translate(${m.fx+m.fw/2} ${m.fy+m.fh+34}) scale(${ph})`);Rt(-92,-14,184,26,'stamp-ok',13);gC()}});
+  gO(seg(p,.65,1));T(480,110,'same motion · three truths · read the axes','ink serif','middle',17);gC();
+}},
+{d:13,cap:'Throw a ball. At the very top its slope passes through <b>zero</b> — the <i>turning point</i>, where direction flips. (The ball flew straight up and down. The graph is a hump. Not a picture!)',draw(p){
+  const t=8*ez(seg(p,.05,.9));
+  const bx=170,by=430;
+  Ln(bx,by,bx,by-ballH(t)*22-14,'grid');
+  Ci(bx,by-ballH(t)*22-14,10,'dot-b');
+  T(bx,by+22,'the ball: straight up, straight down','soft','middle',11);
+  const m=frame(330,120,470,300,8,14,{xl:'time (s)',yl:'height (m)',ty:2});
+  curve(m,ballH,0,t,'c-b');
+  if(t>0.5)tangent(m,ballH,Math.max(.5,Math.min(7.6,t-.01)),130,'c-rate');
+  if(t>3.6&&t<4.6)chip(m.X(4),m.Y(12)-26,'slope = 0 here','chipR');
+  if(t>4.6)Ci(m.X(4),m.Y(12),8,'ring-a');
+}},
+{d:8,cap:'<b>Curvature is the slope changing</b> — not how bent the drawing looks. Straight line: rate held. Bend: rate on the move.',draw(p){
+  const m=frame(280,130,420,280,8,12,{noticks:true,xl:'time',yl:'quantity'});
+  curve(m,x=>1.5*x,0,8,'ghost');
+  curve(m,accX,0,8,'c-pos');
+  gO(seg(p,.2,.6));chip(m.X(6.4),m.Y(9.6)+30,'rate held still','chip');gC();
+  gO(seg(p,.45,.85));chip(m.X(3.4),m.Y(6.4)-24,'rate changing','chipR');gC();
+}},
+]});
+
+/* ---------------- CH7 · AREA IS ACCUMULATION ---------------- */
+CHS.push({title:'Area — Accumulation',beats:[
+{d:12,cap:'A <b>speed</b> graph now. Steady 1.5 m/s for 2 s: rate × time = 3 m. On this graph that product is literally a <b>rectangle</b>.',draw(p){
+  const m=frame(270,110,440,310,8,4,{xl:'time (s)',yl:'speed (m/s)',ty:1,ycls:'q-rate'});
+  curve(m,x=>1.5,0,8,'c-rate');
+  const r=ez(seg(p,.2,.6));
+  Rt(m.X(0),m.Y(1.5),(m.X(2)-m.X(0))*r,m.Y(0)-m.Y(1.5),'area');
+  gO(seg(p,.55,.9));chip(m.X(1),m.Y(0.75),'1.5 m/s × 2 s = 3 m','chipT');gC();
+  gO(seg(p,.75,1));chip(m.X(5.7),m.Y(3.3),'the units MULTIPLY: m/s × s = m','chipA');gC();
+}},
+{d:16,cap:'Speed keeps changing? <b>Slice time thin.</b> Each sliver adds rate × a little time. The slivers become the area — and the area becomes the distance.',draw(p){
+  const m=frame(270,110,440,310,8,6,{xl:'time (s)',yl:'speed (m/s)',ty:2,ycls:'q-rate'});
+  const f=t=>0.7*t;
+  const total=slices(m,f,0,8,16,seg(p,.05,.8));
+  curve(m,f,0,8,'c-rate');
+  chip(m.X(1.9),m.Y(5.3),`distance so far: ${n1(total)} m`,'chipT');
+}},
+{d:10,cap:'So <b>area under speed–time = distance travelled</b>. Under any rate, the area is the <i>accumulated amount</i>: many small “rate × time” added up.',draw(p){
+  const m=frame(270,110,440,310,8,6,{xl:'time (s)',yl:'speed (m/s)',ty:2,ycls:'q-rate'});
+  areaUnder(m,t=>0.7*t,0,8,'area',seg(p,.05,.5));
+  curve(m,t=>0.7*t,0,8,'c-rate');
+  stamp(m.X(5.4),m.Y(1.5),'AREA = 22.4 m','ok',-4,seg(p,.55,.95));
+}},
+{d:13,cap:'But an area only <b>means</b> something when the units multiply into something real. m/s × s = metres ✓. Watts × s = energy ✓. Position × time = <em>…nothing</em> ✗.',draw(p){
+  const rows=[['speed × time','distance ✓','ok'],['power × time','energy ✓','ok'],['force × distance','work ✓','ok'],['position × time','?? — nothing','warn']];
+  rows.forEach((r,i)=>{
+    gO(seg(p,.08+i*.18,.28+i*.18));
+    T(330,160+i*62,r[0],'ink','end',17);
+    T(400,160+i*62,'→',(r[2]==='ok'?'q-pos':'soft'),'middle',17);
+    T(470,160+i*62,r[1],r[2]==='ok'?'q-pos':'stamp-warn-t','start',17);
+    gC();
+  });
+}},
+{d:8,cap:'<b>Before you shade, multiply the axis units.</b> If the product is meaningful, the area is. If not, the area is just paint.',draw(p){
+  bigTitle(480,240,'unit × unit first,',36,seg(p,.05,.4));
+  bigTitle(480,300,'shade second.',36,seg(p,.35,.7));
+}},
+]});
+
+/* ---------------- CH8 · SHAPES ARE MECHANISMS ---------------- */
+CHS.push({title:'Shapes Are Fingerprints of Mechanisms',beats:[
+{d:14,cap:'<b>Mechanism: a steady rate.</b> Equal steps in, equal steps out. Fingerprint: <i>the straight line</i>.',draw(p){
+  const t=8*ez(seg(p,.1,.85));
+  worldStrip(150,[{x:1.5*t}],{clock:t});
+  const m=frame(320,235,380,240,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,walkF,0,t,'c-pos');
+  chip(770,120,'LINEAR','chipT');
+}},
+{d:15,cap:'<b>Mechanism: each generation multiplies.</b> Equal <i>percentage</i> change per step — 1, 2, 4, 8, 16… Fingerprint: <i>the runaway curve</i>.',draw(p){
+  const gen=Math.floor(6*seg(p,.05,.8));
+  for(let g=0;g<=gen;g++){
+    const n=Math.pow(2,g);
+    const sp=Math.min(9.5,410/n), rr=Math.max(1.7,3.2-g*0.22);
+    for(let i=0;i<n;i++)Ci(110+g*38, 92+i*sp, rr,'dot-b');
+    T(110+g*38, 78,g?'×2':'1','q-plum','middle',9.5);
+  }
+  const m=frame(430,190,470,280,6,64,{xl:'generations',yl:'population',ty:16,tx:1,xcls:'q-plum',ycls:'q-plum'});
+  curve(m,x=>Math.pow(2,x),0,Math.min(6,6*seg(p,.1,.85)),'c-b');
+  chip(830,150,'EXPONENTIAL','chip');
+}},
+{d:15,cap:'<b>Mechanism: a conserved product.</b> Width × height = 12, always. Stretch one and the other <i>must</i> shrink. Fingerprint: <i>the hyperbola</i>.',draw(p){
+  const w=2+6*ez(seg(p,.08,.8));const h=12/w;
+  const sc=17;
+  Rt(120,380-h*sc,w*sc,h*sc,'area');
+  Pa(`M120 ${380-h*sc} h${w*sc} v${h*sc} h${-w*sc} Z`,'c-ok');
+  T(120+w*sc/2,402,`width ${n1(w)}`,'q-pos','middle',11);
+  T(104,380-h*sc/2,`height ${n1(h)}`,'q-pos','end',11);
+  chip(180,120,'width × height = 12','chipT');
+  const m=frame(430,150,470,320,8,12,{xl:'width',yl:'height',xcls:'q-pos'});
+  curve(m,x=>12/x,1.2,8,'c-pos',seg(p,.1,.85));
+  Ci(m.X(w),m.Y(h),6,'dot glow');
+  chip(830,120,'INVERSE','chipT');
+}},
+{d:15,cap:'<b>Mechanism: a fixed total spreads over a growing sphere.</b> Twice as far → a quarter as bright. Fingerprint: <i>the steep-then-flat fall</i>: 1/d².',draw(p){
+  const cx=170,cy=250;
+  Ci(cx,cy,7,'',`fill="#F2B84B"`);
+  [1,2,3].forEach((d,i)=>{gO(.8-.22*i);Ci(cx,cy,26+i*34,'ring-a');gC();
+    T(cx+26+i*34,cy-8,['36','9','4'][i],'q-time','middle',11)});
+  T(cx,cy+140,'light spreading out','soft','middle',11);
+  const m=frame(430,150,470,320,8,40,{xl:'distance',yl:'brightness',ty:10,xcls:'q-pos',ycls:'q-time'});
+  curve(m,x=>36/(x*x),1,8,'c-violet',seg(p,.1,.85));
+  chip(820,120,'INVERSE SQUARE','chip');
+}},
+{d:15,cap:'<b>Mechanism: the system keeps revisiting its states</b> — a pendulum, a season, a heartbeat. Fingerprint: <i>the wave</i>.',draw(p){
+  const t=8*seg(p,.05,.95);
+  const ang=Math.sin(2*Math.PI*t/4)*.62;
+  const px0=190,py0=110,L=130;
+  Ln(px0-70,py0,px0+70,py0,'grid');
+  Ln(px0,py0,px0+Math.sin(ang)*L,py0+Math.cos(ang)*L,'axis');
+  Ci(px0+Math.sin(ang)*L,py0+Math.cos(ang)*L,13,'dot-b');
+  const m=frame(400,150,500,320,8,12,{xl:'time (s)',yl:'swing position',ty:3});
+  curve(m,x=>6+4.6*Math.sin(2*Math.PI*x/4),0,t,'c-b');
+  chip(830,120,'PERIODIC','chip');
+}},
+{d:15,cap:'<b>Mechanism: growth weakens near a limit.</b> Hot tea cooling toward the room: fast at first, then barely at all. Fingerprint: <i>the levelling curve</i>.',draw(p){
+  const t=8*seg(p,.05,.9);
+  const temp=x=>25+55*Math.exp(-x/2.2);
+  const cw=64,ch=86,cx=140,cy=200;
+  Rt(cx,cy,cw,ch,'chip-bg',8);
+  const frac=(temp(t)-25)/55;
+  Rt(cx+4,cy+4+(ch-8)*(1-frac),cw-8,(ch-8)*frac,'area-x');
+  T(cx+cw/2,cy+ch+22,`${Math.round(temp(t))} °C`,'q-rate','middle',13);
+  gO(clamp(frac,0,1));T(cx+cw/2,cy-14,'~ ~','soft','middle',15);gC();
+  const m=frame(400,150,500,320,8,90,{xl:'time (min)',yl:'temperature (°C)',ty:30,ycls:'q-rate'});
+  Ln(m.X(0),m.Y(25),m.X(8),m.Y(25),'dash');T(m.X(7.6),m.Y(25)-8,'room 25°','soft','end',10.5);
+  curve(m,temp,0,t,'c-rate');
+  chip(820,120,'SATURATION','chipR');
+}},
+{d:8,cap:'Stop asking <em>“what curve is this?”</em> Start asking <b>“what mechanism could make it change this way?”</b> The shape is a fingerprint — read the culprit, not the ink.',draw(p){
+  const cells=[[t=>t,'linear','c-pos',8,8],[t=>Math.pow(2,t*0.75),'exponential','c-b',8,64],
+    [t=>12/(t+1.2),'inverse','c-pos',7,10],[t=>36/((t+1)*(t+1)),'inverse²','c-violet',7,36],
+    [t=>4+3*Math.sin(1.6*t),'periodic','c-b',8,8],[t=>1+6*(1-Math.exp(-t/2)),'saturation','c-rate',8,8]];
+  cells.forEach((c,i)=>{
+    const col=i%3,row=(i/3)|0;
+    gO(seg(p,i*.09,.35+i*.09));
+    const m=frame(120+col*290,120+row*190,190,120,c[3],c[4],{noticks:true,nogrid:true});
+    curve(m,c[0],0.01,c[3],c[2]);
+    T(120+col*290+95,120+row*190+150,c[1],'soft','middle',11.5);
+    gC();
+  });
+}},
+]});
+
+/* ---------------- CH9 · READING LIKE AN EXPERT ---------------- */
+const trip=t=>t<=3?3*t: t<=5?9: 9-1.5*(t-5);   // out fast, queue, amble back
+function tripGraph(){
+  const m=frame(330,105,540,320,8,12,{xl:'time (s)',yl:'position (m)'});
+  curve(m,trip,0,8,'c-pos');
+  return m;
+}
+function ladder(step,p){
+  const items=['axes + units','one point','direction','rate of each part','bends?','area meaningful?','the mechanism','predict beyond'];
+  items.forEach((it,i)=>{
+    const on=i<step, now=i===step;
+    gO(on?1: now?0.4+0.6*seg(p,.0,.4):0.25);
+    T(96,140+i*38,(on?'✓':(i+1)+'.'),on?'q-pos':'soft','start',13);
+    T(126,140+i*38,it,now?'ink':(on?'q-pos':'soft'),'start',13.5);
+    gC();
+  });
+  T(96,104,'THE LADDER','soft','start',10.5,'letter-spacing=".22em"');
+}
+CHS.push({title:'Reading Like an Expert',beats:[
+{d:7,cap:'A stranger graph. <b>Don’t guess.</b> Climb the ladder — the same eight rungs, every single time.',draw(p){tripGraph();ladder(0,p)}},
+{d:6,cap:'<b>1 · Axes and units.</b> Position in metres, against time in seconds, 0–8 s. Now — and only now — the shape may speak.',draw(p){
+  const m=tripGraph();ladder(1,p);
+  const ph=pop(seg(p,.1,.6));
+  gT(`translate(${m.X(4)} ${m.fy+m.fh+36}) scale(${ph})`);Rt(-56,-14,112,26,'stamp-ok',13);gC();
+}},
+{d:6,cap:'<b>2 · One point.</b> At 1 s she is 3 m out. If you cannot state one dot, stop — nothing later will save you.',draw(p){
+  const m=tripGraph();ladder(2,p);cross(m,1,3,{p,xl:'1 s',yl:'3 m'});
+}},
+{d:6,cap:'<b>3 · Direction.</b> Away… then still… then back. Three regimes, read left to right.',draw(p){
+  const m=tripGraph();ladder(3,p);
+  const arr=[[1.5,'↗',seg(p,.05,.3)],[4,'→',seg(p,.3,.55)],[6.5,'↘',seg(p,.55,.8)]];
+  arr.forEach(a=>{gO(a[2]);T(m.X(a[0]),m.Y(trip(a[0]))-18,a[1],'q-time','middle',22);gC()});
+}},
+{d:7,cap:'<b>4 · Rate of each part.</b> +3 m/s out, 0 while she queues, −1.5 m/s ambling back. Signs and units, spoken aloud.',draw(p){
+  const m=tripGraph();ladder(4,p);
+  gO(seg(p,.05,.3));chip(m.X(1.5),m.Y(4.5)-26,'+3 m/s','chipR');gC();
+  gO(seg(p,.35,.6));chip(m.X(4),m.Y(9)-24,'0 m/s','chipR');gC();
+  gO(seg(p,.6,.85));chip(m.X(6.8),m.Y(6.5)-24,'−1.5 m/s','chipR');gC();
+}},
+{d:6,cap:'<b>5 · Bends?</b> None inside the pieces — the rate only <i>jumps</i> at the corners. Straight stretches: rates held.',draw(p){
+  const m=tripGraph();ladder(5,p);
+  [3,5].forEach((x,i)=>{const ph=pop(seg(p,.1+i*.3,.5+i*.3));if(ph>0){gT(`translate(${m.X(x)} ${m.Y(trip(x))}) scale(${ph})`);Ci(0,0,13,'ring-a glow');gC()}});
+}},
+{d:7,cap:'<b>6 · Area?</b> Position × time multiplies into <em>nothing real</em> — so an expert refuses to shade. Skipping a tool is also a skill.',draw(p){
+  const m=tripGraph();ladder(6,p);
+  areaUnder(m,trip,0,8,'area-x',seg(p,.05,.4));
+  stamp(m.X(4),m.Y(4),'m × s = ?  SKIP IT','warn',-5,seg(p,.45,.85));
+}},
+{d:8,cap:'<b>7 · The mechanism.</b> Sprint to the shop, queue, amble home. The graph told a whole story — with no words on it.',draw(p){
+  const m=tripGraph();ladder(7,p);
+  worldStrip(500,[{x:trip(8*seg(p,.1,.95)),ph:trip(8*seg(p,.1,.95))*2}],{x0:360,x1:840,clock:8*seg(p,.1,.95),axisTag:''});
+}},
+{d:7,cap:'<b>8 · Predict beyond the edge</b> — dashed, humble, testable. Ten seconds of ladder beats an hour of guessing.',draw(p){
+  const m=frame(330,105,460,320,10,12,{xl:'time (s)',yl:'position (m)',tx:2});
+  curve(m,trip,0,8,'c-pos');ladder(8,p);
+  curve(m,t=>Math.max(0,9-1.5*(t-5)),8,10,'ghost',seg(p,.15,.6));
+  gO(seg(p,.55,.9));T(m.X(9.4),m.Y(Math.max(0,9-1.5*4.4))-16,'?','q-time','middle',26);gC();
+}},
+]});
+
+/* ---------------- CH10 · THE LOCK ---------------- */
+CHS.push({title:'The Lock',beats:[
+{d:22,cap:'Read it once more — then own it forever.',draw(p){
+  const lines=[
+    ['A graph is a disciplined visual argument',20,.02],
+    ['about how one quantity varies with another,',20,.12],
+    ['under stated conditions:',20,.22],
+    ['points encode STATES,',24,.34],
+    ['slopes encode RATES,',24,.46],
+    ['curvature encodes CHANGING RATES,',24,.58],
+    ['areas encode ACCUMULATION —',24,.70],
+    ['and the overall shape betrays the MECHANISM.',24,.82],
+  ];
+  lines.forEach((l,i)=>{
+    gO(seg(p,l[2],l[2]+.1));
+    T(480,120+i*44,l[0], i<3?'soft serif':'title-big','middle',l[1]);
+    gC();
+  });
+}},
+{d:12,cap:'Watched at 2×? Watch once more at <b>½×</b> and say every caption <i>aloud</i>. That is how a film becomes a foundation. <b>⟲ Replay</b> — or jump any chapter from the left.',draw(p){
+  const m=frame(280,150,400,250,8,12,{noticks:true});
+  curve(m,walkF,0,8,'c-pos',seg(p,0,.5));dots(m,PTS,'dot',seg(p,.1,.7));
+  tri(m,walkF,2,4,seg(p,.4,.9));
+  bigTitle(480,110,'The Grammar of Graphs',30,seg(p,.05,.35));
+  gO(seg(p,.7,1));T(480,470,'one file · works offline · made for repeat viewing','soft','middle',12);gC();
+}},
+]});
+
+/* =========================================================
+   ENGINE — one master clock, everything else derives from it
+   ========================================================= */
+let total=0;CHS.forEach((c,i)=>{c.i=i;c.dur=c.beats.reduce((a,b)=>a+b.d,0);c.start=total;total+=c.dur});
+const st={t:0,speed:1,playing:true,ended:false};
+const $=id=>document.getElementById(id);
+const stage=$('stage'),capEl=$('cap'),kickEl=$('kicker'),fillEl=$('fill'),clockEl=$('clock');
+
+function locate(t){
+  let ci=CHS.findIndex(c=>t<c.start+c.dur-1e-9); if(ci<0)ci=CHS.length-1;
+  let lt=t-CHS[ci].start,bi=0;
+  for(const b of CHS[ci].beats){if(lt<b.d)break;lt-=b.d;bi++}
+  if(bi>=CHS[ci].beats.length){bi=CHS[ci].beats.length-1;lt=CHS[ci].beats[bi].d}
+  return {ci,bi,p:clamp(lt/CHS[ci].beats[bi].d,0,1)};
+}
+const fmtT=s=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+
+let lastKey='',lastCh=-1;
+function render(){
+  const {ci,bi,p}=locate(st.t);
+  S=[];
+  try{CHS[ci].beats[bi].draw(p)}catch(e){S=[];T(480,270,'…','soft','middle',20);console.error(e)}
+  stage.innerHTML=S.join('');
+  const key=ci+'/'+bi;
+  if(key!==lastKey){
+    lastKey=key;
+    capEl.innerHTML=CHS[ci].beats[bi].cap;
+    capEl.classList.remove('swap');void capEl.offsetWidth;capEl.classList.add('swap');
+  }
+  if(ci!==lastCh){
+    lastCh=ci;
+    kickEl.innerHTML=`CHAPTER ${String(ci).padStart(2,'0')} / ${CHS.length-1} — ${CHS[ci].title.toUpperCase()} <b>· ${fmtT(CHS[ci].dur)}</b>`;
+    document.querySelectorAll('.tocitem').forEach((el,i)=>{
+      el.classList.toggle('active',i===ci);
+      if(i===ci)el.scrollIntoView({block:'nearest'});
+    });
+  }
+  document.querySelectorAll('.tocitem').forEach((el,i)=>{
+    const c=CHS[i];
+    const fr=st.ended?1:clamp((st.t-c.start)/c.dur,0,1);
+    el.querySelector('.bar i').style.width=(fr*100)+'%';
+    el.classList.toggle('done',fr>=0.999);
+  });
+  fillEl.style.width=(st.t/total*100)+'%';
+  clockEl.textContent=`${fmtT(st.t)} / ${fmtT(total)}`;
+  $('play').textContent = st.ended?'⟲':(st.playing?'⏸':'▶');
+}
+
+let lastFrame=performance.now();
+function loop(now){
+  const dt=Math.min(.1,(now-lastFrame)/1000);lastFrame=now;
+  if(st.playing&&!st.ended){
+    st.t+=dt*st.speed;
+    if(st.t>=total){st.t=total-1e-4;st.playing=false;st.ended=true}
+    render();
+  }
+  requestAnimationFrame(loop);
+}
+function seek(t,keepPlay=true){
+  st.t=clamp(t,0,total-1e-4);st.ended=false;
+  if(keepPlay!==null)st.playing=keepPlay?st.playing:st.playing;
+  render();
+}
+function togglePlay(){
+  if(st.ended){st.t=0;st.ended=false;st.playing=true}
+  else st.playing=!st.playing;
+  render();
+}
+
+/* ---------- build sidebar ---------- */
+const toc=$('toc');
+CHS.forEach((c,i)=>{
+  const b=document.createElement('button');
+  b.className='tocitem';b.setAttribute('aria-label',`Jump to chapter ${i}: ${c.title}`);
+  b.innerHTML=`<span class="row"><span class="idx">${String(i).padStart(2,'0')}</span><span class="tt">${c.title}</span><span class="dur">${fmtT(c.dur)}</span></span><span class="bar"><i></i></span>`;
+  b.addEventListener('click',()=>{seek(c.start);st.playing=true;st.ended=false;render();toc.classList.remove('open')});
+  toc.appendChild(b);
+});
+$('runtime').textContent=`RUNTIME ${fmtT(total)} AT 1× · ONE FILE · OFFLINE`;
+
+/* ---------- transport ---------- */
+$('play').addEventListener('click',togglePlay);
+$('prev').addEventListener('click',()=>{
+  const {ci}=locate(st.t);
+  const target=(st.t-CHS[ci].start>2.5||ci===0)?CHS[ci].start:CHS[ci-1].start;
+  seek(target);st.playing=true;render();
+});
+$('next').addEventListener('click',()=>{
+  const {ci}=locate(st.t);
+  if(ci<CHS.length-1){seek(CHS[ci+1].start);st.playing=true;render()}
+});
+const prog=$('prog');
+function seekFromEvent(e){
+  const r=prog.getBoundingClientRect();
+  const x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
+  seek(clamp(x/r.width,0,1)*total);
+}
+prog.addEventListener('pointerdown',e=>{seekFromEvent(e);
+  const mv=ev=>seekFromEvent(ev),up=()=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up)};
+  window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);
+});
+CHS.forEach(c=>{if(c.i===0)return;const n=document.createElement('div');n.className='notch';n.style.left=(c.start/total*100)+'%';prog.appendChild(n)});
+
+const spd=$('spdrange'),spdVal=$('spdval');
+function setSpeed(v){st.speed=clamp(v,.2,4);spd.value=st.speed;spdVal.textContent=st.speed.toFixed(st.speed<1?2:1).replace(/0$/,'')+'×';if(st.speed>=1)spdVal.textContent=st.speed.toFixed(1)+'×'}
+spd.addEventListener('input',()=>setSpeed(parseFloat(spd.value)));
+document.querySelectorAll('.spdchip').forEach(b=>b.addEventListener('click',()=>setSpeed(parseFloat(b.dataset.s))));
+setSpeed(1);
+
+$('tocbtn').addEventListener('click',()=>toc.classList.toggle('open'));
+
+window.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT')return;
+  if(e.code==='Space'){e.preventDefault();togglePlay()}
+  else if(e.key==='ArrowRight'){$('next').click()}
+  else if(e.key==='ArrowLeft'){$('prev').click()}
+  else if(e.key==='ArrowUp'){e.preventDefault();setSpeed(st.speed+.25)}
+  else if(e.key==='ArrowDown'){e.preventDefault();setSpeed(st.speed-.25)}
+});
+
+/* expose for internal verification */
+window.__film={seek:t=>{seek(t);render()},total:()=>total,st,chapters:CHS.map(c=>({title:c.title,start:c.start,dur:c.dur}))};
+
+render();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

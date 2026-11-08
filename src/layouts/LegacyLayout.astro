@@ -1,57 +1,39 @@
 ---
 /**
- * An older single-file (or multi-file) lesson, shown exactly as it was, inside the site frame.
- * It opens fresh every time: anything it saved on the device last time is cleared first.
+ * An older lesson (a single HTML file or a multi-file app) opens AS ITSELF: the original file,
+ * unchanged, as a full page of its own. No site header, no frame, no box around it, so every
+ * animation, layout and interaction behaves exactly as in the original.
+ *
+ * This page only (1) clears what older lessons saved last time, so each one starts fresh, and
+ * (2) swaps itself for the original file. Because it uses location.replace, the browser's Back
+ * button goes straight back to the library page the lesson was opened from.
  */
-import BaseLayout from './BaseLayout.astro';
-import Breadcrumb from '@components/Breadcrumb.astro';
-import SectionNav from '@components/SectionNav.astro';
-import PrevNext from '@components/PrevNext.astro';
-import { ancestors, neighbours, type Page } from '@lib/content';
+import type { Page } from '@lib/content';
 import { url } from '@lib/url';
 
 interface Props { page: Page }
 const { page } = Astro.props;
-const folder = page.folder;
-const { prev, next } = neighbours(page);
 const src = url(page.data.legacy!.replace(/^\//, ''));
 ---
-<BaseLayout title={page.data.title} description={page.data.summary} accent={folder.accent}>
-  <Breadcrumb trail={[...ancestors(folder).map((f) => ({ label: f.title, href: f.href })), { label: page.data.title }]} />
-  <div class="legacy-head">
-    <h1>{page.data.title}</h1>
-    <a class="btn quiet" href={src} target="_blank" rel="noopener">Open full screen ↗</a>
-  </div>
-  <!-- Start fresh: remove whatever older lessons saved on this device (keeps only the site's own day/night choice). -->
-  <script is:inline>
-    (function () {
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{page.data.title}</title>
+    <script define:vars={{ src }}>
       try {
         var keep = { 'library.theme': 1 };
         for (var i = localStorage.length - 1; i >= 0; i--) { var k = localStorage.key(i); if (!keep[k]) localStorage.removeItem(k); }
         sessionStorage.clear();
       } catch (e) { /* storage blocked: nothing saved to clear */ }
-    })();
-  </script>
-  <iframe
-    class="legacy-frame"
-    src={src}
-    title={page.data.title}
-    loading="eager"
-    sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-downloads allow-modals"
-    allow="clipboard-write; fullscreen"
-  ></iframe>
-  <div class="after">
-    <SectionNav folder={folder} current={page.id} />
-    <PrevNext prev={prev} next={next} folder={folder} />
-  </div>
-</BaseLayout>
-
-<style>
-  .legacy-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); margin: var(--space-4) 0; }
-  h1 { font-size: var(--text-xl); }
-  .legacy-frame {
-    display: block; width: 100%; height: calc(100dvh - 7rem); min-height: 32rem;
-    border: var(--border); border-radius: var(--radius); background: #fff; box-shadow: var(--shadow);
-  }
-  .after { display: grid; gap: var(--space-4); margin-top: var(--space-6); max-width: 48rem; }
-</style>
+      location.replace(src);
+    </script>
+    <noscript><meta http-equiv="refresh" content={`0;url=${src}`} /></noscript>
+    <style>body { font: 18px/1.5 system-ui, sans-serif; margin: 2rem; }</style>
+  </head>
+  <body>
+    <p>Opening <a href={src}>{page.data.title}</a>…</p>
+  </body>
+</html>

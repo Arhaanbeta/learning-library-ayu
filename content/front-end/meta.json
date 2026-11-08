@@ -1,0 +1,7 @@
+{
+  "title": "Front end",
+  "order": 5,
+  "icon": "🖥️",
+  "accent": "orange",
+  "blurb": "What happens in the browser: pages, clicks and how websites talk to servers."
+}

@@ -1,5 +1,5 @@
 ---
-// Home: "Continue where you left off" (Phase 2) and one tile per subject.
+// Home: one tile per subject.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getLibrary, plural } from '@lib/content';
 const subjects = await getLibrary();
@@ -9,9 +9,6 @@ const subjects = await getLibrary();
     <h1>What shall we learn today?</h1>
     <p class="lead">Pick a subject. Every page is one idea and takes about 5 to 10 minutes.</p>
   </section>
-
-  <!-- Phase 2 fills this in from the reader's progress. -->
-  <section class="continue card" data-continue hidden aria-label="Continue where you left off"></section>
 
   <ul class="tiles" role="list">
     {subjects.map((s) => {
@@ -35,7 +32,6 @@ const subjects = await getLibrary();
   .hello { display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-6); }
   h1 { font-size: var(--text-3xl); }
   @media (max-width: 40rem) { h1 { font-size: var(--text-2xl); } }
-  .continue { margin-bottom: var(--space-6); padding: var(--space-4); }
   .tiles { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); }
   .tile {
     height: 100%; display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-5);

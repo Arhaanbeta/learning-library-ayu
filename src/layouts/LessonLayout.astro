@@ -1,7 +1,7 @@
 ---
 /**
  * A lesson page: breadcrumb, the section's contents in a sidebar, the lesson,
- * previous/next links and the "Mark as done" spot (switched on in Phase 2).
+ * and previous/next links.
  */
 import 'katex/dist/katex.min.css';
 import '../styles/prose.css';
@@ -21,7 +21,7 @@ const n = section.pages.indexOf(page) + 1;
   <Breadcrumb trail={[{ label: subject.title, href: subject.href }, { label: section.title, href: section.href }, { label: page.data.title }]} />
   <div class="lesson">
     <SectionNav section={section} current={page.id} />
-    <article data-page-id={page.id}>
+    <article>
       <header class="lesson-head">
         <p class="eyebrow">{section.title} · Page {n} of {section.pages.length}</p>
         <h1>{page.data.title}</h1>
@@ -30,10 +30,6 @@ const n = section.pages.indexOf(page) + 1;
       </header>
       <div class="prose">
         <slot />
-      </div>
-      <!-- Phase 2 turns this on: saves "done" for the current reader. -->
-      <div class="done-slot" data-done-for={page.id} hidden>
-        <button class="btn" type="button" data-act="mark-done">Mark as done</button>
       </div>
       <PrevNext prev={prev} next={next} section={section} />
     </article>
@@ -46,5 +42,4 @@ const n = section.pages.indexOf(page) + 1;
   @media (min-width: 62rem) { .lesson { grid-template-columns: var(--sidebar) minmax(0, 1fr); align-items: start; } }
   .lesson-head { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-6); max-width: var(--measure); }
   h1 { font-size: var(--text-2xl); }
-  .done-slot { margin-top: var(--space-7); }
 </style>

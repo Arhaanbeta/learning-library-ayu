@@ -1,5 +1,5 @@
 ---
-// Subject home: its sections, each with its pages count (progress bars arrive in Phase 2).
+// Subject home: its sections, each with how many pages and minutes it has.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumb from '@components/Breadcrumb.astro';
 import { getLibrary, plural, totalMinutes, type Subject } from '@lib/content';
@@ -27,8 +27,6 @@ const { subject } = Astro.props;
             <span class="name">{sec.title}</span>
             <span class="summary">{sec.summary}</span>
             <span class="meta">{plural(sec.pages.length, 'page')} · about {totalMinutes(sec.pages)} minutes</span>
-            <!-- Phase 2: progress bar for this section -->
-            <span class="bar" data-progress-for={sec.pages.map((p) => p.id).join(' ')} hidden><i></i></span>
           </span>
         </a>
       </li>
@@ -51,6 +49,4 @@ const { subject } = Astro.props;
   .body { display: flex; flex-direction: column; gap: var(--space-1); }
   .name { font-size: var(--text-lg); font-weight: 700; color: var(--accent-ink); }
   .summary { color: var(--ink-2); }
-  .bar { display: block; height: 8px; border-radius: 4px; background: var(--surface-2); overflow: hidden; margin-top: var(--space-2); }
-  .bar i { display: block; height: 100%; width: 0; background: var(--accent); }
 </style>

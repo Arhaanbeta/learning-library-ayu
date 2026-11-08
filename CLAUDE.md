@@ -38,55 +38,57 @@ The system has three parts, and each has one job:
 - Site path: `site` and `base` in `astro.config.mjs` (`/learning-library-ayu`). Internal links always go through `url()` in `src/lib/url.ts`, so moving the site is a one-line change.
 - GitHub Pages sends a short cache time for everything; hashed assets in `_astro/` are safe because their names change when they change.
 
-## Content model: Subject → Section → Pages
-Each subject is a complete area of the site. A subject has many sections, and each section has many pages. Each page covers one idea and takes 5–10 minutes to read.
+## Content model: folders of any depth → lessons
+The library is a tree of folders, nested as deep as needed (domain → subject → subdomain → topic …), with lessons as the leaves. The owner reorganises it on the go, so keep it flexible.
 
 ```
 content/
-  physics/
-    subject.json            # title, accent, icon, order, blurb
-    forces/
-      section.json          # title, order, summary
-      01-what-is-a-force.mdx
-      02-balanced-forces.mdx
-  coding/
   maths/
-  english/
-  microprocessors/
+    meta.json               # title, order, icon, accent, blurb (all but title optional)
+    arrows-and-machines.mdx # a lesson directly in a subject shows under "General"
+    number/
+      meta.json
+      number-line-lab.md
+  technology/
+    meta.json
+    how-chips-think.mdx     # an older lesson: `legacy:` points at its file in public/legacy/
+  chemistry/meta.json       # an empty subject shows "Nothing here yet"
 ```
 
-`subject.json` → `accent` is a colour *name* from `src/lib/accents.ts` (teal, blue, violet, orange, green, rose); its light and dark values live in `src/styles/tokens.css`.
+- Any folder may hold lessons and/or sub-folders. `meta.json` is optional (no meta → title from the folder name). `accent` (a name from `src/lib/accents.ts`) is inherited from the parent folder when left out.
+- Lessons are `.mdx` (can use components) or `.md` (plain, e.g. converted documents).
+- Moving a lesson = moving its file; reorganising = moving folders. Do it when the owner asks in one sentence.
 
-Page frontmatter is validated with zod:
+Lesson frontmatter (zod-validated in `src/content.config.ts`):
 
 ```yaml
-id: phy-forces-what-is-a-force   # PERMANENT. Never change or reuse. A page's stable identity (cross-links, future features).
+id: phy-forces-what-is-a-force   # PERMANENT. Never change or reuse.
 title: What is a force?
-summary: One plain-English line.
-order: 1
-minutes: 8
-tags: [push, pull, newton]
-legacy: /legacy/physics/levers.html   # optional, only for wrapped old files
+summary: One plain-English line.          # optional
+order: 1                                  # optional (default 100)
+minutes: 8                                # optional
+tags: [push, pull, newton]                # optional
+legacy: /legacy/physics/levers.html       # only for wrapped older lessons
+source: https://claude.ai/artifact/…      # where an imported lesson came from (records only)
 ```
 
-- The subject and section come from the folder path. The page URL comes from the file name without its `01-` prefix.
+- The URL comes from the folder path plus the file name without its `01-` prefix.
 - Filenames may change. The `id` may never change.
-- The build fails if any page `id` is missing, badly formed or duplicated, or if a folder lacks its `subject.json` / `section.json`.
+- The build fails if a lesson `id` is missing, badly formed or duplicated, or if a lesson and a folder would share an address.
 
 ## Routes
-- `/` shows the subject tiles.
-- `/[subject]/` is the subject home. It lists the sections.
-- `/[subject]/[section]/` is the section's contents page.
-- `/[subject]/[section]/[page]/` is a lesson page: breadcrumb, sidebar with the section's contents, previous and next links. It always opens at the top.
+- `/` shows the top-level folders as tiles. `/map/` shows the whole tree on one page.
+- `/<any/folder/path>/` lists that folder's sub-folders (cards) and lessons. One route, `src/pages/[...path].astro`, serves every depth.
+- `/<folder/path>/<lesson>/` is a lesson: breadcrumb, the folder's lessons in a sidebar, previous/next. It always opens at the top.
 - `/search/` (Phase 3).
 
 ## Where things live (so refactors stay small)
 - `src/styles/tokens.css`: every colour, size, space, radius and tap size. Light and dark. Subject accents.
 - `src/styles/base.css` (page frame, buttons) and `src/styles/prose.css` (lesson text, code, maths): tokens only.
-- `src/layouts/`: `BaseLayout` (head, header, footer, theme) → `LessonLayout` (breadcrumb, sidebar, prev/next).
+- `src/layouts/`: `BaseLayout` (head, header, footer, theme) → `LessonLayout` (written lessons) and `LegacyLayout` (older lessons in a frame).
 - `src/components/`: shared pieces. `mdx.ts` lists the components every lesson can use without importing.
 - `src/sims/`: interactive simulations, imported by the lessons that use them (`import X from '@sims/X.astro'`).
-- `src/lib/content.ts`: the only code that reads the collections; builds the subject → section → page tree.
+- `src/lib/content.ts`: the only code that reads the collections; builds the folder tree (`getLibrary`, `allPages`, `ancestors`, `neighbours`).
 - Components use tokens, never raw colours or sizes. Lessons contain words and components, never styling.
 
 ## Shared components
@@ -105,10 +107,13 @@ Build each component once and use it everywhere from MDX:
 - Tablet and phone first, then desktop. Tap targets at least 48px.
 - Fast, with minimal JS on content pages.
 
-## Legacy single-file lessons — Phase 2 (next)
+## Older lessons (single-file HTML, Claude artifacts) — Phase 2
 - `inbox/` is the front door for old files (drag-and-drop on github.com).
-- `scripts/import-legacy.ts`: moves each file to `public/legacy/<subject>/<slug>.html`, reads its `<title>`, creates a stub `.mdx` with `legacy:` in the frontmatter.
-- The lesson layout shows legacy files in a full-height iframe with `sandbox="allow-scripts allow-same-origin allow-popups allow-forms"`.
+- `node scripts/import-legacy.ts` imports everything in `inbox/` into `content/unsorted/`; `node scripts/import-legacy.ts <file|folder> <content-folder> [--title] [--slug] [--source]` imports one file, or a folder with an `index.html` (multi-file apps), straight into place. It copies to `public/legacy/…`, reads the `<title>` and writes a stub lesson with a new id. Nothing is overwritten.
+- `LegacyLayout` shows them in a full-height iframe (`sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-downloads allow-modals"`), with an "Open full screen" link.
+- Start fresh: before the frame loads, everything older lessons saved in localStorage/sessionStorage is cleared (only `library.theme` is kept). Their own scores, names and review queues therefore reset on every open, as the owner wants.
+- Claude artifacts: single pages and multi-file apps are copied as they are. Features that need Claude (`window.claude`) switch themselves off outside Claude. Claude "Docs" documents cannot be copied (they run on Claude's own software): export their tab as Markdown, convert to a `.md` lesson (strip the byline, which names the owner), and mark each dropped diagram with a `<figure class="diagram-gap">` placeholder until it is redrawn as an SVG `<Figure>`.
+- Check every import for personal details first (the repo is public).
 
 ## Writing style for new lessons
 - Write for a bright 12-year-old, in UK English, with short sentences.
@@ -126,7 +131,7 @@ Keep the door open: page `id`s stay stable.
 
 ## Phases
 1. **Skeleton and deploy** (done): Astro project and schemas, layouts, navigation, tokens, core components, Physics → Forces (3 pages), GitHub Pages workflow.
-2. **Legacy import** (next): `inbox/`, the import script, the iframe wrapper, filing each old lesson under a subject and section.
+2. **Older lessons** (in progress): any-depth folders, `inbox/`, the import script, the frame, Library map; importing the owner's Claude artifacts and HTML files.
 3. **Search, glossary and cross-links**: Pagefind, `<Term>`, `<SeeAlso>`.
 - Dropped: progress tracking ("Who's learning?", Mark as done, Continue, progress bars, Firestore).
 
